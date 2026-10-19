@@ -1,5 +1,7 @@
 # RoomBoy — Haru's Room
 
+[在线游玩 / 分享链接](https://giogyan90.github.io/RoomBoy/) · [GitHub 仓库](https://github.com/GioGyan90/RoomBoy)
+
 基于 `reference/roomboydeepseek.html` 拆分的 Three.js 房间小游戏。保留原版视觉与六种互动，使用 Vite + TypeScript，游戏运行时不依赖 CDN。
 
 ## 本地运行（Windows / macOS / Linux）
@@ -52,7 +54,7 @@ npm run preview
 3. 在 Actions 运行 **Build and deploy game**。
 4. 部署成功后，以 Actions 的 `github-pages` 环境实际返回的 URL 为分享地址。
 
-Vite 使用相对资源路径，兼容仓库子路径。当前源码包已含部署流程，但未创建远端仓库，未执行 Pages 部署。
+Vite 使用相对资源路径，兼容仓库子路径。已创建公开仓库并完成首次 Pages 部署；后续推送 main 会自动测试、构建和更新分享页。
 
 ## 当前边界
 
