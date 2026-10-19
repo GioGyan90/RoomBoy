@@ -1,5 +1,6 @@
 import * as T from 'three';
-import {bodyBands,referenceFrame,sourceJoints,sourcePoint,type SourceBand} from './bodyReference';
+import {referenceFrame,sourceJoints,sourcePoint,fitJointTargets,hairRim,type BodyTargets,type JointName} from './bodyReference';
+import {constrainBands,measureReprojection,type BodyPart,type MeshLandmarks} from './bodyConstraints';
 
 /** Metres. Image landmarks estimated from the supplied 1200 × 800 turnaround.
  * These are editable design measurements, not inferred anatomical ground truth. */
@@ -28,11 +29,12 @@ export function cage(rings:readonly Ring[],sides:number){
  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setIndex(idx);g.computeVertexNormals();return g;
 }
 
-export function createBodyBlockout(stage:BodyStage){
+export function createBodyBlockout(stage:BodyStage,targets:BodyTargets=fitJointTargets()){
  const root=new T.Group();root.name=`body-${stage}`;
  const refined=stage==='planes',sides=refined?12:8;
  const palette={head:0xc9bdaa,torso:0xa9b8bb,pelvis:0xb9aaa1,limbs:0xc6c1b5,joints:0xb1ada3,hair:0x5e6060};
- function mass(name:string,bands:readonly SourceBand[],color:number){
+ function mass(name:string,part:BodyPart,color:number){
+  const bands=constrainBands(part,targets);
   // Both resolutions use the same measured section positions. Refinement adds
   // radial faces only; decimating anatomical stations would change the silhouette.
   const rings:Ring[]=bands.map(([y,l,r,f,b])=>[
@@ -40,23 +42,35 @@ export function createBodyBlockout(stage:BodyStage){
    (b-f)*referenceFrame.scale/2,(referenceFrame.sideAxis-(f+b)/2)*referenceFrame.scale,
    ((l+r)/2-referenceFrame.frontAxis)*referenceFrame.scale,
   ]);
-  const m=new T.Mesh(cage(rings,sides),new T.MeshStandardMaterial({color,roughness:1,flatShading:true}));m.name=name;root.add(m);return m;
+  const m=new T.Mesh(cage(rings,sides),new T.MeshStandardMaterial({color,roughness:1,flatShading:true}));m.name=name;m.userData.bandCount=bands.length;root.add(m);return m;
  }
- const pelvis=mass('pelvis',bodyBands.pelvis,palette.pelvis);
+ const pelvis=mass('pelvis','pelvis',palette.pelvis);
  const pp=pelvis.geometry.getAttribute('position');for(let i=0;i<sides;i++)pp.setY(i,pp.getY(i)+.050*Math.abs(Math.sin(i/sides*Math.PI*2)));pelvis.geometry.computeVertexNormals();
- mass('abdomen',bodyBands.abdomen,palette.torso);mass('ribcage',bodyBands.ribcage,palette.torso);
- mass('neck',bodyBands.neck,palette.joints);mass('head',bodyBands.head,palette.head);
- const hair=mass('hair-envelope',bodyBands.hair,palette.hair);
+ mass('abdomen','abdomen',palette.torso);mass('ribcage','ribcage',palette.torso);
+ mass('neck','neck',palette.joints);mass('head','head',palette.head);
+ const hair=mass('hair-envelope','hair',palette.hair);
  // The single envelope reaches down the nape without lowering the front hairline.
  const hp=hair.geometry.getAttribute('position');for(let i=0;i<sides;i++){
-  const a=i/sides*Math.PI*2;hp.setY(i,hp.getY(i)-.105*Math.max(0,-Math.cos(a)));
+  const t=i/sides*hairRim.length,index=Math.floor(t),u=t-index,a=hairRim[index],b=hairRim[(index+1)%hairRim.length];
+  hp.setXYZ(i,...sourcePoint([a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,a[2]+(b[2]-a[2])*u]));
  }hair.geometry.computeVertexNormals();
  for(const side of ['right','left'] as const){
   for(const [part,section] of [['deltoid','Deltoid'],['upper-arm','UpperArm'],['forearm','Forearm'],['hand','Hand'],['thigh','Thigh'],['shin','Shin'],['foot','Foot']] as const){
-   mass(`${side}-${part}`,bodyBands[`${side}${section}`],['hand','foot'].includes(part)?palette.head:palette.limbs);
+   mass(`${side}-${part}`,`${side}${section}`,['hand','foot'].includes(part)?palette.head:palette.limbs);
   }
  }
- root.userData.landmarks=Object.fromEntries(Object.entries(sourceJoints).map(([name,point])=>[name,sourcePoint(point)]));
+ // Read actual geometry vertices, never copy the target coordinates into markers.
+ const actual={} as MeshLandmarks;
+ function read(name:JointName,meshName:string,at:'bottom'|'top'|'front'){
+  const m=root.getObjectByName(meshName) as T.Mesh,p=m.geometry.getAttribute('position'),index=at==='front'?0:m.userData.bandCount*sides+(at==='top'?1:0);
+  actual[name]=[p.getX(index),p.getY(index),p.getZ(index)];
+ }
+ read('crown','hair-envelope','top');read('chin','head','front');read('neck','neck','bottom');
+ for(const side of ['right','left'] as const){
+  read(`${side}Shoulder`,`${side}-upper-arm`,'top');read(`${side}Elbow`,`${side}-forearm`,'top');read(`${side}Wrist`,`${side}-forearm`,'bottom');
+  read(`${side}Hip`,`${side}-thigh`,'top');read(`${side}Knee`,`${side}-shin`,'top');read(`${side}Ankle`,`${side}-shin`,'bottom');
+ }
+ root.userData.landmarks=actual;root.userData.fitReport=measureReprojection(actual);
  root.userData.triangles=0;root.traverse(o=>{if(o instanceof T.Mesh)root.userData.triangles+=o.geometry.index!.count/3;});
  return root;
 }

@@ -38,12 +38,13 @@ test('structural cages stay closed, finite and proportionate at both densities',
 
 test('measured front and side section stations drive both model densities',async()=>{
  const {createBodyBlockout}=await import('../src/assets/procedural/bodyBlockout');
- const {bodyBands,referenceFrame:f}=await import('../src/assets/procedural/bodyReference');
+ const {fitJointTargets,referenceFrame:f}=await import('../src/assets/procedural/bodyReference');
+ const {constrainBands}=await import('../src/assets/procedural/bodyConstraints');
  const parts=[['ribcage','ribcage'],['right-forearm','rightForearm'],['left-forearm','leftForearm'],['right-shin','rightShin'],['left-shin','leftShin'],['head','head']] as const;
  for(const stage of ['blockout','planes'] as const){
   const body=createBodyBlockout(stage),sides=stage==='blockout'?8:12;
   for(const [name,key] of parts){const positions=(body.getObjectByName(name) as T.Mesh).geometry.getAttribute('position');
-   for(const [station,[y,l,r,front,back]] of bodyBands[key].entries()){
+   for(const [station,[y,l,r,front,back]] of constrainBands(key,fitJointTargets()).entries()){
     const xs:number[]=[],zs:number[]=[];
     for(let j=0;j<sides;j++){const i=station*sides+j;xs.push(positions.getX(i)/f.scale+f.frontAxis);zs.push(f.sideAxis-positions.getZ(i)/f.scale);assert.ok(Math.abs(f.ground-positions.getY(i)/f.scale-y)<.0001);}
     assert.ok(Math.abs(Math.min(...xs)-l)<.0001&&Math.abs(Math.max(...xs)-r)<.0001,`Front station drift in ${name}`);
@@ -51,4 +52,22 @@ test('measured front and side section stations drive both model densities',async
    }
   }
  }
+});
+
+
+test('joint targets move real mesh end caps rather than only display markers',async()=>{
+ const {createBodyBlockout}=await import('../src/assets/procedural/bodyBlockout');
+ const {fitJointTargets,sourcePoint,referenceFrame:f}=await import('../src/assets/procedural/bodyReference');
+ const targets=fitJointTargets(),before=createBodyBlockout('blockout',targets);
+ const changed={...targets,rightWrist:[targets.rightWrist[0]+14,targets.rightWrist[1]-10,targets.rightWrist[2]-9] as const};
+ const after=createBodyBlockout('blockout',changed),expected=sourcePoint(changed.rightWrist);
+ const forearm=after.getObjectByName('right-forearm') as T.Mesh;
+ const hand=after.getObjectByName('right-hand') as T.Mesh;
+ for(const [part,top] of [[forearm,false],[hand,true]] as const){const p=part.geometry.getAttribute('position'),i=part.userData.bandCount*8+(top?1:0);const actual=[p.getX(i),p.getY(i),p.getZ(i)];
+  actual.forEach((v,k)=>assert.ok(Math.abs(v-expected[k])<1e-6));
+ }
+ const delta=after.userData.landmarks.rightWrist.map((v:number,i:number)=>v-before.userData.landmarks.rightWrist[i]);
+ [14*f.scale,10*f.scale,9*f.scale].forEach((v,i)=>assert.ok(Math.abs(delta[i]-v)<1e-6));
+ assert.deepEqual(before.userData.landmarks.leftWrist,after.userData.landmarks.leftWrist);
+ for(const stage of ['blockout','planes'] as const){const m=createBodyBlockout(stage);assert.ok(m.userData.fitReport.front.max<4.2);assert.ok(m.userData.fitReport.side.max<1.01);assert.ok(m.userData.fitReport.back.max<4.2);}
 });

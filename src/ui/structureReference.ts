@@ -1,5 +1,6 @@
 import * as T from 'three';
-import {referenceFrame,sourceJoints,sourcePoint} from '../assets/procedural/bodyReference';
+import {referenceFrame,sourceJoints,viewJoints,type StudyView,type JointName} from '../assets/procedural/bodyReference';
+import type {MeshLandmarks} from '../assets/procedural/bodyConstraints';
 
 export function clearStudyGroup(group:T.Group){
  group.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Line||o instanceof T.Sprite){
@@ -16,11 +17,12 @@ export function addReferenceProjection(group:T.Group,image:HTMLImageElement,view
  const plane=new T.Mesh(new T.PlaneGeometry(width*f.scale,height*f.scale),new T.MeshBasicMaterial({map:texture,transparent:true,opacity,depthWrite:false}));
  plane.position.set(offset+(left+width/2-axis)*f.scale,(f.ground-top-height/2)*f.scale,-.5);group.add(plane);
 }
-export function addLandmarkMarkers(parent:T.Group){
+export function addLandmarkMarkers(parent:T.Group,actual:MeshLandmarks,view:StudyView){
  const material=new T.MeshBasicMaterial({color:0x008969,depthTest:false});
  const points=Object.entries(sourceJoints);
- for(const [index,[,p]] of points.entries()){
-  const position=new T.Vector3(...sourcePoint(p));
+ for(const [index,[name]] of points.entries()){
+  if(!viewJoints[name as JointName][view])continue;
+  const position=new T.Vector3(...actual[name as JointName]);
   const dot=new T.Mesh(new T.SphereGeometry(.007,8,6),material.clone());dot.position.copy(position);dot.renderOrder=4;parent.add(dot);
   const canvas=document.createElement('canvas');canvas.width=64;canvas.height=48;
   const ctx=canvas.getContext('2d')!;ctx.font='bold 29px sans-serif';ctx.textAlign='center';ctx.fillStyle='#005740';ctx.strokeStyle='white';ctx.lineWidth=5;ctx.strokeText(String(index+1),32,35);ctx.fillText(String(index+1),32,35);
@@ -28,6 +30,19 @@ export function addLandmarkMarkers(parent:T.Group){
  }
  material.dispose();
  const links=[['crown','chin'],['chin','neck'],['neck','rightShoulder'],['neck','leftShoulder'],['rightShoulder','rightElbow'],['rightElbow','rightWrist'],['leftShoulder','leftElbow'],['leftElbow','leftWrist'],['rightHip','leftHip'],['rightHip','rightKnee'],['rightKnee','rightAnkle'],['leftHip','leftKnee'],['leftKnee','leftAnkle']] as const;
- const vertices=links.flatMap(([a,b])=>[new T.Vector3(...sourcePoint(sourceJoints[a])),new T.Vector3(...sourcePoint(sourceJoints[b]))]);
+ const vertices=links.filter(([a,b])=>viewJoints[a][view]&&viewJoints[b][view]).flatMap(([a,b])=>[new T.Vector3(...actual[a]),new T.Vector3(...actual[b])]);
  const lines=new T.LineSegments(new T.BufferGeometry().setFromPoints(vertices),new T.LineBasicMaterial({color:0x008969,transparent:true,opacity:.45,depthTest:false}));lines.renderOrder=3;parent.add(lines);
+}
+
+/** Independent original-image targets; unlike mesh markers these stay fixed. */
+export function addViewTargets(parent:T.Group,actual:MeshLandmarks,view:StudyView,offset:number,drawError=true){
+ const f=referenceFrame,axis=view==='front'?f.frontAxis:view==='side'?f.sideAxis:f.backAxis,vertices:T.Vector3[]=[];
+ for(const name of Object.keys(viewJoints) as JointName[]){
+  const target=viewJoints[name][view];if(!target)continue;
+  const x=offset+(target[0]-axis)*f.scale,y=(f.ground-target[1])*f.scale,r=.010;
+  vertices.push(new T.Vector3(x-r,y,.35),new T.Vector3(x+r,y,.35),new T.Vector3(x,y-r,.35),new T.Vector3(x,y+r,.35));
+  const p=actual[name],px=offset+(view==='front'?p[0]:view==='side'?-p[2]:-p[0]);
+  if(drawError)vertices.push(new T.Vector3(px,p[1],.35),new T.Vector3(x,y,.35));
+ }
+ const lines=new T.LineSegments(new T.BufferGeometry().setFromPoints(vertices),new T.LineBasicMaterial({color:0xc34469,depthTest:false}));lines.renderOrder=6;parent.add(lines);
 }

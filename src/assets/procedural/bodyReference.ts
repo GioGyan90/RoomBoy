@@ -5,12 +5,12 @@ export const referenceFrame={width:1200,height:800,ground:772,top:24,frontAxis:5
 export type SourcePoint=readonly [frontX:number,frontY:number,sideX:number];
 export function sourcePoint([x,y,sx]:SourcePoint):[number,number,number]{const f=referenceFrame;return [(x-f.frontAxis)*f.scale,(f.ground-y)*f.scale,(f.sideAxis-sx)*f.scale];}
 export const sourceJoints={
- crown:[554,24,790],chin:[555,121,770],neck:[554,150,800],
+ crown:[554,24,790],chin:[555,124,773],neck:[554,150,809],
  rightShoulder:[483,181,818],leftShoulder:[631,181,818],
- rightElbow:[463,285,818],leftElbow:[648,285,818],
- rightWrist:[458,386,785],leftWrist:[648,386,785],
+ rightElbow:[464,280,819],leftElbow:[647,280,819],
+ rightWrist:[458,383,785],leftWrist:[648,383,785],
  rightHip:[513,384,798],leftHip:[599,384,798],
- rightKnee:[513,543,800],leftKnee:[601,543,800],
+ rightKnee:[513,539,805],leftKnee:[601,537,805],
  rightAnkle:[499,726,820],leftAnkle:[611,726,820],
 } as const satisfies Record<string,SourcePoint>;
 export const landmarkNames:Record<keyof typeof sourceJoints,string>={crown:'头顶',chin:'下巴',neck:'颈根',rightShoulder:'右肩',leftShoulder:'左肩',rightElbow:'右肘',leftElbow:'左肘',rightWrist:'右腕',leftWrist:'左腕',rightHip:'右髋',leftHip:'左髋',rightKnee:'右膝',leftKnee:'左膝',rightAnkle:'右踝',leftAnkle:'左踝'};
@@ -22,8 +22,8 @@ export const bodyBands={
  abdomen:[[350,488,617,754,836],[320,493,615,754,836],[290,491,620,753,840]],
  ribcage:[[315,493,615,754,836],[260,488,623,754,845],[210,491,621,756,850],[175,492,621,772,849],[156,497,616,790,838],[144,534,580,790,825]],
  neck:[[151,531,579,789,823],[132,538,575,781,815],[116,542,574,779,810]],
- head:[[121,551,559,768,783],[110,539,575,758,804],[94,531,581,746,820],[73,525,589,747,830],[48,529,585,760,825],[31,544,567,779,804]],
- hair:[[73,506,601,742,835],[47,514,596,751,831],[30,534,579,769,816],[24,550,558,786,794]],
+ head:[[124,550,560,773,785],[110,539,575,758,804],[94,531,581,746,820],[73,525,589,747,830],[48,529,585,760,825],[31,544,567,779,804]],
+ hair:[[108,526,582,753,816],[73,506,601,742,835],[47,514,596,751,831],[30,534,579,769,816],[24,550,558,786,794]],
  rightDeltoid:[[226,458,485,797,849],[196,459,494,794,851],[175,465,500,799,847],[158,484,497,812,835]],
  leftDeltoid:[[226,628,655,797,849],[196,618,653,794,851],[175,611,648,799,847],[158,614,627,812,835]],
  rightUpperArm:[[287,452,474,804,832],[240,455,481,797,845],[211,459,491,795,850]],
@@ -39,3 +39,31 @@ export const bodyBands={
  rightFoot:[[772,458,512,738,835],[758,463,513,746,837],[741,481,513,773,837],[726,488,511,807,834]],
  leftFoot:[[772,595,645,738,835],[758,594,638,746,837],[741,595,627,773,837],[726,599,623,807,834]],
 } as const satisfies Record<string,readonly SourceBand[]>;
+
+export type JointName=keyof typeof sourceJoints;
+export type BodyTargets=Record<JointName,SourcePoint>;
+export type StudyView='front'|'side'|'back';
+export type ImagePoint=readonly [x:number,y:number];
+// Back points are independent holdout readings, not mirrored front markers.
+const backJoints:Partial<Record<JointName,ImagePoint>>={
+ crown:[1042,24],rightShoulder:[1117,181],leftShoulder:[967,181],
+ rightElbow:[1137,280],leftElbow:[947,280],rightWrist:[1136,383],leftWrist:[946,383],
+ rightHip:[1085,384],leftHip:[999,384],rightKnee:[1091,541],leftKnee:[994,541],
+ rightAnkle:[1098,726],leftAnkle:[984,726],
+};
+export const viewJoints={} as Record<JointName,{front:ImagePoint;side:ImagePoint;back?:ImagePoint}>;
+for(const name of Object.keys(sourceJoints) as JointName[]){const [x,y,sx]=sourceJoints[name];viewJoints[name]={front:[x,y],side:[sx,name==='chin'?122:name.includes('Knee')?540:y],back:backJoints[name]};}
+/** Equal-weight orthographic fit. One 3D point reconciles all visible views. */
+export function fitJointTargets():BodyTargets{
+ const result={} as BodyTargets;
+ for(const name of Object.keys(viewJoints) as JointName[]){const p=viewJoints[name];
+  const x=p.back?(p.front[0]+referenceFrame.frontAxis+referenceFrame.backAxis-p.back[0])/2:p.front[0];
+  const y=name==='crown'?referenceFrame.top:(p.front[1]+p.side[1]+(p.back?.[1]??0))/(p.back?3:2);
+  result[name]=[x,y,p.side[0]];
+ }
+ return result;
+}
+export const hairRim:readonly SourcePoint[]=[
+ [554,88,753],[585,96,773],[598,82,799],[581,111,816],
+ [554,126,815],[528,111,816],[506,85,799],[522,96,773],
+];

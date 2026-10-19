@@ -71,3 +71,5 @@ Vite 使用相对资源路径，兼容仓库子路径。已创建公开仓库并
 [打开体块与低面三视图](https://giogyan90.github.io/RoomBoy/?view=structure) · [建模顺序与比例基准](docs/STRUCTURE_STUDY.md)。独立静态研究，保留旧人物作对照。
 
 点位校准版支持“定位点”与“原图叠合”，在参考图面板中选择原始设定图即可检查。[坐标与校准记录](docs/POINT_CALIBRATION.md)。
+
+最新一轮已让定点驱动实际网格端面，加入独立背面点位、并排对照及误差检查。[实际网格对齐记录](docs/MESH_ALIGNMENT.md)。

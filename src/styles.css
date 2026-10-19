@@ -71,3 +71,7 @@
 #structure-labels span{position:absolute;transform:translateX(-50%)}
 
 #structure-ui button:disabled{opacity:.4;cursor:default}#structure-reference-panel details{font-size:11px;line-height:1.7}#structure-reference-panel label{font-size:12px}
+
+#structure-stats{max-width:calc(100vw - 40px);line-height:1.6}#structure-reference-panel details li{padding:2px 0}
+
+@media(max-width:650px){#structure-labels{bottom:80px}}
