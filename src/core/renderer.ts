@@ -1,4 +1,8 @@
 import * as THREE from 'three';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {SSAOPass} from 'three/addons/postprocessing/SSAOPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 export function createRenderer(){
 /* =========================================================
    1 · renderer / scene / camera
@@ -18,5 +22,8 @@ scene.background = new THREE.Color(0x0a0d12);
 
 const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.05, 120);
 
-return {renderer,scene,camera};
+const target=new THREE.WebGLRenderTarget(innerWidth,innerHeight,{samples:4});
+const composer=new EffectComposer(renderer,target);composer.addPass(new RenderPass(scene,camera));
+const ao=new SSAOPass(scene,camera,innerWidth,innerHeight,16);ao.kernelRadius=.16;ao.minDistance=.0005;ao.maxDistance=.045;composer.addPass(ao);composer.addPass(new OutputPass());
+return {renderer,scene,camera,composer};
 }

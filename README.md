@@ -43,6 +43,10 @@ npm run preview
 | `src/input/` / `src/ui/` | 鼠标键盘输入、动作菜单和界面 |
 | `.github/workflows/pages.yml` | 测试、构建与 GitHub Pages 部署 |
 
+## 概念图复现
+
+已按两张参考图重建程序化场景与角色，并加入房间/人物/脸部检查视图和“概念图对照”。详见 [视觉验收记录](docs/VISUAL_REVIEW.md)，其中列明迭代过程与尚存差异。
+
 ## 后续替换模型
 
 参见 [资产流程](docs/ASSETS.md)。静态家具可以转换为 TS 顶点模块，再编译成 JS；角色骨骼与动画需要适配器，工具会拒绝有损扁平化。

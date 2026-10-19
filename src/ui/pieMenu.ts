@@ -17,7 +17,7 @@ function buildPie(){
     b.type = 'button';
     b.style.setProperty('--a', ang + 'deg');
     b.style.transitionDelay = (i*26) + 'ms';
-    b.textContent = a.icon;
+    b.textContent = a.icon;b.setAttribute('aria-label',a.label);b.dataset.action=a.id;
     b.addEventListener('mouseenter', ()=>{ pieLabel.textContent = a.label; pieLabel.classList.add('show'); });
     b.addEventListener('mouseleave', ()=> pieLabel.classList.remove('show'));
     b.addEventListener('click', (e)=>{

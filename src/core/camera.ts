@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import {damp} from './math';
 export function createCameraController(camera:THREE.PerspectiveCamera){
-const camState = { theta:0.17, phi:1.19, radius:5.3, target:new THREE.Vector3(0,0.92,0) };
-const camGoal  = { theta:0.17, phi:1.19, radius:5.3, target:new THREE.Vector3(0,0.92,0) };
+const camState = { theta:0.02, phi:1.50, radius:4.10, target:new THREE.Vector3(0,1.16,-1.1) };
+const camGoal  = { theta:0.02, phi:1.50, radius:4.10, target:new THREE.Vector3(0,1.16,-1.1) };
 
 function updateCamera(dt:number){
   camState.theta  = damp(camState.theta,  camGoal.theta,  11, dt);

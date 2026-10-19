@@ -15,7 +15,7 @@ export function woodFloorTexture(){
   const c = document.createElement('canvas'); c.width = c.height = 512;
   const g = c.getContext('2d')!;
   g.fillStyle = '#c99b64'; g.fillRect(0,0,512,512);
-  const planks = 5, pw = 512/planks;
+  const planks = 16, pw = 512/planks;
   for (let i=0;i<planks;i++){
     const b = 205 + Math.round(rand(-16,16));
     g.fillStyle = `rgb(${b},${Math.round(b*0.77)},${Math.round(b*0.52)})`;

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {refineRoom} from './roomDetails';
 import {rand} from '../../core/math';
 import {createMaterials} from './materials';
 import {skyTexture,calendarTexture} from './textures';
@@ -333,5 +334,6 @@ active = new THREE.Group(); active.name="props"; room.add(active); registry.set(
 }
 
 
+refineRoom(room,registry);
 return {root:room,registry,ceiling:room.userData.ceiling as THREE.Mesh};
 }

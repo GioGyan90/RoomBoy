@@ -5,11 +5,11 @@ export function createMaterials(){
    3 · materials
    ========================================================= */
 const MAT = {
-  wall:      new THREE.MeshStandardMaterial({ color:0xf3e8d9, roughness:0.96, side:THREE.DoubleSide }),
+  wall:      new THREE.MeshStandardMaterial({ color:0xc9bbae, roughness:0.96, side:THREE.DoubleSide }),
   floor:     new THREE.MeshStandardMaterial({ map:woodFloorTexture(), roughness:0.82 }),
-  wood:      new THREE.MeshStandardMaterial({ color:0xc08b55, roughness:0.78 }),
-  woodLight: new THREE.MeshStandardMaterial({ color:0xd9b183, roughness:0.82 }),
-  woodDark:  new THREE.MeshStandardMaterial({ color:0x8d5f38, roughness:0.8 }),
+  wood:      new THREE.MeshStandardMaterial({ color:0xac8257, roughness:0.78 }),
+  woodLight: new THREE.MeshStandardMaterial({ color:0xc59d70, roughness:0.82 }),
+  woodDark:  new THREE.MeshStandardMaterial({ color:0x624a35, roughness:0.8 }),
   white:     new THREE.MeshStandardMaterial({ color:0xf8f6f1, roughness:0.9 }),
   fabric:    new THREE.MeshStandardMaterial({ color:0xfdfcf8, roughness:1.0 }),
   blue:      new THREE.MeshStandardMaterial({ color:0x9fc6dc, roughness:0.95, side:THREE.DoubleSide }),

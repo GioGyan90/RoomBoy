@@ -177,6 +177,6 @@ function walkTo(p:THREE.Vector3){
 function updateMarker(dt:number){
  if(markerLife>0){markerLife=Math.max(0,markerLife-dt*1.4);marker.material.opacity=markerLife*.85;marker.scale.setScalar(1+(1-markerLife)*1.2);}
 }
-return {ACTIONS,runAction,walkTo,updateRunner,updateMarker,setStatus};
+return {ACTIONS,runAction,walkTo,updateRunner,updateMarker,setStatus,cancel:finishSteps};
 }
 export type Actions=ReturnType<typeof createActions>;

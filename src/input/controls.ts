@@ -20,7 +20,7 @@ let drag:{button:number;x:number;y:number;moved:number;shift:boolean}|null=null;
 
 function orbit(dx:number, dy:number){
   camGoal.theta -= dx*0.0055;
-  camGoal.phi = clamp(camGoal.phi - dy*0.0055, 0.30, 1.44);
+  camGoal.phi = clamp(camGoal.phi - dy*0.0055, 0.30, 1.65);
 }
 function pan(dx:number, dy:number){
   const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
