@@ -5,7 +5,7 @@ import type {Character} from '../assets/procedural/character';
 export function createReview(scene:T.Scene,room:T.Group,character:Character,controller:ReturnType<typeof createCameraController>,actions:Actions){
  const query=new URLSearchParams(location.search);let view=query.get('view')??'game';let angle=query.get('angle')??'front';
  const ui=document.createElement('div');ui.id='review-controls';ui.innerHTML='<button data-view="game">游玩</button><button data-view="room">房间</button><button data-view="character">人物</button><button data-view="face">脸部</button><button id="compare-toggle">概念图对照</button>';
- document.body.append(ui);
+ const structureLink=document.createElement('a');structureLink.href='?view=structure';structureLink.textContent='结构研究 ↗';ui.append(structureLink);document.body.append(ui);
  const angles=document.createElement('div');angles.id='character-angles';angles.innerHTML='<button data-angle="front">正面</button><button data-angle="side">侧面</button><button data-angle="back">背面</button>';document.body.append(angles);
  const panel=document.createElement('aside');panel.id='reference-panel';panel.hidden=true;
  const image=document.createElement('img');image.alt='用户提供的原始概念图，仅用于对照';panel.append(image);

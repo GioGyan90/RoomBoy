@@ -19,3 +19,19 @@ test('adult rig remains finite throughout all six game interactions',()=>{
  for(const action of actions.ACTIONS){actions.runAction(action);for(let i=0;i<500;i++){actions.updateRunner(.02);animation.updateAnimation(.02,i*.02);}validate(character.charRoot);}
  assert.ok(validate(character.charRoot)>20000);
 });
+
+test('structural cages stay closed, finite and proportionate at both densities',async()=>{
+ const {createBodyBlockout,bodyPlan}=await import('../src/assets/procedural/bodyBlockout');
+ const counts:number[]=[];
+ for(const stage of ['blockout','planes'] as const){
+  const body=createBodyBlockout(stage);validate(body);
+  const box=new T.Box3().setFromObject(body);assert.ok(Math.abs(box.max.y-bodyPlan.height)<1e-6);assert.ok(Math.abs(box.min.y)<1e-6);
+  assert.ok(body.getObjectByName('ribcage'));assert.ok(body.getObjectByName('pelvis'));
+  body.traverse(o=>{if(!(o instanceof T.Mesh))return;const edges=new Map<string,number>(),idx=o.geometry.index!;
+   for(let i=0;i<idx.count;i+=3){const face=[idx.getX(i),idx.getX(i+1),idx.getX(i+2)];for(let k=0;k<3;k++){const a=face[k],b=face[(k+1)%3],key=[Math.min(a,b),Math.max(a,b)].join(':');edges.set(key,(edges.get(key)??0)+1);}}
+   assert.ok([...edges.values()].every(n=>n===2),`Open boundary in ${o.name}`);
+  });
+  counts.push(body.userData.triangles);assert.ok(body.userData.triangles<3000);
+ }
+ assert.ok(counts[1]>counts[0]);
+});
