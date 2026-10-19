@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {createHair} from './hair';
 import {mesh,loft,ellipsoid,rounded,tube,patch,strand,type P3} from './sculpt';
 export function createCharacter(scene:THREE.Scene){
  const charRoot=new THREE.Group();charRoot.name='haru';
@@ -11,14 +12,14 @@ export function createCharacter(scene:THREE.Scene){
  const cloth=new THREE.MeshToonMaterial({color:0x27282d,gradientMap:ramp,side:THREE.DoubleSide});
  const grey=new THREE.MeshToonMaterial({color:0x62656c,gradientMap:ramp,side:THREE.DoubleSide});
  const seam=new THREE.MeshStandardMaterial({color:0x363940,roughness:1});
- const hair=new THREE.MeshToonMaterial({color:0x19171c,gradientMap:ramp,side:THREE.DoubleSide});
- const hairHi=new THREE.MeshToonMaterial({color:0x302a30,gradientMap:ramp,side:THREE.DoubleSide});
+ const hair=new THREE.MeshStandardMaterial({color:0x16151a,roughness:.54,metalness:0,side:THREE.DoubleSide});
+ const hairHi=new THREE.MeshStandardMaterial({color:0x29252b,roughness:.60,metalness:0,side:THREE.DoubleSide});
  const silver=new THREE.MeshStandardMaterial({color:0xbabcc0,metalness:.8,roughness:.32});
  const dark=new THREE.MeshStandardMaterial({color:0x302021,roughness:1});
- const white=new THREE.MeshStandardMaterial({color:0xe4ded5,roughness:.8});
- const iris=new THREE.MeshStandardMaterial({color:0x686c62,roughness:.4});
+ const white=new THREE.MeshStandardMaterial({color:0xe4ded5,roughness:.8,side:THREE.DoubleSide});
+ const iris=new THREE.MeshStandardMaterial({color:0x51483e,roughness:.4});
  const pelvis=joint('pelvis',body);
- mesh(pelvis,loft([[-.16,.085,.07],[-.115,.146,.1],[-.02,.153,.102],[.06,.138,.089],[.11,.121,.076]]),grey);
+ mesh(pelvis,loft([[-.077,.080,.070],[-.050,.146,.1],[-.02,.153,.102],[.06,.138,.089],[.11,.121,.076]]),grey);
  // Elastic waistband and a narrow stitched centre fly.
  mesh(pelvis,loft([[.074,.137,.091],[.10,.127,.082],[.112,.123,.079]]),cloth);
  tube(pelvis,[[0,.075,.092],[-.008,-.02,.106],[0,-.13,.084]],.0018,seam);
@@ -26,94 +27,86 @@ export function createCharacter(scene:THREE.Scene){
  // Torso is one continuous fitted garment; no spherical chest pieces.
  patch(spine,100,65,(u,v)=>{
   const a=u*Math.PI*2,q=Math.abs(Math.sin(a));
-  const top=.285+.052*Math.exp(-(((q-.64)/.22)**2))-.045*q**6+(Math.cos(a)<0?.016:0);
+  const top=.285+.052*Math.exp(-(((q-.64)/.22)**2))-.045*q**6+(Math.max(0,-Math.cos(a))**4*.075);
   const y=-.052+v*(top+.052),rx=y<.10?.145-y*.20:.126+(y-.10)*.22,rz=.106+(y>.16?(y-.16)*.035:0);
   const folds=(Math.sin(a*11+y*19)*.0035+Math.sin(a*7-y*25)*.0025)*Math.max(0,1-y/.30);
-  return [Math.sin(a)*(rx+folds),y,Math.cos(a)*(rz+folds)];
+  const upperStretch=.07*THREE.MathUtils.smoothstep(y,.08,.30);
+  return [Math.sin(a)*(rx+folds),y+upperStretch,Math.cos(a)*(rz+folds)];
  },cloth);
  // Sculpt the scoop neckline and deep side armholes as actual open garment surfaces.
- const chest=joint('chest',spine,[0,.20,0]);
+ const chest=joint('chest',spine,[0,.27,0]);
  mesh(chest,loft([[.02,.167,.086],[.09,.177,.08],[.135,.155,.072],[.17,.075,.059],[.19,.047,.048]]),skin);
  for(const s of [-1,1]){
   // clavicle ridges, shallow enough to read through the diffuse light.
   tube(chest,[[s*.025,.16,.063],[s*.075,.152,.074],[s*.134,.145,.055]],.003,skin);
  }
  // Shoulder straps are continuous surfaces from the front neckline over the clavicle.
- for(const side of [-1,1])patch(spine,14,32,(u,v)=>[side*(.102+u*.048),.335+.020*Math.sin(v*Math.PI)+u*.002,.092-v*.18],cloth);
+ for(const side of [-1,1])patch(spine,14,32,(u,v)=>[side*(.102+u*.048),.405+.020*Math.sin(v*Math.PI)+u*.002,.092-v*.18],cloth);
  // Loose lower hem and deliberate garment creases.
  for(const s of [-1,1]){
   tube(spine,[[s*.104,-.04,.075],[s*.115,.015,.07],[s*.09,.072,.065]],.002,cloth);
   tube(spine,[[s*.085,-.025,.088],[s*.025,.025,.092],[s*.10,.07,.073]],.0018,seam);
  }
- const neck=joint('neck',chest,[0,.20,0]);
- mesh(neck,loft([[-.055,.060,.052],[0,.043,.042],[.075,.039,.039],[.095,.048,.043]]),skin);
- const head=joint('head',neck,[0,.055,0]);
- mesh(head,loft([[0,.018,.03,.027],[.018,.046,.043,.024],[.042,.074,.060,.012],[.075,.083,.074,0],[.111,.098,.081,-.006],[.15,.102,.083,-.009],[.19,.10,.086,-.015],[.225,.087,.078,-.018],[.25,.055,.055,-.02],[.26,0,0,-.02]],64,(x,y,z,a)=>{
+ const neck=joint('neck',chest,[0,.165,0]);
+ mesh(neck,loft([[-.055,.060,.052],[0,.043,.042],[.055,.039,.039],[.075,.043,.041]]),skin);
+ const head=joint('head',neck,[0,.045,0]);head.scale.set(.88,.85,.88);
+ mesh(head,loft([[0,.025,.033,.027],[.018,.048,.045,.024],[.042,.076,.061,.012],[.075,.083,.074,0],[.111,.098,.081,-.006],[.15,.102,.083,-.009],[.19,.10,.086,-.015],[.225,.087,.078,-.018],[.25,.055,.055,-.02],[.26,0,0,-.02]],64,(x,y,z,a)=>{
   const front=Math.max(0,Math.cos(a));
-  const cheek=.007*Math.exp(-(((y-.105)/.025)**2))*Math.exp(-(((Math.abs(x)-.067)/.025)**2));
+  const cheek=.003*Math.exp(-(((y-.105)/.025)**2))*Math.exp(-(((Math.abs(x)-.067)/.025)**2));
   // A flattened facial plane with recessed orbital sockets.
   let f=z+cheek*front;
-  f-=.007*Math.exp(-(((y-.14)/.018)**2))*Math.exp(-(((Math.abs(x)-.045)/.026)**2))*front;
+  f-=.004*Math.exp(-(((y-.14)/.018)**2))*Math.exp(-(((Math.abs(x)-.045)/.026)**2))*front;
   if(front>.45&&y<.18)f+=.009*front;
-  const nose=(.032*Math.exp(-(((y-.092)/.018)**2))+.014*Math.exp(-(((y-.132)/.03)**2)))*Math.exp(-((x/.010)**2));
+  const facialPlane=THREE.MathUtils.smoothstep(y,.065,.10)*(1-THREE.MathUtils.smoothstep(y,.17,.19));
+  if(front>.45)f+=(.088-f)*.72*front*facialPlane;
+  const nose=(.026*Math.exp(-(((y-.092)/.018)**2))+.010*Math.exp(-(((y-.132)/.03)**2)))*Math.exp(-((x/.010)**2));
   f+=nose*front;
   return [x,y,f];
  }),skin);
  for(const s of [-1,1]){
   
-  tube(head,[[s*.008,.074,.104],[s*.012,.073,.100]],.0013,skinShade,10);
+  tube(head,[[s*.006,.078,.105],[s*.010,.077,.101]],.0007,skinShade,10);
+  // Recess the complete eye assembly into the orbital plane, including the lids.
+  const socket=new THREE.Group();socket.position.z=-.008;head.add(socket);
   // Almond-shaped sclera, outer corner slightly higher than the inner one.
-  patch(head,32,12,(u,v)=>{const x=s*(.019+u*.057),arc=Math.pow(Math.sin(u*Math.PI),.8);return [x,.129+u*.008+(v-.5)*.014*arc,.083+arc*.015];},white);
-  const eye=new THREE.Group();eye.position.set(s*.047,.135,.099);eye.rotation.y=s*.12;head.add(eye);
-  ellipsoid(eye,[.010,.0075,.003],iris,[0,0,0]);
-  ellipsoid(eye,[.004,.006,.0033],dark,[0,0,.002]);
+  patch(socket,32,12,(u,v)=>{const x=s*(.019+u*.057),arc=Math.pow(Math.sin(u*Math.PI),.8);return [x,.129+u*.008+(v-.5)*.011*arc,.083+arc*.015];},white);
+  const eye=new THREE.Group();eye.position.set(s*.047,.134,.099);eye.rotation.y=s*.12;socket.add(eye);
+  ellipsoid(eye,[.010,.0065,.003],iris,[0,0,0]);
+  ellipsoid(eye,[.004,.0052,.0033],dark,[0,0,.002]);
   ellipsoid(eye,[.0018,.0018,.001],white,[-.003,.004,.005]);
-  tube(head,[[s*.019,.129,.085],[s*.042,.141,.100],[s*.064,.145,.095],[s*.079,.14,.079]],.0018,dark);
-  tube(head,[[s*.019,.128,.086],[s*.045,.129,.099],[s*.075,.137,.085]],.0012,skinShade);
-  tube(head,[[s*.022,.161,.090],[s*.047,.168,.091],[s*.078,.165,.076]],.0022,hair);
+  tube(socket,[[s*.019,.129,.085],[s*.042,.139,.100],[s*.064,.141,.095],[s*.079,.137,.079]],.0018,dark);
+  tube(socket,[[s*.019,.128,.086],[s*.045,.129,.099],[s*.075,.137,.085]],.0012,skinShade);
+  strand(socket,[[s*.021,.158,.092],[s*.043,.164,.094],[s*.065,.165,.087],[s*.081,.162,.075]],.0044,.0018,hair);
   // Ear helix and inner concha, with an actual silver hoop on one side.
   const ear=ellipsoid(head,[.016,.031,.014],skin,[s*.103,.121,-.002]);ear.rotation.z=-s*.16;
   ellipsoid(head,[.007,.018,.005],skinShade,[s*.113,.124,.010]);
   tube(head,[[s*.111,.101,.014],[s*.119,.116,.014],[s*.116,.14,.010],[s*.106,.149,.009]],.003,skin);
-  if(s===-1){const hoop=mesh(head,new THREE.TorusGeometry(.0065,.0016,8,32),silver,[s*.114,.09,.010]);hoop.rotation.y=.3;}
+  
  }
- tube(head,[[-.017,.047,.083],[0,.047,.089],[.017,.048,.082]],.0008,dark);
+ tube(head,[[-.020,.047,.083],[0,.046,.089],[.020,.050,.082]],.0008,dark);
  tube(head,[[-.012,.043,.080],[0,.042,.084],[.012,.044,.080]],.0011,skinShade);
  // Dark skull cap, the front hairline sits above the brows.
- patch(head,64,28,(u,v)=>{const a=u*Math.PI*2;const end=.95+(.40*(1-Math.cos(a)));const p=.01+v*end;return [Math.sin(a)*Math.sin(p)*.113,.157+Math.cos(p)*.125,-.021+Math.cos(a)*Math.sin(p)*.103];},hair);
- // Swept locks curve from the off-centre part, tapering at their tips.
- const locks:P3[][]=[
- [[-.03,.274,-.02],[-.065,.26,.055],[-.105,.213,.087],[-.109,.151,.082],[-.12,.118,.048]],
- [[-.027,.274,-.01],[-.048,.258,.078],[-.071,.215,.105],[-.076,.164,.107],[-.065,.134,.108]],
- [[-.024,.272,.009],[-.035,.25,.091],[-.040,.201,.113],[-.030,.166,.113],[-.015,.148,.105]],
- [[-.015,.27,.018],[.015,.25,.101],[.030,.202,.118],[.037,.168,.106],[.026,.145,.099]],
- [[-.012,.272,.002],[.039,.258,.073],[.074,.226,.099],[.092,.196,.089],[.110,.186,.057]],
- [[-.006,.27,-.02],[.065,.254,.033],[.105,.222,.070],[.124,.203,.050],[.14,.208,.022]],
- [[-.04,.27,-.04],[-.085,.25,.001],[-.12,.205,.032],[-.129,.157,.028],[-.118,.132,.010]],
- ];
- locks.forEach((points,i)=>{
-  strand(head,points,.027+i%2*.007,.010,i%3===0?hairHi:hair);
-  for(const offset of [-.007,.007])tube(head,points.slice(0,-1).map(p=>[p[0]+offset,p[1]+.001,p[2]+.011] as P3),.00055,hairHi,30);
- });
- for(const s of [-1,1])for(let i=0;i<8;i++){
-  const a=.45+i*.27;
-  strand(head,[[s*.016,.27,-.03],[s*.10,.233,-.02-i*.007],[s*(.121+i%2*.008),.16-i*.008,-.033-i*.009],[s*.105,.091-i*.005,-.039-i*.009]],.031,.012,i%3===0?hairHi:hair);
- }
- for(let i=0;i<7;i++)strand(head,[[(i-3)*.02,.22,-.092],[(i-3)*.033,.14,-.12],[(i-3)*.027,.058,-.091],[(i-3)*.03,.037,-.07]],.026,.009,hair);
- // Chain follows the clavicle and hangs as a shallow catenary.
- const chain:P3[]=[];for(let i=0;i<=48;i++){const a=i/48*Math.PI*2;chain.push([Math.cos(a)*.072,.188-Math.max(0,Math.sin(a))*.081,Math.sin(a)*(Math.sin(a)>0?.109:.05)]);}
- tube(chest,chain,.0018,silver,72);
- mesh(chest,new THREE.TorusGeometry(.007,.0016,8,24),silver,[0,.10,.113]);
+ patch(head,64,28,(u,v)=>{const a=u*Math.PI*2;const end=.95+(.75*(1-Math.cos(a)))+.055*Math.sin(a*19)*Math.max(0,-Math.cos(a));const p=.01+v*end;return [Math.sin(a)*Math.sin(p)*.113,.157+Math.cos(p)*.125,-.021+Math.cos(a)*Math.sin(p)*.103];},hair);
+ createHair(head,hair,hairHi);
+ // Two chains and the narrow rectangular tag in the new turnaround sheet.
+ const shortChain:P3[]=[[0,.188,-.044],[.032,.183,-.030],[.044,.174,0],[.040,.158,.044],[.030,.132,.085],[0,.105,.086],[-.030,.132,.085],[-.040,.158,.044],[-.044,.174,0],[-.032,.183,-.030],[0,.188,-.044]];
+ const longChain:P3[]=[[0,.187,-.047],[.034,.180,-.031],[.045,.171,0],[.040,.148,.055],[.031,.095,.087],[.022,.055,.115],[0,-.022,.115],[-.022,.055,.115],[-.031,.095,.087],[-.040,.148,.055],[-.045,.171,0],[-.034,.180,-.031],[0,.187,-.047]];
+ tube(chest,shortChain,.00115,silver,100);tube(chest,longChain,.0010,silver,100);
+ const medallion=mesh(chest,new THREE.CylinderGeometry(.0055,.0055,.002,24),silver,[0,.099,.089]);medallion.rotation.x=Math.PI/2;
+ rounded(chest,[.012,.034,.0035],silver,[0,-.036,.118],.003);
+ mesh(chest,new THREE.TorusGeometry(.0022,.0006,6,16),silver,[0,-.015,.120]);
+ tube(chest,[[.003,-.028,.120],[.003,-.044,.120]],.0004,seam,8);
  // Anatomical limbs are lofted sections rather than generic cylinders.
  for(const side of ['l','r']){
   const s=side==='l'?1:-1;
-  const shoulder=joint(side+'Shoulder',chest,[s*.177,.112,0]);
+  const shoulder=joint(side+'Shoulder',chest,[s*.170,.112,0]);
   const upper=joint(side+'UpperArm',shoulder);
-  mesh(upper,loft([[-.30,.035,.035],[-.273,.043,.040],[-.23,.049,.046,.002],[-.17,.064,.060,.006],[-.10,.067,.063,0],[-.035,.071,.065,0],[.021,.051,.047,0],[.037,.012,.014,0]],40,(x,y,z,a)=>[x,y,z+Math.max(0,Math.cos(a))*.006*Math.sin(-y*11)]),skin);
+  const upperSkin=mesh(upper,loft([[-.30,.035,.035],[-.273,.043,.040],[-.23,.049,.046,.002],[-.17,.064,.060,.006],[-.10,.067,.063,0],[-.035,.071,.065,0],[.021,.051,.047,0],[.037,.012,.014,0]],40,(x,y,z,a)=>[x,y,z+Math.max(0,Math.cos(a))*.006*Math.sin(-y*11)]),skin);upperSkin.scale.set(.82,1,.86);
   const fore=joint(side+'ForeArm',upper,[0,-.29,0]);
-  ellipsoid(fore,[.037,.04,.037],skin,[0,0,0]);
-  mesh(fore,loft([[-.26,.025,.026],[-.235,.029,.028],[-.17,.040,.037,.005],[-.10,.048,.043,.006],[-.035,.043,.040],[.012,.033,.034]]),skin);
-  const hand=joint(side+'Hand',fore,[0,-.26,0]);
+  ellipsoid(fore,[.031,.036,.031],skin,[0,0,0]);
+  const foreSkin=mesh(fore,loft([[-.26,.025,.026],[-.235,.029,.028],[-.17,.040,.037,.005],[-.10,.048,.043,.006],[-.035,.043,.040],[.012,.033,.034]]),skin);
+  foreSkin.scale.set(.84,1,.87);
+  const hand=joint(side+'Hand',fore,[0,-.26,0]);hand.scale.set(.87,.94,.88);
   mesh(hand,loft([[-.087,.032,.016],[-.066,.038,.020],[-.035,.034,.021],[0,.025,.024]]),skin);
   for(let i=0;i<4;i++){
    const x=(i-1.5)*.017,ln=[.060,.071,.067,.052][i];
@@ -123,17 +116,21 @@ export function createCharacter(scene:THREE.Scene){
   strand(hand,[[s*.025,-.025,.005],[s*.048,-.052,.012],[s*.050,-.079,.022]],.013,.011,skin);
   for(let i=0;i<3;i++)tube(hand,[[(i-1)*.014,-.013,.022],[(i-1)*.017,-.066,.022]],.0012,skin);
   const thigh=joint(side+'Thigh',pelvis,[s*.083,-.03,0]);
-  mesh(thigh,loft([[-.49,.047,.051,.006],[-.455,.060,.062,.005],[-.38,.074,.078,-.006],[-.27,.090,.095,-.011],[-.12,.098,.101,-.009],[.015,.087,.085,0],[.038,.057,.056]],48,(x,y,z,a)=>[x+Math.sin(a)*.005*Math.sin(-y*9),y,z]),skin);
-  mesh(thigh,loft([[-.151,.106,.112,-.012],[-.13,.107,.113,-.009],[-.05,.109,.113],[.02,.098,.098],[.065,.089,.09]]),grey);
-  mesh(thigh,loft([[-.174,.110,.118,-.012],[-.145,.112,.119,-.012]]),cloth);
-  tube(thigh,[[s*.088,.01,.05],[s*.102,-.10,.018],[s*.094,-.19,.008]],.0015,seam);
-  ellipsoid(thigh,[.028,.034,.012],skin,[0,-.458,.049]);
+  const thighSkin=mesh(thigh,loft([[-.49,.047,.051,.006],[-.455,.060,.062,.005],[-.38,.074,.078,-.006],[-.27,.090,.095,-.011],[-.12,.098,.101,-.009],[.015,.087,.085,0],[.038,.057,.056]],48,(x,y,z,a)=>[x+Math.sin(a)*.005*Math.sin(-y*9),y,z]),skin);
+  thighSkin.scale.set(.83,1,.88);
+  const shortsLeg=mesh(thigh,loft([[-.073,.106,.112,-.012],[-.050,.109,.113,-.009],[.02,.102,.104],[.065,.089,.09]]),grey);
+  shortsLeg.scale.set(.88,1,.92);
+  const shortsHem=mesh(thigh,loft([[-.094,.110,.118,-.012],[-.070,.112,.119,-.012]]),cloth);
+  shortsHem.scale.set(.88,1,.92);
+  tube(thigh,[[s*.078,.01,.05],[s*.092,-.04,.018],[s*.083,-.087,.008]],.0015,seam);
+  ellipsoid(thigh,[.024,.029,.010],skin,[0,-.458,.045]);
   const shin=joint(side+'Shin',thigh,[0,-.48,0]);
-  mesh(shin,loft([[-.405,.028,.028],[-.36,.029,.032,-.005],[-.27,.037,.047,-.015],[-.17,.054,.061,-.020],[-.085,.055,.058,-.012],[-.03,.046,.045],[.025,.043,.045]]),skin);
-  for(const sx of [-1,1])ellipsoid(shin,[.010,.016,.012],skin,[sx*.026,-.36,-.001]);
+  const shinSkin=mesh(shin,loft([[-.405,.028,.028],[-.36,.029,.032,-.005],[-.27,.037,.047,-.015],[-.17,.054,.061,-.020],[-.085,.055,.058,-.012],[-.03,.046,.045],[.025,.043,.045]]),skin);
+  shinSkin.scale.set(.84,1,.88);
+  for(const sx of [-1,1])ellipsoid(shin,[.007,.012,.009],skin,[sx*.022,-.36,-.001]);
   const foot=joint(side+'Foot',shin,[0,-.40,0]);
   // Heel, instep, metatarsal and five separate toe volumes.
-  const footShape=loft([[-.056,.01,.012,.032],[-.025,.034,.028,.026],[.025,.035,.034,.022],[.08,.044,.025,.036],[.13,.045,.018,.043],[.16,.034,.014,.047],[.17,.001,.001,.048]],40);
+  const footShape=loft([[-.061,0,0,.033],[-.054,.024,.020,.032],[-.025,.034,.028,.026],[.025,.035,.034,.022],[.08,.044,.025,.036],[.13,.045,.018,.043],[.16,.034,.014,.047],[.17,.001,.001,.048]],40);
   footShape.rotateX(Math.PI/2);mesh(foot,footShape,skin);
   tube(foot,[[s*.018,-.01,.01],[s*.014,-.018,.067],[s*.016,-.036,.117]],.002,skin);
   for(let i=0;i<5;i++){

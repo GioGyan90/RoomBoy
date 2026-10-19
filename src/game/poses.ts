@@ -45,8 +45,8 @@ export function sitDeskPose(t:number):Pose{
     lThigh:[-1.50, 0, 0.06], rThigh:[-1.50, 0, -0.06],
     lShin:[1.50, 0, 0], rShin:[1.50, 0, 0],
     lFoot:[0,0,0], rFoot:[0,0,0],
-    lUpperArm:[-0.48, 0, -0.10], rUpperArm:[-0.48, 0, 0.10],
-    lForeArm:[-1.55 + ty, 0, 0], rForeArm:[-1.55 - ty, 0, 0],
+    lUpperArm:[-0.43, 0, -0.10], rUpperArm:[-0.43, 0, 0.10],
+    lForeArm:[-1.50 + ty, 0, 0], rForeArm:[-1.50 - ty, 0, 0],
     lHand:[0.15,0,0], rHand:[0.15,0,0],
   };
 }
