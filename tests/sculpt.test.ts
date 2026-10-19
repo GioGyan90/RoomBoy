@@ -35,3 +35,20 @@ test('structural cages stay closed, finite and proportionate at both densities',
  }
  assert.ok(counts[1]>counts[0]);
 });
+
+test('measured front and side section stations drive both model densities',async()=>{
+ const {createBodyBlockout}=await import('../src/assets/procedural/bodyBlockout');
+ const {bodyBands,referenceFrame:f}=await import('../src/assets/procedural/bodyReference');
+ const parts=[['ribcage','ribcage'],['right-forearm','rightForearm'],['left-forearm','leftForearm'],['right-shin','rightShin'],['left-shin','leftShin'],['head','head']] as const;
+ for(const stage of ['blockout','planes'] as const){
+  const body=createBodyBlockout(stage),sides=stage==='blockout'?8:12;
+  for(const [name,key] of parts){const positions=(body.getObjectByName(name) as T.Mesh).geometry.getAttribute('position');
+   for(const [station,[y,l,r,front,back]] of bodyBands[key].entries()){
+    const xs:number[]=[],zs:number[]=[];
+    for(let j=0;j<sides;j++){const i=station*sides+j;xs.push(positions.getX(i)/f.scale+f.frontAxis);zs.push(f.sideAxis-positions.getZ(i)/f.scale);assert.ok(Math.abs(f.ground-positions.getY(i)/f.scale-y)<.0001);}
+    assert.ok(Math.abs(Math.min(...xs)-l)<.0001&&Math.abs(Math.max(...xs)-r)<.0001,`Front station drift in ${name}`);
+    assert.ok(Math.abs(Math.min(...zs)-front)<.0001&&Math.abs(Math.max(...zs)-back)<.0001,`Side station drift in ${name}`);
+   }
+  }
+ }
+});
