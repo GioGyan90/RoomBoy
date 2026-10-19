@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Haru's Room · 3D</title>
+
+</head>
+<body>
+
+<div id="loader">LOADING ROOM…</div>
+
+<div id="hud">
+  <div class="panel">
+    <div class="avatar">H</div>
+    <div>
+      <div class="name">Haru</div>
+      <div class="status" id="status">Idle</div>
+    </div>
+  </div>
+</div>
+
+<div id="pie" class="hidden">
+  <button class="pie-center" id="pieClose" title="Cancel">✕</button>
+  <div id="pieLabel"></div>
+</div>
+
+<div id="hint">
+  <span><b>Click Haru</b> — interactions</span>
+  <span><b>Click floor</b> — walk</span>
+  <span><b>Right-drag</b> — orbit</span>
+  <span><b>Wheel</b> — zoom</span>
+</div>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
