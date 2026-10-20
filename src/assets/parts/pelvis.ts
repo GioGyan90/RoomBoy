@@ -1,26 +1,21 @@
 import * as T from 'three';
-import {pelvisPoints,pelvisFrontPolygons,pelvisBackPolygons,pelvisFrame as f,pelvisReviewState} from './pelvisReference';
-/** Fresh isolated asset. No legacy cages, muscle functions or vertex patches. */
+import {pelvisPoints,pelvisHalfProfile,pelvisProfile,pelvisMirrorIndex,pelvisFrame as f,pelvisReviewState} from './pelvisReference';
+/** Symmetric extruded outline: no interior face vertices or independent back rim. */
 export function createPelvisPart(){
- const positions=pelvisPoints.flatMap(p=>[p.x*f.scale,(460-p.y)*f.scale,(f.sideAxis-p.sx)*f.scale]);
- const indices:number[]=[];
- function face(ids:readonly number[],back=false){
-  const contour=ids.map(i=>new T.Vector2(positions[i*3],positions[i*3+1]));
-  for(const t of T.ShapeUtils.triangulateShape(contour,[])){const tri=t.map(j=>ids[j]);const a=new T.Vector3().fromArray(positions,tri[0]*3),b=new T.Vector3().fromArray(positions,tri[1]*3),c=new T.Vector3().fromArray(positions,tri[2]*3);const z=b.sub(a).cross(c.sub(a)).z;
-   if((z<0)!==back)tri.reverse();indices.push(...tri);
-  }
+ const n=pelvisProfile.length,positions=pelvisPoints.flatMap(p=>[p.x*f.scale,(460-p.y)*f.scale,(f.sideAxis-p.sx)*f.scale]),indices:number[]=[];
+ const mirror=(i:number)=>pelvisMirrorIndex[i%n]+(i>=n?n:0);
+ function mirroredTriangle(tri:number[]){indices.push(...tri,...tri.map(mirror).reverse());}
+ const contour=pelvisHalfProfile.map(p=>new T.Vector2(p.x,-p.y));
+ for(const triangle of T.ShapeUtils.triangulateShape(contour,[])){
+  const tri=[...triangle],a=contour[tri[0]],b=contour[tri[1]],c=contour[tri[2]];
+  if((b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x)<0)tri.reverse();
+  mirroredTriangle(tri);mirroredTriangle(tri.map(i=>i+n).reverse());
  }
- for(const polygon of pelvisFrontPolygons)face(polygon);
- for(const polygon of pelvisBackPolygons)face(polygon.map(i=>i+16),true);
- const B=(i:number)=>i+16;
- function side(a:number,b:number,c:number,d:number){indices.push(a,b,c,b,d,c);}
- side(0,1,B(0),B(1));side(1,2,B(1),B(2));side(2,3,B(2),B(3));
- indices.push(3,4,B(3),4,B(4),B(3),4,5,B(4));
- side(5,6,B(4),B(5));side(6,7,B(5),B(6));side(7,8,B(6),B(7));
- indices.push(8,9,B(7),9,B(8),B(7),9,10,B(8));
- side(10,0,B(8),B(0));
+ for(let i=0;i<pelvisHalfProfile.length-1;i++){
+  const a=i,b=i+1;mirroredTriangle([a,b,a+n]);mirroredTriangle([b,b+n,a+n]);
+ }
  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setIndex(indices);geometry.computeVertexNormals();
- const mesh=new T.Mesh(geometry,new T.MeshStandardMaterial({color:0xa79db7,roughness:1,flatShading:true}));mesh.name='pelvis-review-part';mesh.userData.review=pelvisReviewState;mesh.userData.vertexIds=pelvisPoints.map(p=>p.id);return mesh;
+ const mesh=new T.Mesh(geometry,new T.MeshStandardMaterial({color:0xa79db7,roughness:1,flatShading:true}));mesh.name='pelvis-review-part';mesh.userData.review=pelvisReviewState;mesh.userData.vertexIds=pelvisPoints.map(p=>p.id);mesh.userData.mirrorIndices=pelvisPoints.map((_,i)=>mirror(i));return mesh;
 }
 /** Remove the old region from the assembly review. Never install the candidate. */
 export function detachLegacyPelvis(root:T.Group){

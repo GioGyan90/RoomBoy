@@ -86,4 +86,4 @@ Vite 使用相对资源路径，兼容仓库子路径。已创建公开仓库并
 
 ## 当前分块重建：臀部待审阅
 
-[独立臀部分块](https://giogyan90.github.io/RoomBoy/?view=pelvis)：新建30顶点/56面基础楔形体，支持顶点编号及本地参考并排。全身检查页已移除旧臀块，新块尚未安装，等待用户确认。[分块审阅记录](docs/PELVIS_PART_REVIEW.md)。
+[独立臀部分块](https://giogyan90.github.io/RoomBoy/?view=pelvis)：当前为24顶点/44面镜像外轮廓笼架，所有点在轮廓边界；支持编号与本地参考并排。侧面统一厚度仍待后续拟合。全身检查页已移除旧臀块，新块尚未安装，等待用户确认。[分块审阅记录](docs/PELVIS_PART_REVIEW.md)。
