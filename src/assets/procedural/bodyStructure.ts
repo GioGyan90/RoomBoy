@@ -10,8 +10,17 @@ export function shapeBodyStructure(part:BodyPart,bands:readonly SourceBand[],sid
    const i=ring*sides+j,a=j/sides*Math.PI*2,c=Math.cos(a),x=p.getX(i)-cx;
    if(part==='ribcage'&&c>0){
     const active=Math.exp(-(((sy-252)/29)**2)),arc=c+(Math.pow(c,.28)-c)*active;
-    const sternum=.0105*Math.exp(-((x/.024)**2))*active;
-    p.setZ(i,cz+d*arc-sternum);
+    const sternum=.0125*Math.exp(-((x/.024)**2))*active;
+    // Separate the shallow clavicular shelf from the fuller pectoral plane.
+    const clavicle=.004*Math.exp(-(((sy-232)/12)**2))*(1-Math.exp(-((x/.035)**2)))*c;
+    p.setZ(i,cz+d*arc-sternum+clavicle);
+   }
+   if(part.endsWith('Deltoid')){
+    // Broad anterior/posterior facets wrap the shoulder cap; its lower tip
+    // narrows into the upper arm instead of ending in a horizontal cylinder.
+    const active=Math.exp(-(((sy-258)/27)**2));
+    const arc=Math.sign(c)*Math.pow(Math.abs(c),1-.28*active);
+    p.setZ(i,cz+d*arc);
    }
    if(part==='pelvis'&&c<0){
     const active=Math.exp(-(((sy-465)/34)**2)),arc=-c+(Math.pow(-c,.28)+c)*active;

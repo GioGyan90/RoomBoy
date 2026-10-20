@@ -35,7 +35,7 @@ export function createBodyBlockout(stage:BodyStage,targets:BodyTargets=fitJointT
  const refined=stage==='planes',sides=refined?12:8;
  const palette={head:0xd1c0a7,torso:0xa5ae92,pelvis:0xa79db7,limbs:0x9ba5b9,joints:0xd5b98c,hair:0x929db2,chest:0xc9a293};
  function mass(name:string,part:BodyPart,color:number){
-  const bands=constrainBands(part,targets);const radialSides=['ribcage','pelvis','hair'].includes(part)?Math.max(16,sides):sides;
+  const bands=constrainBands(part,targets);const radialSides=['ribcage','pelvis','hair'].includes(part)?Math.max(16,sides):part.endsWith('Deltoid')?Math.max(12,sides):sides;
   // Both resolutions use the same measured section positions. Refinement adds
   // radial faces only; decimating anatomical stations would change the silhouette.
   const rings:Ring[]=bands.map(([y,l,r,f,b])=>[
@@ -56,7 +56,7 @@ export function createBodyBlockout(stage:BodyStage,targets:BodyTargets=fitJointT
  mass('abdomen','abdomen',palette.joints);const chest=mass('ribcage','ribcage',palette.torso);
  // Colour groups expose the simplified drawing's upper/lower chest partition.
  const geometry=chest.geometry,upper=new T.MeshStandardMaterial({color:palette.chest,roughness:1,flatShading:true});chest.material=[chest.material as T.MeshStandardMaterial,upper];
- geometry.clearGroups();for(let ring=0;ring<chest.userData.bandCount-1;ring++){geometry.addGroup(ring*chest.userData.radialSides*6,chest.userData.radialSides*6,ring>=2?1:0);}geometry.addGroup((chest.userData.bandCount-1)*chest.userData.radialSides*6,chest.userData.radialSides*3,0);geometry.addGroup((chest.userData.bandCount-1)*chest.userData.radialSides*6+chest.userData.radialSides*3,chest.userData.radialSides*3,1);
+ geometry.clearGroups();for(let ring=0;ring<chest.userData.bandCount-1;ring++){geometry.addGroup(ring*chest.userData.radialSides*6,chest.userData.radialSides*6,chest.userData.sourceBands[ring][0]<=280?1:0);}geometry.addGroup((chest.userData.bandCount-1)*chest.userData.radialSides*6,chest.userData.radialSides*3,0);geometry.addGroup((chest.userData.bandCount-1)*chest.userData.radialSides*6+chest.userData.radialSides*3,chest.userData.radialSides*3,1);
  mass('neck','neck',palette.joints);mass('head','head',palette.head);
  const hair=mass('hair-envelope','hair',palette.hair);
  // The single envelope reaches down the nape without lowering the front hairline.

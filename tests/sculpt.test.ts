@@ -95,3 +95,19 @@ test('anatomical planes preserve paired chest/glute volumes, nape shelf and inst
   assert.ok(slope(rows-2,rows-1)>slope(2,3)*2,'Instep should steepen towards ankle');
  }));
 });
+
+
+test('shoulder caps taper into arms and hairline retains forehead, temple and nape steps',async()=>{
+ const {createBodyBlockout}=await import('../src/assets/procedural/bodyBlockout');
+ const root=createBodyBlockout('blockout');
+ for(const side of ['right','left']){
+  const m=root.getObjectByName(`${side}-deltoid`) as T.Mesh,p=m.geometry.getAttribute('position'),n=m.userData.radialSides;
+  const width=(r:number)=>Math.abs(p.getX(r*n+n/4)-p.getX(r*n+3*n/4));
+  assert.ok(width(0)<width(2)*.5,'Shoulder insertion must taper into upper arm');
+ }
+ const hair=root.getObjectByName('hair-envelope') as T.Mesh,p=hair.geometry.getAttribute('position'),n=hair.userData.radialSides;
+ assert.ok(p.getY(0)>p.getY(3),'Temple edge should descend from frontal hairline');
+ assert.ok(p.getY(4)>p.getY(3),'Ear clearance needs a separate turn');
+ assert.ok(p.getY(0)-p.getY(n/2)>.07,'Rear rim must descend to nape');
+ for(let j=1;j<n/2;j++){assert.ok(Math.abs(p.getY(j)-p.getY(n-j))<1e-6);assert.ok(Math.abs(p.getZ(j)-p.getZ(n-j))<1e-6);}
+});
