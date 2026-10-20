@@ -1,0 +1,38 @@
+import * as T from 'three';
+import {createPelvisPart} from '../assets/parts/pelvis';
+import {pelvisPoints,pelvisMasks,pelvisFrame as f,type PelvisView} from '../assets/parts/pelvisReference';
+import {clearStudyGroup} from './structureReference';
+/** A review workbench only. It has no path that installs the part on a body. */
+export function startPelvisStudio(){
+ const query=new URLSearchParams(location.search),capture=query.get('capture')==='1';document.querySelectorAll('#hud,#hint,#pie,#loader').forEach(e=>e.remove());document.body.classList.add('structure-studio');
+ const scene=new T.Scene();scene.background=new T.Color(0xf2f1ec);scene.add(new T.HemisphereLight(0xffffff,0xc4c0b8,2.2));const key=new T.DirectionalLight(0xffffff,2.5);key.position.set(-3,5,6);scene.add(key);const fill=new T.DirectionalLight(0xffffff,.8);fill.position.set(4,2,-2);scene.add(fill);
+ const renderer=new T.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));document.body.append(renderer.domElement);const camera=new T.OrthographicCamera(-1,1,.5,-.5,.1,10);camera.position.set(0,0,4);camera.lookAt(0,0,0);
+ const objects=new T.Group();scene.add(objects);let angle=query.get('angle')??'three',wire=false,points=query.get('points')!=='0',paired=false,image:HTMLImageElement|undefined,url:string|undefined;
+ const ui=document.createElement('section');ui.id='structure-ui';ui.innerHTML=`<header><div><small>PART REVIEW · PELVIS</small><h1>臀部分块 · 待确认</h1><p>独立基础几何体。确认准确后才装回全身。</p></div><a href="?view=structure">全身检查页（旧臀块已移除） ↗</a></header><nav aria-label="分块视角"><button data-angle="three">三视同屏</button><button data-angle="front">正面</button><button data-angle="side">侧面</button><button data-angle="back">背面</button><button data-angle="quarter">前斜侧</button><button data-angle="rear-quarter">后斜侧</button></nav><nav><button id="pelvis-wire">线框</button><button id="pelvis-points">顶点编号</button><button id="pelvis-reference">载入参考图</button><button id="pelvis-paired" disabled>并排对照</button></nav><output>30 顶点 / 56 三角面 · 绿色：侧图可见深度 · 橙色：遮挡处深度暂定 · 尚未安装</output>`;document.body.append(ui);
+ const labels=document.createElement('div');labels.id='structure-labels';labels.style.width='100%';document.body.append(labels);
+ const panel=document.createElement('aside');panel.id='structure-reference-panel';panel.hidden=true;panel.innerHTML='<p>选择原始 1536 × 1024 简化三视图。仅截取紫色臀块；侧图被手臂挡住的区域留白，不补画。</p><input type="file" accept="image/*" aria-label="选择臀部参考原图"><p id="pelvis-reference-state"></p>';document.body.append(panel);
+ function reference(view:PelvisView,offset:number){
+  const source=image!,axis=view==='front'?f.frontAxis:view==='back'?f.backAxis:f.sideAxis,left=axis-110,top=390,width=220,height=145,canvas=document.createElement('canvas');canvas.width=width*3;canvas.height=height*3;const ctx=canvas.getContext('2d')!;ctx.scale(3,3);ctx.fillStyle='white';ctx.fillRect(0,0,width,height);ctx.beginPath();for(const polygon of pelvisMasks[view]){polygon.forEach(([x,y],i)=>{if(i===0)ctx.moveTo(x-left,y-top);else ctx.lineTo(x-left,y-top);});ctx.closePath();}ctx.clip();ctx.drawImage(source,-left,-top);const texture=new T.CanvasTexture(canvas);texture.colorSpace=T.SRGBColorSpace;
+  const plane=new T.Mesh(new T.PlaneGeometry(width*f.scale,height*f.scale),new T.MeshBasicMaterial({map:texture}));plane.position.set(offset,(460-top-height/2)*f.scale,-.3);objects.add(plane);
+ }
+ function label(mesh:T.Mesh,view:string){
+  const p=mesh.geometry.getAttribute('position'),seen=new Set<string>();
+  for(const [i,v] of pelvisPoints.entries()){
+   if((view==='front'||view==='back')&&v.view!==view)continue;if(view==='side'&&v.depth!=='visible')continue;
+   const position=new T.Vector3().fromBufferAttribute(p,i),key=view==='side'?`${v.y},${v.sx}`:v.id;if(seen.has(key))continue;seen.add(key);
+   const color=v.depth==='visible'?'#00785e':'#aa6b17';const dot=new T.Mesh(new T.SphereGeometry(.0025,6,4),new T.MeshBasicMaterial({color,depthTest:false}));dot.position.copy(position);dot.renderOrder=4;mesh.add(dot);
+   const canvas=document.createElement('canvas');canvas.width=120;canvas.height=48;const ctx=canvas.getContext('2d')!;ctx.font='bold 25px sans-serif';ctx.textAlign='center';ctx.strokeStyle='white';ctx.lineWidth=4;ctx.fillStyle=color;ctx.strokeText(v.id,60,34);ctx.fillText(v.id,60,34);
+   const sprite=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(canvas),depthTest:false}));sprite.position.copy(position).add(new T.Vector3(.012,.008,0));sprite.scale.set(.033,.0132,1);sprite.renderOrder=5;mesh.add(sprite);
+  }
+ }
+ function resize(){const top=capture?0:Math.ceil(ui.getBoundingClientRect().bottom+18),height=capture?innerHeight:Math.max(200,innerHeight-top-45),aspect=innerWidth/height,width=angle==='three'?(paired?3.25:1.65):(paired?1.05:.55),span=Math.max(.40,width/aspect);camera.left=-span*aspect/2;camera.right=span*aspect/2;camera.top=span/2;camera.bottom=-span/2;camera.updateProjectionMatrix();renderer.setSize(innerWidth,height);renderer.domElement.style.position='absolute';renderer.domElement.style.top=`${top}px`;renderer.render(scene,camera);}
+ function rebuild(){clearStudyGroup(objects);const views=angle==='three'?['front','side','back']:[angle];for(const [i,v] of views.entries()){
+   const canonical=['front','side','back'].includes(v),base=views.length===3?(i-1)*(paired?1.08:.54):0,mesh=createPelvisPart();mesh.position.x=base+(paired?.27:0);mesh.rotation.y=v==='side'?-Math.PI/2:v==='back'?Math.PI:v==='quarter'?-Math.PI/4:v==='rear-quarter'?Math.PI*.75:0;mesh.material.wireframe=wire;if(points)label(mesh,v);objects.add(mesh);if(paired&&image&&canonical)reference(v as PelvisView,base-.27);
+  }
+  const names:Record<string,string>={front:'正面',side:'侧面',back:'背面',quarter:'前斜侧','rear-quarter':'后斜侧'};labels.innerHTML=views.flatMap(v=>paired?[names[v]+' · 原图可见部分',names[v]+' · 独立模型']:[names[v]]).map(t=>`<span>${t}</span>`).join('');
+  ui.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.classList.toggle('active',b.dataset.angle===angle));ui.querySelector('#pelvis-wire')!.classList.toggle('active',wire);ui.querySelector('#pelvis-points')!.classList.toggle('active',points);ui.querySelector('#pelvis-paired')!.classList.toggle('active',paired);ui.querySelector<HTMLButtonElement>('#pelvis-paired')!.disabled=!image||['quarter','rear-quarter'].includes(angle);const u=new URL(location.href);u.searchParams.set('angle',angle);history.replaceState(null,'',u);resize();
+ }
+ ui.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.onclick=()=>{angle=b.dataset.angle!;if(['quarter','rear-quarter'].includes(angle))paired=false;rebuild();});ui.querySelector<HTMLButtonElement>('#pelvis-wire')!.onclick=()=>{wire=!wire;rebuild();};ui.querySelector<HTMLButtonElement>('#pelvis-points')!.onclick=()=>{points=!points;rebuild();};ui.querySelector<HTMLButtonElement>('#pelvis-paired')!.onclick=()=>{paired=!paired;rebuild();};ui.querySelector<HTMLButtonElement>('#pelvis-reference')!.onclick=()=>{panel.hidden=!panel.hidden;};
+ panel.querySelector<HTMLInputElement>('input')!.onchange=e=>{const file=(e.target as HTMLInputElement).files?.[0];if(!file)return;if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(file);const next=new Image();next.onload=()=>{const valid=next.naturalWidth===1536&&next.naturalHeight===1024;image=valid?next:undefined;paired=valid&&!['quarter','rear-quarter'].includes(angle);panel.querySelector('#pelvis-reference-state')!.textContent=valid?'已截取臀部。侧图留白处为手臂遮挡。':'请选择原始1536×1024简化图；不接受重排后的图版作标定。';rebuild();};next.src=url;};
+ if(capture){ui.hidden=true;labels.hidden=true;}window.addEventListener('resize',resize);rebuild();
+}

@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {detachLegacyPelvis} from '../assets/parts/pelvis';
 import {bodyPlan,createBodyBlockout,type BodyStage} from '../assets/procedural/bodyBlockout';
 import {landmarkNames,sourceJoints,viewJoints,type StudyView} from '../assets/procedural/bodyReference';
 import {addLandmarkMarkers,addViewTargets,addReferenceProjection,clearStudyGroup,addEditedVertices} from './structureReference';
@@ -21,7 +22,7 @@ export function startStructureStudio(){
  let angle=query.get('angle')??'three',silhouette=false,wire=false,showGuides=true;
  let showPoints=query.get('points')==='1',overlay=false,referenceReady=false,referenceOpacity=.55,paired=false;let labelPositions:number[]=[];
  const ui=document.createElement('section');ui.id='structure-ui';
- ui.innerHTML=`<header><div><small>CHARACTER STUDY · 01</small><h1>先把结构做准</h1><p>当前基准：彩色几何体块简化图 → 先完成体块对齐</p></div><a href="?view=character">查看旧版 ↗</a></header>
+ ui.innerHTML=`<header><div><small>CHARACTER STUDY · 01</small><h1>先把结构做准</h1><p>旧臀块已移除，新分块等待确认。<a href="?view=pelvis">审阅独立臀块 ↗</a></p></div><a href="?view=character">查看旧版 ↗</a></header>
  <nav aria-label="建模阶段"><button data-stage="blockout">01 几何体块</button><button data-stage="planes" disabled title="完成简化体块对齐后再进入低面细化">02 低面结构</button></nav>
  <nav aria-label="检查视角"><button data-angle="three">三视同屏</button><button data-angle="front">正面</button><button data-angle="side">侧面</button><button data-angle="back">背面</button><button data-angle="quarter">前斜侧</button><button data-angle="rear-quarter">后斜侧</button></nav>
  <nav aria-label="局部放大"><button data-focus="body">全身</button><button data-focus="neck">颈胸放大</button><button data-focus="hips">臀腿放大</button></nav>
@@ -55,7 +56,7 @@ export function startStructureStudio(){
  function rebuild(){
   clearStudyGroup(overlays);clearStudyGroup(markers);disposeModels();const views=angle==='three'?['front','side','back']:[angle];let triangles=0;let fitText="";labelPositions=[];const labelTexts:string[]=[];
   for(const [i,v] of views.entries()){
-   const m=createBodyBlockout(stage);const origin=views.length===3?(i-1)*(paired?1.55:focus==='body'?.73:.52):0;const referenceOffset=origin-(paired?.36:0);m.position.x=origin+(paired?.36:0);m.rotation.y=v==='side'?-Math.PI/2:v==='back'?Math.PI:v==='quarter'?-Math.PI/4:v==='rear-quarter'?Math.PI*.75:0;const canonical=['front','side','back'].includes(v);
+   const m=createBodyBlockout(stage);detachLegacyPelvis(m);const origin=views.length===3?(i-1)*(paired?1.55:focus==='body'?.73:.52):0;const referenceOffset=origin-(paired?.36:0);m.position.x=origin+(paired?.36:0);m.rotation.y=v==='side'?-Math.PI/2:v==='back'?Math.PI:v==='quarter'?-Math.PI/4:v==='rear-quarter'?Math.PI*.75:0;const canonical=['front','side','back'].includes(v);
    triangles=m.userData.triangles;fitText=(Object.entries(m.userData.fitReport) as [string,{rms:number}][]).map(([v,r])=>`${({front:"正",side:"侧",back:"背"} as Record<string,string>)[v]} ${r.rms.toFixed(2)}`).join(" / ");
    m.traverse(o=>{if(o instanceof T.Mesh){const materials=Array.isArray(o.material)?o.material:[o.material];for(const material of materials){const mat=material as T.MeshStandardMaterial;mat.wireframe=wire;mat.transparent=overlay&&!paired;mat.opacity=overlay&&!paired?.60:1;}if(silhouette){for(const mat of materials)mat.dispose();o.material=new T.MeshBasicMaterial({color:0x303636,wireframe:wire,transparent:overlay&&!paired,opacity:overlay&&!paired?.60:1});}}});models.add(m);
    if(canonical&&(overlay||paired)&&referenceReady)addReferenceProjection(overlays,referenceImage,v,referenceOffset,paired?1:referenceOpacity);
@@ -72,7 +73,7 @@ export function startStructureStudio(){
   const canCompare=referenceReady&&!['quarter','rear-quarter'].includes(angle);ui.querySelector<HTMLButtonElement>('#structure-overlay')!.disabled=!canCompare;ui.querySelector<HTMLButtonElement>('#structure-paired')!.disabled=!canCompare;
   ui.querySelector('#structure-edits')!.classList.toggle('active',showEdits);
   ui.querySelector('#structure-points')!.classList.toggle('active',showPoints);ui.querySelector('#structure-overlay')!.classList.toggle('active',overlay);ui.querySelector('#structure-paired')!.classList.toggle('active',paired);
-  ui.querySelector('output')!.textContent=`${triangles.toLocaleString()} 三角面 / 人物 · 本轮新增顶点 0 · 正交投影 · ${(bodyPlan.height/(bodyPlan.height-bodyPlan.chin)).toFixed(1)} 头身 · 关节中心 RMS：${fitText} px（不代表轮廓）`;
+  ui.querySelector('output')!.textContent=`${triangles.toLocaleString()} 三角面 / 人物 · 旧臀块已移除 / 新块未安装 · 正交投影 · ${(bodyPlan.height/(bodyPlan.height-bodyPlan.chin)).toFixed(1)} 头身 · 关节中心 RMS：${fitText} px（不代表轮廓）`;
   const url=new URL(location.href);url.searchParams.set('focus',focus);url.searchParams.set('stage',stage);url.searchParams.set('angle',angle);history.replaceState(null,'',url);
   resize();
  }
