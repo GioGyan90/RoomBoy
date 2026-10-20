@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {joinNeckAndChest,joinPelvisAndThighs} from './bodyJoins';
 import {shapeBodyStructure} from './bodyStructure';
 import {referenceFrame,sourceJoints,sourcePoint,fitJointTargets,hairRim,type BodyTargets,type JointName} from './bodyReference';
 import {constrainBands,measureReprojection,type BodyPart,type MeshLandmarks} from './bodyConstraints';
@@ -35,7 +36,7 @@ export function createBodyBlockout(stage:BodyStage,targets:BodyTargets=fitJointT
  const refined=stage==='planes',sides=refined?12:8;
  const palette={head:0xd1c0a7,torso:0xa5ae92,pelvis:0xa79db7,limbs:0x9ba5b9,joints:0xd5b98c,hair:0x929db2,chest:0xc9a293};
  function mass(name:string,part:BodyPart,color:number){
-  const bands=constrainBands(part,targets);const radialSides=['ribcage','pelvis','hair'].includes(part)?Math.max(16,sides):part.endsWith('Deltoid')?Math.max(12,sides):sides;
+  const bands=constrainBands(part,targets);const radialSides=['ribcage','pelvis','hair','neck'].includes(part)?Math.max(16,sides):part.endsWith('Deltoid')?Math.max(12,sides):part.endsWith('Thigh')?10:sides;
   // Both resolutions use the same measured section positions. Refinement adds
   // radial faces only; decimating anatomical stations would change the silhouette.
   const rings:Ring[]=bands.map(([y,l,r,f,b])=>[
@@ -47,17 +48,23 @@ export function createBodyBlockout(stage:BodyStage,targets:BodyTargets=fitJointT
  }
  const pelvis=mass('pelvis','pelvis',palette.pelvis);
  const pp=pelvis.geometry.getAttribute('position');
- // Warp the entire lower opening coherently. Raising only its last ring folds
- // the neighbouring glute rings through each other and creates posterior spikes.
+ // A curved lower rim defines the leg openings. Intermediate rings interpolate
+ // to the waist, avoiding the compressed, overhanging skirt of the old warp.
  for(const [ring,band] of (pelvis.userData.sourceBands as readonly (readonly number[])[]).entries()){
-  const weight=Math.max(0,(band[0]-453)/(507-453));
-  for(let i=0;i<pelvis.userData.radialSides;i++){const a=i/pelvis.userData.radialSides*Math.PI*2,s=Math.abs(Math.sin(a)),rise=Math.cos(a)<0?referenceFrame.pelvisRise*s**4+19*Math.exp(-((s/.25)**2)):referenceFrame.pelvisRise*s,index=ring*pelvis.userData.radialSides+i;pp.setY(index,pp.getY(index)+rise*weight*referenceFrame.scale);}
+  const t=(507-band[0])/(507-410),waist=pelvis.userData.sourceBands.at(-1),cx=((band[1]+band[2])/2-referenceFrame.frontAxis)*referenceFrame.scale;
+  for(let i=0;i<pelvis.userData.radialSides;i++){
+   const a=i/pelvis.userData.radialSides*Math.PI*2,s=Math.abs(Math.sin(a)),c=Math.cos(a),index=ring*pelvis.userData.radialSides+i;
+   const rimY=c<0?494-31*s**4:507-44*s**1.4;
+   pp.setY(index,(referenceFrame.ground-(rimY*(1-t)+410*t))*referenceFrame.scale);
+   const radius=77*(1-t)+(waist[2]-waist[1])/2*t;
+   pp.setX(index,cx+Math.sin(a)*radius*referenceFrame.scale);
+  }
  }pelvis.geometry.computeVertexNormals();
  mass('abdomen','abdomen',palette.joints);const chest=mass('ribcage','ribcage',palette.torso);
  // Colour groups expose the simplified drawing's upper/lower chest partition.
  const geometry=chest.geometry,upper=new T.MeshStandardMaterial({color:palette.chest,roughness:1,flatShading:true});chest.material=[chest.material as T.MeshStandardMaterial,upper];
  geometry.clearGroups();for(let ring=0;ring<chest.userData.bandCount-1;ring++){geometry.addGroup(ring*chest.userData.radialSides*6,chest.userData.radialSides*6,chest.userData.sourceBands[ring][0]<=280?1:0);}geometry.addGroup((chest.userData.bandCount-1)*chest.userData.radialSides*6,chest.userData.radialSides*3,0);geometry.addGroup((chest.userData.bandCount-1)*chest.userData.radialSides*6+chest.userData.radialSides*3,chest.userData.radialSides*3,1);
- mass('neck','neck',palette.joints);mass('head','head',palette.head);
+ const neck=mass('neck','neck',palette.joints);joinNeckAndChest(neck,chest);mass('head','head',palette.head);
  const hair=mass('hair-envelope','hair',palette.hair);
  // The single envelope reaches down the nape without lowering the front hairline.
  const hp=hair.geometry.getAttribute('position');for(let i=0;i<hair.userData.radialSides;i++){
@@ -69,6 +76,7 @@ export function createBodyBlockout(stage:BodyStage,targets:BodyTargets=fitJointT
    mass(`${side}-${part}`,`${side}${section}`,['hand','foot'].includes(part)?palette.joints:part==='thigh'?palette.chest:part==='forearm'?palette.torso:palette.limbs);
   }
  }
+ joinPelvisAndThighs(pelvis,root.getObjectByName('right-thigh') as T.Mesh<T.BufferGeometry,T.Material|T.Material[]>,root.getObjectByName('left-thigh') as T.Mesh<T.BufferGeometry,T.Material|T.Material[]>);
  // Read actual geometry vertices, never copy the target coordinates into markers.
  const actual={} as MeshLandmarks;
  function read(name:JointName,meshName:string,at:'bottom'|'top'|'front'){

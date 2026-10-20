@@ -16,12 +16,14 @@ export function startStructureStudio(){
  const camera=new T.OrthographicCamera(-1.2,1.2,1.2,-1.2,.1,20);camera.position.set(0,.90,5);camera.lookAt(0,.90,0);
  const models=new T.Group(),guides=new T.Group(),overlays=new T.Group(),markers=new T.Group();scene.add(models,guides,overlays,markers);
  let stage:BodyStage='blockout';
+ let focus=query.get('focus')??'body';
  let angle=query.get('angle')??'three',silhouette=false,wire=false,showGuides=true;
  let showPoints=query.get('points')==='1',overlay=false,referenceReady=false,referenceOpacity=.55,paired=false;let labelPositions:number[]=[];
  const ui=document.createElement('section');ui.id='structure-ui';
  ui.innerHTML=`<header><div><small>CHARACTER STUDY · 01</small><h1>先把结构做准</h1><p>当前基准：彩色几何体块简化图 → 先完成体块对齐</p></div><a href="?view=character">查看旧版 ↗</a></header>
  <nav aria-label="建模阶段"><button data-stage="blockout">01 几何体块</button><button data-stage="planes" disabled title="完成简化体块对齐后再进入低面细化">02 低面结构</button></nav>
  <nav aria-label="检查视角"><button data-angle="three">三视同屏</button><button data-angle="front">正面</button><button data-angle="side">侧面</button><button data-angle="back">背面</button><button data-angle="quarter">前斜侧</button><button data-angle="rear-quarter">后斜侧</button></nav>
+ <nav aria-label="局部放大"><button data-focus="body">全身</button><button data-focus="neck">颈胸放大</button><button data-focus="hips">臀腿放大</button></nav>
  <nav><button id="structure-silhouette">剪影</button><button id="structure-wire">线框</button><button id="structure-guides" class="active">比例线</button><button id="structure-points">定位点</button><button id="structure-reference">参考图</button><button id="structure-paired" disabled>并排对照</button><button id="structure-overlay" title="先在参考图中选择当前简化体块三视图" disabled>简化图叠合</button></nav>
  <output id="structure-stats"></output>`;
  document.body.append(ui);
@@ -41,7 +43,8 @@ export function startStructureStudio(){
  function resize(){
   const top=capture?0:Math.ceil(ui.getBoundingClientRect().bottom+18);
   const height=capture?innerHeight:Math.max(200,innerHeight-top-50);
-  const aspect=innerWidth/height,span=angle==='three'?Math.max(2.04,(paired?4.8:2.25)/aspect):Math.max(2.04,(paired?1.5:.75)/aspect);
+  const aspect=innerWidth/height,baseSpan=focus==='body'?2.04:.62,minWidth=focus==='body'?2.25:1.55,span=angle==='three'?Math.max(baseSpan,(paired?4.8:minWidth)/aspect):Math.max(baseSpan,(paired?1.25:.65)/aspect);
+  const center=focus==='neck'?1.5:focus==='hips'?.95:.90;camera.position.set(0,center,5);camera.lookAt(0,center,0);
   camera.left=-span*aspect/2;camera.right=span*aspect/2;camera.top=span/2;camera.bottom=-span/2;camera.updateProjectionMatrix();
   renderer.setSize(innerWidth,height);renderer.domElement.style.position='absolute';renderer.domElement.style.top=`${top}px`;
   labels.style.width='100%';labels.querySelectorAll<HTMLElement>('span').forEach((e,i)=>{const x=labelPositions[i]??0;e.style.left=`${50+x/(span*aspect)*100}%`;});render();
@@ -51,7 +54,7 @@ export function startStructureStudio(){
  function rebuild(){
   clearStudyGroup(overlays);clearStudyGroup(markers);disposeModels();const views=angle==='three'?['front','side','back']:[angle];let triangles=0;let fitText="";labelPositions=[];const labelTexts:string[]=[];
   for(const [i,v] of views.entries()){
-   const m=createBodyBlockout(stage);const origin=views.length===3?(i-1)*(paired?1.55:.73):0;const referenceOffset=origin-(paired?.36:0);m.position.x=origin+(paired?.36:0);m.rotation.y=v==='side'?-Math.PI/2:v==='back'?Math.PI:v==='quarter'?-Math.PI/4:v==='rear-quarter'?Math.PI*.75:0;const canonical=['front','side','back'].includes(v);
+   const m=createBodyBlockout(stage);const origin=views.length===3?(i-1)*(paired?1.55:focus==='body'?.73:.52):0;const referenceOffset=origin-(paired?.36:0);m.position.x=origin+(paired?.36:0);m.rotation.y=v==='side'?-Math.PI/2:v==='back'?Math.PI:v==='quarter'?-Math.PI/4:v==='rear-quarter'?Math.PI*.75:0;const canonical=['front','side','back'].includes(v);
    triangles=m.userData.triangles;fitText=(Object.entries(m.userData.fitReport) as [string,{rms:number}][]).map(([v,r])=>`${({front:"正",side:"侧",back:"背"} as Record<string,string>)[v]} ${r.rms.toFixed(2)}`).join(" / ");
    m.traverse(o=>{if(o instanceof T.Mesh){const materials=Array.isArray(o.material)?o.material:[o.material];for(const material of materials){const mat=material as T.MeshStandardMaterial;mat.wireframe=wire;mat.transparent=overlay&&!paired;mat.opacity=overlay&&!paired?.60:1;}if(silhouette){for(const mat of materials)mat.dispose();o.material=new T.MeshBasicMaterial({color:0x303636,wireframe:wire,transparent:overlay&&!paired,opacity:overlay&&!paired?.60:1});}}});models.add(m);
    if(canonical&&(overlay||paired)&&referenceReady)addReferenceProjection(overlays,referenceImage,v,referenceOffset,paired?1:referenceOpacity);
@@ -61,15 +64,17 @@ export function startStructureStudio(){
   guides.visible=showGuides;
   labels.innerHTML=labelTexts.map(label=>`<span>${label}</span>`).join('');
   labels.style.width=views.length===3?'min(94vw, 900px)':'100%';
+  ui.querySelectorAll<HTMLButtonElement>('[data-focus]').forEach(b=>b.classList.toggle('active',b.dataset.focus===focus));
   ui.querySelectorAll<HTMLButtonElement>('[data-stage]').forEach(b=>b.classList.toggle('active',b.dataset.stage===stage));
   ui.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.classList.toggle('active',b.dataset.angle===angle));
   const canCompare=referenceReady&&!['quarter','rear-quarter'].includes(angle);ui.querySelector<HTMLButtonElement>('#structure-overlay')!.disabled=!canCompare;ui.querySelector<HTMLButtonElement>('#structure-paired')!.disabled=!canCompare;
   ui.querySelector('#structure-points')!.classList.toggle('active',showPoints);ui.querySelector('#structure-overlay')!.classList.toggle('active',overlay);ui.querySelector('#structure-paired')!.classList.toggle('active',paired);
   ui.querySelector('output')!.textContent=`${triangles.toLocaleString()} 三角面 / 人物 · 正交投影 · ${(bodyPlan.height/(bodyPlan.height-bodyPlan.chin)).toFixed(1)} 头身 · 定点 RMS：${fitText} px`;
-  const url=new URL(location.href);url.searchParams.set('stage',stage);url.searchParams.set('angle',angle);history.replaceState(null,'',url);
+  const url=new URL(location.href);url.searchParams.set('focus',focus);url.searchParams.set('stage',stage);url.searchParams.set('angle',angle);history.replaceState(null,'',url);
   resize();
  }
  ui.querySelectorAll<HTMLButtonElement>('[data-stage]').forEach(b=>b.onclick=()=>{stage=b.dataset.stage as BodyStage;rebuild();});
+ ui.querySelectorAll<HTMLButtonElement>('[data-focus]').forEach(b=>b.onclick=()=>{focus=b.dataset.focus!;ui.querySelectorAll<HTMLButtonElement>('[data-focus]').forEach(x=>x.classList.toggle('active',x===b));rebuild();});
  ui.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.onclick=()=>{angle=b.dataset.angle!;if(['quarter','rear-quarter'].includes(angle)){paired=false;overlay=false;}rebuild();});
  function toggle(id:string,get:()=>boolean,set:(v:boolean)=>void){ui.querySelector<HTMLButtonElement>(id)!.onclick=e=>{set(!get());(e.target as HTMLElement).classList.toggle('active',get());rebuild();};}
  toggle('#structure-silhouette',()=>silhouette,v=>{silhouette=v;});toggle('#structure-wire',()=>wire,v=>{wire=v;});toggle('#structure-guides',()=>showGuides,v=>{showGuides=v;});
