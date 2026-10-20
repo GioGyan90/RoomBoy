@@ -27,15 +27,6 @@ export function shapeBodyStructure(part:BodyPart,bands:readonly SourceBand[],sid
     const sacralGroove=.009*Math.exp(-((x/.025)**2))*active;
     p.setZ(i,cz-d*arc+sacralGroove);
    }
-   if(part==='neck'&&c>0){
-    // Paired sternocleidomastoid planes converge toward the suprasternal
-    // notch instead of reading as horizontal rings on a flared tube.
-    const t=Math.max(0,Math.min(1,(sy-138)/(205-138))),ridge=(14-6*t)*f.scale;
-    const q=Math.min(j,sides-j);
-    if(q===1)p.setX(i,cx+Math.sign(Math.sin(a))*ridge*.45);
-    if(q===2)p.setX(i,cx+Math.sign(Math.sin(a))*ridge);
-    p.setZ(i,cz+d*Math.pow(c,.35)+(q===2?.006:q===0?-.004:0));
-   }
    if(part==='neck'&&ring===0&&c<0){
     // Broaden and lower only the posterior collar into the trapezius shelf.
     const rear=-c;p.setY(i,p.getY(i)-.026*rear);p.setX(i,cx+x*(1+.35*rear));
@@ -44,3 +35,4 @@ export function shapeBodyStructure(part:BodyPart,bands:readonly SourceBand[],sid
  }
  geometry.computeVertexNormals();
 }
+

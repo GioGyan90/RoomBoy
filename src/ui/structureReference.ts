@@ -46,3 +46,13 @@ export function addViewTargets(parent:T.Group,actual:MeshLandmarks,view:StudyVie
  }
  const lines=new T.LineSegments(new T.BufferGeometry().setFromPoints(vertices),new T.LineBasicMaterial({color:0xc34469,depthTest:false}));lines.renderOrder=6;parent.add(lines);
 }
+
+/** Measured surface corners for the current edit pass, separate from joint centres. */
+export function addEditedVertices(parent:T.Group,report:{id:string;position:number[];targets:Partial<Record<StudyView,readonly number[]>>}[],view:StudyView|undefined,focus:string){
+ for(const r of report){if(view&&!r.targets[view])continue;if(focus==='neck'&&!r.id.startsWith('N'))continue;if(focus==='hips'&&r.id.startsWith('N'))continue;
+  const point=new T.Vector3(...r.position as [number,number,number]);
+  const dot=new T.Mesh(new T.SphereGeometry(.004,6,4),new T.MeshBasicMaterial({color:0x008969,depthTest:false}));dot.position.copy(point);dot.renderOrder=8;parent.add(dot);
+  const canvas=document.createElement('canvas');canvas.width=96;canvas.height=48;const ctx=canvas.getContext('2d')!;ctx.font='bold 26px sans-serif';ctx.textAlign='center';ctx.fillStyle='#005740';ctx.strokeStyle='white';ctx.lineWidth=4;ctx.strokeText(r.id,48,34);ctx.fillText(r.id,48,34);
+  const label=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(canvas),depthTest:false}));label.position.copy(point).add(new T.Vector3(.016,.012,0));label.scale.set(.038,.019,1);label.renderOrder=9;parent.add(label);
+ }
+}

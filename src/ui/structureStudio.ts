@@ -1,7 +1,7 @@
 import * as T from 'three';
 import {bodyPlan,createBodyBlockout,type BodyStage} from '../assets/procedural/bodyBlockout';
 import {landmarkNames,sourceJoints,viewJoints,type StudyView} from '../assets/procedural/bodyReference';
-import {addLandmarkMarkers,addViewTargets,addReferenceProjection,clearStudyGroup} from './structureReference';
+import {addLandmarkMarkers,addViewTargets,addReferenceProjection,clearStudyGroup,addEditedVertices} from './structureReference';
 
 /** Independent static modelling studio. Does not alter the playable rig. */
 export function startStructureStudio(){
@@ -17,6 +17,7 @@ export function startStructureStudio(){
  const models=new T.Group(),guides=new T.Group(),overlays=new T.Group(),markers=new T.Group();scene.add(models,guides,overlays,markers);
  let stage:BodyStage='blockout';
  let focus=query.get('focus')??'body';
+ let showEdits=query.get('edits')==='1';
  let angle=query.get('angle')??'three',silhouette=false,wire=false,showGuides=true;
  let showPoints=query.get('points')==='1',overlay=false,referenceReady=false,referenceOpacity=.55,paired=false;let labelPositions:number[]=[];
  const ui=document.createElement('section');ui.id='structure-ui';
@@ -24,7 +25,7 @@ export function startStructureStudio(){
  <nav aria-label="建模阶段"><button data-stage="blockout">01 几何体块</button><button data-stage="planes" disabled title="完成简化体块对齐后再进入低面细化">02 低面结构</button></nav>
  <nav aria-label="检查视角"><button data-angle="three">三视同屏</button><button data-angle="front">正面</button><button data-angle="side">侧面</button><button data-angle="back">背面</button><button data-angle="quarter">前斜侧</button><button data-angle="rear-quarter">后斜侧</button></nav>
  <nav aria-label="局部放大"><button data-focus="body">全身</button><button data-focus="neck">颈胸放大</button><button data-focus="hips">臀腿放大</button></nav>
- <nav><button id="structure-silhouette">剪影</button><button id="structure-wire">线框</button><button id="structure-guides" class="active">比例线</button><button id="structure-points">定位点</button><button id="structure-reference">参考图</button><button id="structure-paired" disabled>并排对照</button><button id="structure-overlay" title="先在参考图中选择当前简化体块三视图" disabled>简化图叠合</button></nav>
+ <nav><button id="structure-silhouette">剪影</button><button id="structure-wire">线框</button><button id="structure-guides" class="active">比例线</button><button id="structure-points">关节定位点</button><button id="structure-edits">本轮改点</button><button id="structure-reference">参考图</button><button id="structure-paired" disabled>并排对照</button><button id="structure-overlay" title="先在参考图中选择当前简化体块三视图" disabled>简化图叠合</button></nav>
  <output id="structure-stats"></output>`;
  document.body.append(ui);
  const labels=document.createElement('div');labels.id='structure-labels';document.body.append(labels);
@@ -59,6 +60,7 @@ export function startStructureStudio(){
    m.traverse(o=>{if(o instanceof T.Mesh){const materials=Array.isArray(o.material)?o.material:[o.material];for(const material of materials){const mat=material as T.MeshStandardMaterial;mat.wireframe=wire;mat.transparent=overlay&&!paired;mat.opacity=overlay&&!paired?.60:1;}if(silhouette){for(const mat of materials)mat.dispose();o.material=new T.MeshBasicMaterial({color:0x303636,wireframe:wire,transparent:overlay&&!paired,opacity:overlay&&!paired?.60:1});}}});models.add(m);
    if(canonical&&(overlay||paired)&&referenceReady)addReferenceProjection(overlays,referenceImage,v,referenceOffset,paired?1:referenceOpacity);
    const viewLabel=({front:'正面',side:'侧面',back:'背面',quarter:'前斜侧','rear-quarter':'后斜侧'} as Record<string,string>)[v];if(paired){labelPositions.push(referenceOffset,m.position.x);labelTexts.push(`${viewLabel} · 简化图`,`${viewLabel} · 模型`);}else{labelPositions.push(m.position.x);labelTexts.push(viewLabel);}
+   if(showEdits){const editMarkers=new T.Group();editMarkers.position.copy(m.position);editMarkers.rotation.copy(m.rotation);addEditedVertices(editMarkers,m.userData.vertexEdits.report,canonical?v as StudyView:undefined,focus);markers.add(editMarkers);}
    if(showPoints){const marker=new T.Group();marker.position.copy(m.position);marker.rotation.copy(m.rotation);addLandmarkMarkers(marker,m.userData.landmarks,(canonical?v:'front') as StudyView);markers.add(marker);if(canonical)addViewTargets(markers,m.userData.landmarks,v as StudyView,paired?referenceOffset:m.position.x,!paired);}
   }
   guides.visible=showGuides;
@@ -68,8 +70,9 @@ export function startStructureStudio(){
   ui.querySelectorAll<HTMLButtonElement>('[data-stage]').forEach(b=>b.classList.toggle('active',b.dataset.stage===stage));
   ui.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.classList.toggle('active',b.dataset.angle===angle));
   const canCompare=referenceReady&&!['quarter','rear-quarter'].includes(angle);ui.querySelector<HTMLButtonElement>('#structure-overlay')!.disabled=!canCompare;ui.querySelector<HTMLButtonElement>('#structure-paired')!.disabled=!canCompare;
+  ui.querySelector('#structure-edits')!.classList.toggle('active',showEdits);
   ui.querySelector('#structure-points')!.classList.toggle('active',showPoints);ui.querySelector('#structure-overlay')!.classList.toggle('active',overlay);ui.querySelector('#structure-paired')!.classList.toggle('active',paired);
-  ui.querySelector('output')!.textContent=`${triangles.toLocaleString()} 三角面 / 人物 · 正交投影 · ${(bodyPlan.height/(bodyPlan.height-bodyPlan.chin)).toFixed(1)} 头身 · 定点 RMS：${fitText} px`;
+  ui.querySelector('output')!.textContent=`${triangles.toLocaleString()} 三角面 / 人物 · 本轮新增顶点 0 · 正交投影 · ${(bodyPlan.height/(bodyPlan.height-bodyPlan.chin)).toFixed(1)} 头身 · 关节中心 RMS：${fitText} px（不代表轮廓）`;
   const url=new URL(location.href);url.searchParams.set('focus',focus);url.searchParams.set('stage',stage);url.searchParams.set('angle',angle);history.replaceState(null,'',url);
   resize();
  }
@@ -78,6 +81,7 @@ export function startStructureStudio(){
  ui.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.onclick=()=>{angle=b.dataset.angle!;if(['quarter','rear-quarter'].includes(angle)){paired=false;overlay=false;}rebuild();});
  function toggle(id:string,get:()=>boolean,set:(v:boolean)=>void){ui.querySelector<HTMLButtonElement>(id)!.onclick=e=>{set(!get());(e.target as HTMLElement).classList.toggle('active',get());rebuild();};}
  toggle('#structure-silhouette',()=>silhouette,v=>{silhouette=v;});toggle('#structure-wire',()=>wire,v=>{wire=v;});toggle('#structure-guides',()=>showGuides,v=>{showGuides=v;});
+ toggle('#structure-edits',()=>showEdits,v=>{showEdits=v;});
  toggle('#structure-paired',()=>paired,v=>{paired=v;});toggle('#structure-points',()=>showPoints,v=>{showPoints=v;});toggle('#structure-overlay',()=>overlay,v=>{overlay=v;});
  ui.querySelector<HTMLButtonElement>('#structure-reference')!.onclick=()=>{panel.hidden=!panel.hidden;};
  if(capture){ui.hidden=true;labels.hidden=true;guides.visible=false;showGuides=false;}
