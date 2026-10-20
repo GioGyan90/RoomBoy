@@ -23,8 +23,8 @@ export function constrainBands(part:BodyPart,targets:BodyTargets):SourceBand[]{
   if(part===`${side}UpperArm`){pin(joint('Elbow'),'bottom');pin(joint('Shoulder'),'insert',.6);}
   if(part===`${side}Forearm`){pin(joint('Wrist'),'bottom');pin(joint('Elbow'),'top');}
   if(part===`${side}Hand`)pin(joint('Wrist'),'top');
-  if(part===`${side}Thigh`){pin(joint('Knee'),'bottom');pin(joint('Hip'),'top');}
-  if(part===`${side}Shin`){pin(joint('Ankle'),'bottom');pin(joint('Knee'),'top');}
+  if(part===`${side}Thigh`){pin(joint('Knee'),'insert');pin(joint('Hip'),'top');}
+  if(part===`${side}Shin`){pin(joint('Ankle'),'bottom');pin(joint('Knee'),'insert',.6);}
   if(part===`${side}Foot`)pin(joint('Ankle'),'top');
  }
  // Chin is a surface constraint rather than a section's centre.

@@ -69,5 +69,5 @@ test('joint targets move real mesh end caps rather than only display markers',as
  const delta=after.userData.landmarks.rightWrist.map((v:number,i:number)=>v-before.userData.landmarks.rightWrist[i]);
  [14*f.scale,10*f.scale,9*f.scale].forEach((v,i)=>assert.ok(Math.abs(delta[i]-v)<1e-6));
  assert.deepEqual(before.userData.landmarks.leftWrist,after.userData.landmarks.leftWrist);
- for(const stage of ['blockout','planes'] as const){const m=createBodyBlockout(stage);assert.ok(m.userData.fitReport.front.max<4.2);assert.ok(m.userData.fitReport.side.max<1.01);assert.ok(m.userData.fitReport.back.max<4.2);}
+ for(const stage of ['blockout','planes'] as const){const m=createBodyBlockout(stage);assert.ok(m.userData.fitReport.front.max<2.1);assert.ok(m.userData.fitReport.side.max<2.01);assert.ok(m.userData.fitReport.back.max<2.1);}
 });

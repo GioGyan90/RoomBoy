@@ -2,11 +2,11 @@ import * as T from 'three';
 import {referenceFrame,sourceJoints,sourcePoint,fitJointTargets,hairRim,type BodyTargets,type JointName} from './bodyReference';
 import {constrainBands,measureReprojection,type BodyPart,type MeshLandmarks} from './bodyConstraints';
 
-/** Metres. Image landmarks estimated from the supplied 1200 × 800 turnaround.
+/** Metres. Image landmarks estimated from the simplified 1536 × 1024 blockout sheet.
  * These are editable design measurements, not inferred anatomical ground truth. */
 export const bodyPlan = {
- height:1.80, chin:sourcePoint(sourceJoints.chin)[1], shoulder:sourcePoint(sourceJoints.rightShoulder)[1], waist:sourcePoint([554,320,795])[1], crotch:sourcePoint([554,421,795])[1],
- knee:sourcePoint(sourceJoints.rightKnee)[1], ankle:sourcePoint(sourceJoints.rightAnkle)[1], shoulderWidth:.461, waistWidth:.294, hipWidth:.345,
+ height:1.80, chin:sourcePoint(sourceJoints.chin)[1], shoulder:sourcePoint(sourceJoints.rightShoulder)[1], waist:sourcePoint([383,390,770])[1], crotch:sourcePoint([383,507,770])[1],
+ knee:sourcePoint(sourceJoints.rightKnee)[1], ankle:sourcePoint(sourceJoints.rightAnkle)[1], shoulderWidth:.415, waistWidth:.250, hipWidth:.316,
  headWidth:.176, headDepth:.205,
 } as const;
 export type BodyStage='blockout'|'planes';
@@ -32,7 +32,7 @@ export function cage(rings:readonly Ring[],sides:number){
 export function createBodyBlockout(stage:BodyStage,targets:BodyTargets=fitJointTargets()){
  const root=new T.Group();root.name=`body-${stage}`;
  const refined=stage==='planes',sides=refined?12:8;
- const palette={head:0xc9bdaa,torso:0xa9b8bb,pelvis:0xb9aaa1,limbs:0xc6c1b5,joints:0xb1ada3,hair:0x5e6060};
+ const palette={head:0xd1c0a7,torso:0xa5ae92,pelvis:0xa79db7,limbs:0x9ba5b9,joints:0xd5b98c,hair:0x929db2,chest:0xc9a293};
  function mass(name:string,part:BodyPart,color:number){
   const bands=constrainBands(part,targets);
   // Both resolutions use the same measured section positions. Refinement adds
@@ -42,11 +42,14 @@ export function createBodyBlockout(stage:BodyStage,targets:BodyTargets=fitJointT
    (b-f)*referenceFrame.scale/2,(referenceFrame.sideAxis-(f+b)/2)*referenceFrame.scale,
    ((l+r)/2-referenceFrame.frontAxis)*referenceFrame.scale,
   ]);
-  const m=new T.Mesh(cage(rings,sides),new T.MeshStandardMaterial({color,roughness:1,flatShading:true}));m.name=name;m.userData.bandCount=bands.length;root.add(m);return m;
+  const m=new T.Mesh<T.BufferGeometry,T.Material|T.Material[]>(cage(rings,sides),new T.MeshStandardMaterial({color,roughness:1,flatShading:true}));m.name=name;m.userData.bandCount=bands.length;root.add(m);return m;
  }
  const pelvis=mass('pelvis','pelvis',palette.pelvis);
- const pp=pelvis.geometry.getAttribute('position');for(let i=0;i<sides;i++)pp.setY(i,pp.getY(i)+.050*Math.abs(Math.sin(i/sides*Math.PI*2)));pelvis.geometry.computeVertexNormals();
- mass('abdomen','abdomen',palette.torso);mass('ribcage','ribcage',palette.torso);
+ const pp=pelvis.geometry.getAttribute('position');for(let i=0;i<sides;i++)pp.setY(i,pp.getY(i)+referenceFrame.pelvisRise*referenceFrame.scale*Math.abs(Math.sin(i/sides*Math.PI*2)));pelvis.geometry.computeVertexNormals();
+ mass('abdomen','abdomen',palette.joints);const chest=mass('ribcage','ribcage',palette.torso);
+ // Colour groups expose the simplified drawing's upper/lower chest partition.
+ const geometry=chest.geometry,upper=new T.MeshStandardMaterial({color:palette.chest,roughness:1,flatShading:true});chest.material=[chest.material as T.MeshStandardMaterial,upper];
+ geometry.clearGroups();for(let ring=0;ring<chest.userData.bandCount-1;ring++){geometry.addGroup(ring*sides*6,sides*6,ring>=2?1:0);}geometry.addGroup((chest.userData.bandCount-1)*sides*6,sides*3,0);geometry.addGroup((chest.userData.bandCount-1)*sides*6+sides*3,sides*3,1);
  mass('neck','neck',palette.joints);mass('head','head',palette.head);
  const hair=mass('hair-envelope','hair',palette.hair);
  // The single envelope reaches down the nape without lowering the front hairline.
@@ -56,7 +59,7 @@ export function createBodyBlockout(stage:BodyStage,targets:BodyTargets=fitJointT
  }hair.geometry.computeVertexNormals();
  for(const side of ['right','left'] as const){
   for(const [part,section] of [['deltoid','Deltoid'],['upper-arm','UpperArm'],['forearm','Forearm'],['hand','Hand'],['thigh','Thigh'],['shin','Shin'],['foot','Foot']] as const){
-   mass(`${side}-${part}`,`${side}${section}`,['hand','foot'].includes(part)?palette.head:palette.limbs);
+   mass(`${side}-${part}`,`${side}${section}`,['hand','foot'].includes(part)?palette.joints:part==='thigh'?palette.chest:part==='forearm'?palette.torso:palette.limbs);
   }
  }
  // Read actual geometry vertices, never copy the target coordinates into markers.

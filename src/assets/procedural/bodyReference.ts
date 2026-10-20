@@ -1,69 +1,52 @@
-/** Hand digitized design coordinates, in the original 1200 × 800 sheet.
- * Front/back are not identical anatomical poses; hidden body contours are estimates.
- * +Z is towards the face. Joint centres are distinct from surface outlines. */
-export const referenceFrame={width:1200,height:800,ground:772,top:24,frontAxis:554,sideAxis:821,backAxis:1042,scale:1.8/748} as const;
+/** Stage 01 authority: the generated coloured GEOMETRIC BLOCKOUT sheet.
+ * The detailed character concept is archived in conceptReference.ts and is not
+ * used for fitting this stage. Coordinates belong to the 1536 × 1024 sheet. */
+export const referenceFrame={width:1536,height:1024,ground:943,top:59,frontAxis:383,sideAxis:800,backAxis:1151,scale:1.8/884,cropTop:45,cropHeight:910,frontCrop:350,sideCrop:260,pelvisRise:52} as const;
+export const referenceStage={id:'geometric-blockout',label:'几何体块简化图',next:'低面结构完成后再复核原概念图'} as const;
 export type SourcePoint=readonly [frontX:number,frontY:number,sideX:number];
 export function sourcePoint([x,y,sx]:SourcePoint):[number,number,number]{const f=referenceFrame;return [(x-f.frontAxis)*f.scale,(f.ground-y)*f.scale,(f.sideAxis-sx)*f.scale];}
 export const sourceJoints={
- crown:[554,24,790],chin:[555,124,773],neck:[554,150,809],
- rightShoulder:[483,181,818],leftShoulder:[631,181,818],
- rightElbow:[464,280,819],leftElbow:[647,280,819],
- rightWrist:[458,383,785],leftWrist:[648,383,785],
- rightHip:[513,384,798],leftHip:[599,384,798],
- rightKnee:[513,539,805],leftKnee:[601,537,805],
- rightAnkle:[499,726,820],leftAnkle:[611,726,820],
+ crown:[383,59,765],chin:[383,171,733],neck:[383,205,791],
+ rightShoulder:[281,255,800],leftShoulder:[485,255,800],
+ rightElbow:[269,365,792],leftElbow:[497,365,792],
+ rightWrist:[248,493,764],leftWrist:[518,493,764],
+ rightHip:[339,453,776],leftHip:[427,453,776],
+ rightKnee:[320,685,790],leftKnee:[446,685,790],
+ rightAnkle:[306,880,800],leftAnkle:[458,880,800],
 } as const satisfies Record<string,SourcePoint>;
 export const landmarkNames:Record<keyof typeof sourceJoints,string>={crown:'头顶',chin:'下巴',neck:'颈根',rightShoulder:'右肩',leftShoulder:'左肩',rightElbow:'右肘',leftElbow:'左肘',rightWrist:'右腕',leftWrist:'左腕',rightHip:'右髋',leftHip:'左髋',rightKnee:'右膝',leftKnee:'左膝',rightAnkle:'右踝',leftAnkle:'左踝'};
-/** y, front silhouette left/right, side silhouette front/back, all pixels.
- * Rings run from the ground upwards. Garment edges do not assert bare anatomy. */
 export type SourceBand=readonly [y:number,left:number,right:number,front:number,back:number];
 export const bodyBands={
- pelvis:[[421,482,625,775,816],[390,482,625,750,841],[365,485,618,752,839],[344,489,616,753,836]],
- abdomen:[[350,488,617,754,836],[320,493,615,754,836],[290,491,620,753,840]],
- ribcage:[[315,493,615,754,836],[260,488,623,754,845],[210,491,621,756,850],[175,492,621,772,849],[156,497,616,790,838],[144,534,580,790,825]],
- neck:[[151,531,579,789,823],[132,538,575,781,815],[116,542,574,779,810]],
- head:[[124,550,560,773,785],[110,539,575,758,804],[94,531,581,746,820],[73,525,589,747,830],[48,529,585,760,825],[31,544,567,779,804]],
- hair:[[108,526,582,753,816],[73,506,601,742,835],[47,514,596,751,831],[30,534,579,769,816],[24,550,558,786,794]],
- rightDeltoid:[[226,458,485,797,849],[196,459,494,794,851],[175,465,500,799,847],[158,484,497,812,835]],
- leftDeltoid:[[226,628,655,797,849],[196,618,653,794,851],[175,611,648,799,847],[158,614,627,812,835]],
- rightUpperArm:[[287,452,474,804,832],[240,455,481,797,845],[211,459,491,795,850]],
- leftUpperArm:[[287,637,659,804,832],[240,630,658,797,845],[211,622,653,795,850]],
- rightForearm:[[388,449,467,772,797],[338,448,472,777,812],[310,449,474,793,824],[283,452,475,804,832]],
- leftForearm:[[388,639,657,772,797],[338,637,662,777,812],[310,635,660,793,824],[283,636,659,804,832]],
- rightHand:[[446,464,473,766,779],[431,452,476,758,789],[405,446,472,760,793],[386,449,468,772,798]],
- leftHand:[[446,631,640,766,779],[431,628,652,758,789],[405,630,659,760,793],[386,638,658,772,798]],
- rightThigh:[[547,493,533,783,830],[505,483,535,771,831],[451,480,545,760,832],[384,483,547,753,839]],
- leftThigh:[[547,580,620,783,830],[505,572,623,771,831],[451,564,626,760,832],[384,559,623,753,839]],
- rightShin:[[731,487,511,807,834],[674,481,517,801,838],[607,484,526,792,844],[570,489,529,789,839],[539,494,534,783,828]],
- leftShin:[[731,599,623,807,834],[674,591,627,801,838],[607,585,628,792,844],[570,580,620,789,839],[539,580,620,783,828]],
- rightFoot:[[772,458,512,738,835],[758,463,513,746,837],[741,481,513,773,837],[726,488,511,807,834]],
- leftFoot:[[772,595,645,738,835],[758,594,638,746,837],[741,595,627,773,837],[726,599,623,807,834]],
+ pelvis:[[507,324,443,730,812],[453,306,461,716,835],[410,321,444,719,807]],
+ abdomen:[[410,321,444,720,807],[365,328,443,720,818]],
+ ribcage:[[365,328,443,720,818],[320,306,461,711,830],[280,301,466,706,841],[220,297,470,746,834],[183,355,411,772,811]],
+ neck:[[205,355,411,765,816],[180,359,407,753,803],[164,360,405,749,792]],
+ head:[[171,375,391,733,754],[150,355,410,721,778],[120,350,416,715,789],[95,350,415,715,794],[80,360,406,737,794]],
+ hair:[[136,350,416,714,800],[95,345,421,712,814],[80,350,416,724,808],[59,380,386,761,769]],
+ rightDeltoid:[[289,258,303,756,818],[255,258,303,754,837],[220,285,304,774,821]],
+ leftDeltoid:[[289,463,508,756,818],[255,463,508,754,837],[220,462,481,774,821]],
+ rightUpperArm:[[365,250,289,773,812],[320,250,300,759,823],[280,257,303,756,823]],
+ leftUpperArm:[[365,477,517,773,812],[320,465,516,759,823],[280,463,509,756,823]],
+ rightForearm:[[493,237,260,747,776],[410,234,284,761,815],[365,246,287,773,811]],
+ leftForearm:[[493,505,528,747,776],[410,481,532,761,815],[365,479,519,773,811]],
+ rightHand:[[573,261,268,730,754],[552,245,272,728,771],[523,234,277,727,780],[493,237,260,747,776]],
+ leftHand:[[573,497,504,730,754],[552,493,520,728,771],[523,489,532,727,780],[493,505,528,747,776]],
+ rightThigh:[[699,293,339,768,827],[650,299,347,755,809],[580,290,365,735,819],[520,287,375,727,818],[453,307,371,720,827]],
+ leftThigh:[[699,425,475,768,827],[650,417,466,755,809],[580,400,475,735,819],[520,390,478,727,818],[453,394,458,720,827]],
+ rightShin:[[880,293,318,782,817],[800,284,330,778,829],[740,276,346,770,841],[699,289,339,768,827]],
+ leftShin:[[880,445,470,782,817],[800,433,480,778,829],[740,418,488,770,841],[699,425,475,768,827]],
+ rightFoot:[[943,261,332,695,829],[924,267,332,697,827],[900,287,329,753,821],[880,293,318,782,817]],
+ leftFoot:[[943,433,504,695,829],[924,433,499,697,827],[900,436,476,753,821],[880,445,470,782,817]],
 } as const satisfies Record<string,readonly SourceBand[]>;
-
 export type JointName=keyof typeof sourceJoints;
 export type BodyTargets=Record<JointName,SourcePoint>;
 export type StudyView='front'|'side'|'back';
 export type ImagePoint=readonly [x:number,y:number];
-// Back points are independent holdout readings, not mirrored front markers.
-const backJoints:Partial<Record<JointName,ImagePoint>>={
- crown:[1042,24],rightShoulder:[1117,181],leftShoulder:[967,181],
- rightElbow:[1137,280],leftElbow:[947,280],rightWrist:[1136,383],leftWrist:[946,383],
- rightHip:[1085,384],leftHip:[999,384],rightKnee:[1091,541],leftKnee:[994,541],
- rightAnkle:[1098,726],leftAnkle:[984,726],
-};
+const backJoints:Partial<Record<JointName,ImagePoint>>={crown:[1151,59],neck:[1151,205],rightShoulder:[1253,255],leftShoulder:[1049,255],rightElbow:[1268,365],leftElbow:[1034,365],rightWrist:[1286,493],leftWrist:[1017,493],rightHip:[1195,453],leftHip:[1107,453],rightKnee:[1216,685],leftKnee:[1085,685],rightAnkle:[1229,880],leftAnkle:[1072,880]};
 export const viewJoints={} as Record<JointName,{front:ImagePoint;side:ImagePoint;back?:ImagePoint}>;
-for(const name of Object.keys(sourceJoints) as JointName[]){const [x,y,sx]=sourceJoints[name];viewJoints[name]={front:[x,y],side:[sx,name==='chin'?122:name.includes('Knee')?540:y],back:backJoints[name]};}
-/** Equal-weight orthographic fit. One 3D point reconciles all visible views. */
+for(const name of Object.keys(sourceJoints) as JointName[]){const [x,y,sx]=sourceJoints[name];viewJoints[name]={front:[x,y],side:[sx,name==='chin'?174:y],back:backJoints[name]};}
 export function fitJointTargets():BodyTargets{
- const result={} as BodyTargets;
- for(const name of Object.keys(viewJoints) as JointName[]){const p=viewJoints[name];
-  const x=p.back?(p.front[0]+referenceFrame.frontAxis+referenceFrame.backAxis-p.back[0])/2:p.front[0];
-  const y=name==='crown'?referenceFrame.top:(p.front[1]+p.side[1]+(p.back?.[1]??0))/(p.back?3:2);
-  result[name]=[x,y,p.side[0]];
- }
- return result;
+ const result={} as BodyTargets;for(const name of Object.keys(viewJoints) as JointName[]){const p=viewJoints[name];result[name]=[p.back?(p.front[0]+referenceFrame.frontAxis+referenceFrame.backAxis-p.back[0])/2:p.front[0],name==='crown'?referenceFrame.top:(p.front[1]+p.side[1]+(p.back?.[1]??0))/(p.back?3:2),p.side[0]];}return result;
 }
-export const hairRim:readonly SourcePoint[]=[
- [554,88,753],[585,96,773],[598,82,799],[581,111,816],
- [554,126,815],[528,111,816],[506,85,799],[522,96,773],
-];
+/** Single blue cranial cap, not the original character's hairstyle. */
+export const hairRim:readonly SourcePoint[]=[[383,95,714],[411,100,743],[421,120,777],[409,136,798],[383,136,800],[355,136,798],[345,120,777],[355,100,743]];

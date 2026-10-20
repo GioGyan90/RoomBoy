@@ -4,13 +4,13 @@ import type {MeshLandmarks} from '../assets/procedural/bodyConstraints';
 
 export function clearStudyGroup(group:T.Group){
  group.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Line||o instanceof T.Sprite){
-  if('geometry' in o)o.geometry.dispose();const m=o.material as T.Material&{map?:T.Texture};m.map?.dispose();m.dispose();
+  if('geometry' in o)o.geometry.dispose();for(const m of (Array.isArray(o.material)?o.material:[o.material]) as (T.Material&{map?:T.Texture})[]){m.map?.dispose();m.dispose();}
  }});group.clear();
 }
 /** Display only: the original file is read locally and never sent to a server. */
 export function addReferenceProjection(group:T.Group,image:HTMLImageElement,view:string,offset:number,opacity:number){
  const f=referenceFrame,axis=view==='side'?f.sideAxis:view==='back'?f.backAxis:f.frontAxis;
- const left=axis-(view==='side'?110:135),top=20,width=view==='side'?180:270,height=760;
+ const width=view==='side'?f.sideCrop:f.frontCrop,left=axis-width/2,top=f.cropTop,height=f.cropHeight;
  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
  canvas.getContext('2d')!.drawImage(image,left,top,width,height,0,0,width,height);
  const texture=new T.CanvasTexture(canvas);texture.colorSpace=T.SRGBColorSpace;
