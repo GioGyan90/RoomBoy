@@ -34,6 +34,19 @@ test('room v4 keeps the asset slots and places the action anchors on its furnitu
  assert.ok(DOOR_HEIGHT*ROOM_SCALE>1.89&&DOOR_HEIGHT*ROOM_SCALE<2);
  assert.equal(ROOM.bath.doorH,DOOR_HEIGHT);
 });
+test('bed pillow rests on the sheet clear of the headboard and folded blanket',()=>{
+ const {root}=createRoomV4();
+ root.updateMatrixWorld(true);
+ const bounds=(name:string)=>new T.Box3().setFromObject(root.getObjectByName(name)!);
+ const pillow=bounds('bed-pillow');
+ const sheet=bounds('bed-sheet');
+ const fold=bounds('bed-fold');
+ assert.ok(Math.abs(pillow.min.y-sheet.max.y)<1e-6);
+ assert.ok(pillow.min.z>sheet.min.z&&pillow.max.z<sheet.max.z);
+ assert.ok(pillow.min.x-bounds('bed-headboard').max.x>.015);
+ assert.ok(fold.min.x-pillow.max.x>.025);
+ assert.ok(fold.max.x-bounds('bed-blanket').min.x<1e-6);
+});
 test('entry garments and shoes have cut faces and window dust has varied motion',()=>{
  const {root,refs}=createRoomV4();
  for(const name of ['carved-jacket','carved-shoe-upper']){

@@ -50,7 +50,7 @@ export const COLORS = {
   tile: 0xdfecec,
 };
 
-export const BED = { x: -3.85, z: -1.95, length: 3.6, depth: 2.9, blanketY: 1.14, blanketHeight: 0.3 };
+export const BED = { x: -3.85, z: -1.95, length: 3.6, depth: 2.5, blanketY: 1.14, blanketHeight: 0.3 };
 export const DESK = { x: -0.30, z: -4.22 };
 export const CHAIR = { x: DESK.x, z: DESK.z + 1.37, rotation: Math.PI, cushionY: 1.14, cushionHeight: 0.1, heightScale: 0.8 };
 export const TOILET = { x: 4.25, z: 2.45, tankZ: 1.8, lidY: 1.24, lidHeight: 0.07, heightScale: 0.73 };

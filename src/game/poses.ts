@@ -52,9 +52,10 @@ export function sitDeskPose(t:number):Pose{
 }
 
 export function liePose(t:number):Pose{
-  const br = Math.sin(t*1.15)*0.025;
+  // Keep the head close to the pillow while the chest rises.
+  const br = Math.sin(t*1.15)*0.006;
   return {
-    spine:[0.11 + br, 0, 0], chest:[0.09 + br*0.6, 0, 0],
+    spine:[0.095 + br, 0, 0], chest:[0.075 + br*0.6, 0, 0],
     neck:[0.05, 0, 0], head:[0.02, 0.11, 0.05],
     lThigh:[-0.04, 0, 0.07], rThigh:[-0.04, 0, -0.07],
     lShin:[0.10, 0, 0], rShin:[0.10, 0, 0],

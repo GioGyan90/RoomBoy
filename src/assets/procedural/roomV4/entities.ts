@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { rounded } from "../sculpt";
 import { createRoomDust } from "./dust";
 import { buildEntryShoes, buildHangingJacket } from "./entryProps";
 import { BED, CHAIR, COLORS, DESK, DOOR_HEIGHT, ROOM, ROOM_SCALE, TOILET, WINDOW } from "./definitions";
@@ -270,34 +271,48 @@ function buildWindow(root: THREE.Group, refs: Refs): void {
 /*  Bed                                                                */
 /* ------------------------------------------------------------------ */
 function buildBed(root: THREE.Group): void {
+  const { x, z, length, depth, blanketY, blanketHeight } = BED;
   const wood = toon(COLORS.wood);
   const woodDark = toon(COLORS.woodDark);
 
-  root.add(bmesh(BED.length, 0.44, BED.depth, wood, BED.x, 0.46, BED.z, { outline: 0.03 }));
-  for (const sx of [-5.5, -2.2]) {
-    for (const sz of [-3.2, -0.7]) {
-      root.add(bmesh(0.22, 0.5, 0.22, woodDark, sx, 0.25, sz));
+  root.add(bmesh(length, 0.44, depth, wood, x, 0.46, z, { outline: 0.03 }));
+  for (const dx of [-1, 1]) {
+    for (const dz of [-1, 1]) {
+      root.add(bmesh(0.22, 0.5, 0.22, woodDark, x + dx * (length / 2 - 0.15), 0.25, z + dz * (depth / 2 - 0.20)));
     }
   }
-  root.add(bmesh(0.22, 1.75, 2.9, wood, -5.66, 0.87, -1.95, { outline: 0.03 }));
-  root.add(bmesh(0.26, 0.12, 3.0, toon(COLORS.woodLight), -5.66, 1.78, -1.95));
+  const headX = x - length / 2 - 0.01;
+  const headboard = bmesh(0.22, 1.75, depth, wood, headX, 0.87, z, { outline: 0.03 });
+  headboard.name = "bed-headboard";
+  root.add(headboard);
+  root.add(bmesh(0.26, 0.12, depth + 0.10, toon(COLORS.woodLight), headX, 1.78, z));
 
-  root.add(bmesh(3.4, 0.42, 2.76, toon(0xf8f2e4), -3.82, 0.88, -1.95, { outline: 0.02 }));
-  root.add(bmesh(3.42, 0.08, 2.78, toon(0xfffbf1), -3.82, 1.09, -1.95));
+  const mattressX = x + 0.03;
+  root.add(bmesh(length - 0.20, 0.42, depth - 0.14, toon(0xf8f2e4), mattressX, 0.88, z, { outline: 0.02 }));
+  const sheetY = 1.09;
+  const sheetHeight = 0.08;
+  const sheet = bmesh(length - 0.18, sheetHeight, depth - 0.12, toon(0xfffbf1), mattressX, sheetY, z);
+  sheet.name = "bed-sheet";
+  root.add(sheet);
 
-  const blanket = bmesh(2.35, BED.blanketHeight, 2.88, toon(0xffffff, { map: makePlaidTexture() }), -3.25, BED.blanketY, BED.z, {
+  const blanketLength = 2.35;
+  const blanketX = x + 0.60;
+  const blanketDepth = depth - 0.02;
+  const blanket = bmesh(blanketLength, blanketHeight, blanketDepth, toon(0xffffff, { map: makePlaidTexture() }), blanketX, blanketY, z, {
     outline: 0.022,
   });
+  blanket.name = "bed-blanket";
   root.add(blanket);
-  root.add(bmesh(0.34, 0.2, 2.88, toon(0xeef6f7), -4.52, 1.2, -1.95));
+  const foldLength = 0.24;
+  const fold = bmesh(foldLength, 0.20, blanketDepth, toon(0xeef6f7), blanketX - (blanketLength + foldLength) / 2, 1.20, z);
+  fold.name = "bed-fold";
+  root.add(fold);
 
-  const pillow = bmesh(0.95, 0.36, 2.05, toon(0xfdfaf2), -5.05, 1.27, -1.95, { outline: 0.022 });
-  pillow.rotation.z = 0.07;
-  root.add(pillow);
-
-  const pillow2 = bmesh(0.62, 0.24, 0.9, toon(0xf6dfc4), -4.78, 1.28, -2.65, { outline: 0.016 });
-  pillow2.rotation.z = -0.18;
-  root.add(pillow2);
+  const pillowHeight = 0.35;
+  const pillow = rounded(root, [0.78, 0.46, 1.50], toon(0xfdfaf2),
+    [x - 1.27, sheetY + (sheetHeight + pillowHeight) / 2, z], 0.20);
+  pillow.name = "bed-pillow";
+  pillow.scale.y = pillowHeight / 0.46;
 }
 
 /* ------------------------------------------------------------------ */
