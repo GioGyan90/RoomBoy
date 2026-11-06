@@ -8,6 +8,8 @@ import {createBlueApartment} from '../src/assets/procedural/blueApartment';
 import {createGardenLoft} from '../src/assets/procedural/gardenLoft';
 import {loftLayout,plan as loftPlan,stair} from '../src/assets/procedural/gardenLoft/plan';
 import {apartmentLayout,plan as apartmentPlan} from '../src/assets/procedural/blueApartment/plan';
+import {createHotelSuite} from '../src/assets/procedural/hotelSuite';
+import {hotelLayout,plan as hotelPlan,tub as hotelTub} from '../src/assets/procedural/hotelSuite/plan';
 import {createRoomNavigation} from '../src/assets/procedural/roomV4/colliders';
 import {DOOR_HEIGHT,GAME_LAYOUT,ROOM,ROOM_SCALE} from '../src/assets/procedural/roomV4/definitions';
 import {createAnimation} from '../src/game/animation';
@@ -118,6 +120,61 @@ test('loft seating preserves the mezzanine height while sitting, napping and ret
   }
   assert.ok(character.charRoot.position.distanceTo(new T.Vector3(anchor.x,anchor.y??0,anchor.z))<.001,id);
   assert.ok(Math.abs(character.body.position.y-anchor.bodyY)<.001,id);
+ }
+});
+
+test('hotel bathtub is open and its bathroom route crosses the actual doorway', () => {
+ const {root,navigation}=createHotelSuite();
+ assert.ok(validate(root)>0);
+ const shell=root.getObjectByName('hotel-hollow-tub-shell')!;
+ const bowlRay=new T.Raycaster(new T.Vector3(hotelTub.x+.033,2,hotelTub.z+.045),new T.Vector3(0,-1,0));
+ const bowl=bowlRay.intersectObject(shell)[0];
+ assert.ok(bowl&&bowl.point.y>.09&&bowl.point.y<.19);
+ assert.ok(new T.Box3().setFromObject(shell).max.y>.64);
+ assert.ok(!navigation.canStand(hotelTub));
+ assert.ok(!navigation.canStand({x:hotelPlan.bathLeft+.20,z:hotelPlan.bathBack-.55}));
+ const {spawn,bed,desk,toilet}=hotelLayout;
+ const points=[bed.stand,desk.stand,toilet.stand,{x:hotelPlan.entryLeft+1.835,z:5.235},{x:2.05,z:1.28}];
+ for(const to of points){
+  const route=navigation.findPath(spawn,to);
+  assert.ok(route,`No hotel route to ${to.x}, ${to.z}`);
+  let previous:{x:number;z:number}=spawn;
+  for(const next of route){
+   assert.ok(navigation.canTraverse(previous,next));
+   if(to===toilet.stand&&previous.x>hotelPlan.bathRight&&next.x<hotelPlan.bathRight){
+    const at=(hotelPlan.bathRight-previous.x)/(next.x-previous.x);
+    const z=T.MathUtils.lerp(previous.z,next.z,at);
+    assert.ok(z>hotelPlan.bathDoor[0]&&z<hotelPlan.bathDoor[1]);
+   }
+   previous=next;
+  }
+ }
+ assert.ok(!navigation.canTraverse(bed.stand,toilet.stand));
+ assert.ok(!navigation.canTraverse({x:-.76,z:-1.06},{x:.37,z:-1.06}));
+});
+
+test('the fourth room supports existing seating actions and closes both curtain panels', () => {
+ const {root,navigation,effects}=createHotelSuite();
+ const {spawn,desk,bed,toilet}=hotelLayout;
+ const scene=new T.Scene(),character=createCharacter(scene),animation=createAnimation(character);
+ scene.add(character.charRoot);
+ character.charRoot.position.set(spawn.x,0,spawn.z);
+ const actions=createActions(scene,character,animation,navigation,hotelLayout,false);
+ for(const [id,anchor] of [['sitChair',desk.sit],['sitBed',bed.sit],['nap',bed.lie],['sitToilet',toilet.sit]] as const){
+  actions.runAction(actions.ACTIONS.find(action=>action.id===id)!);
+  for(let i=0;i<840;i++){
+   actions.updateRunner(.02);
+   animation.updateAnimation(.02,0);
+  }
+  assert.ok(character.charRoot.position.distanceTo(new T.Vector3(anchor.x,0,anchor.z))<.001,id);
+  assert.ok(Math.abs(character.body.position.y-anchor.bodyY)<.001,id);
+ }
+ effects.toggle('curtains');
+ for(let i=0;i<140;i++)effects.update(.02,0);
+ for(const curtain of root.getObjectsByProperty('name','hotel-burgundy-curtain')){
+  const cloth=curtain.children.find((o):o is T.Mesh=>o instanceof T.Mesh&&!!o.morphTargetInfluences);
+  assert.ok(cloth&&cloth.morphTargetInfluences![0]>.99);
+  assert.equal(curtain.getObjectByName('braided-gold-tieback')!.visible,false);
  }
 });
 

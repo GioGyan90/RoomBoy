@@ -26,12 +26,12 @@ function leaf(parent: T.Object3D, at: P3, angle: number, length: number, width: 
   blade.add(rib);
 }
 
-export function plant(parent: T.Object3D, at: P3, size: number, trailing = false) {
+export function plant(parent: T.Object3D, at: P3, size: number, trailing = false, potMaterial: T.Material = finish.ivory) {
   const pot = group(parent, trailing ? "trailing-pothos" : "potted-rubber-plant", at);
   pot.scale.setScalar(size);
   const profile = [[0, .012], [.171, .012], [.195, .034], [.231, .322], [.241, .34], [.232, .365],
     [.211, .365], [.198, .328], [.188, .29], [0, .29]].map(([x, y]) => new T.Vector2(x, y));
-  mesh(pot, new T.LatheGeometry(profile, 26), finish.ivory);
+  mesh(pot, new T.LatheGeometry(profile, 26), potMaterial);
   disc(pot, .196, .012, matte(0x674b34), [0, .310, 0]);
   const stems = matte(0x667346);
   const layers = trailing ? 10 : 16;

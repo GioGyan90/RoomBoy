@@ -1,3 +1,5 @@
+import { createHotelSuite } from "../assets/procedural/hotelSuite";
+import { hotelLayout } from "../assets/procedural/hotelSuite/plan";
 import { createGardenLoft } from "../assets/procedural/gardenLoft";
 import { loftLayout } from "../assets/procedural/gardenLoft/plan";
 import { createBlueApartment } from "../assets/procedural/blueApartment";
@@ -45,6 +47,13 @@ export const rooms = {
     camera: { theta: -.438, phi: 1.07, target: [-.45, 1.79, .58], gameRadius: 13.35, roomRadius: 12.42, orthographic: true },
     frameScale: (aspect: number) => Math.max(1, 1.48 / aspect),
     create: createGardenLoft,
+  },
+  hotel: {
+    label: "枣红酒店套房",
+    layout: hotelLayout,
+    camera: { theta: -.398, phi: 1.062, target: [-.80, 1.49, .34], gameRadius: 13.64, roomRadius: 12.8, orthographic: true },
+    frameScale: (aspect: number) => Math.max(1, 1.49 / aspect),
+    create: createHotelSuite,
   },
 } as const;
 

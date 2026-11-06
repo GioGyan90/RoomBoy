@@ -4,7 +4,7 @@
 
 基于 `reference/roomboydeepseek.html` 拆分的 Three.js 房间小游戏。使用 Vite + TypeScript，游戏运行时不依赖 CDN。
 
-默认进入 Room v4。右上角「选择房间」可切换到[蓝灰公寓](https://giogyan90.github.io/RoomBoy/?room=apartment)或[米绿 Loft](https://giogyan90.github.io/RoomBoy/?room=loft)。两套房间都支持 Haru 行走、坐下和小睡。米绿 Loft 的左侧楼梯通往夹层卧室，底层设有书桌、厨房、客厅、浴室和窗边运动区。可直接打开[公寓剖面](https://giogyan90.github.io/RoomBoy/?room=apartment&view=room)或 [Loft 剖面](https://giogyan90.github.io/RoomBoy/?room=loft&view=room)。
+默认进入 Room v4。右上角「选择房间」可切换到[蓝灰公寓](https://giogyan90.github.io/RoomBoy/?room=apartment)、[米绿 Loft](https://giogyan90.github.io/RoomBoy/?room=loft)或[枣红酒店套房](https://giogyan90.github.io/RoomBoy/?room=hotel)。这些房间支持 Haru 行走、坐下和小睡。米绿 Loft 的左侧楼梯通往夹层卧室，底层设有书桌、厨房、客厅、浴室和窗边运动区。可直接打开[公寓剖面](https://giogyan90.github.io/RoomBoy/?room=apartment&view=room)、[Loft 剖面](https://giogyan90.github.io/RoomBoy/?room=loft&view=room)或[酒店剖面](https://giogyan90.github.io/RoomBoy/?room=hotel&view=room)。
 
 ## 本地运行（Windows / macOS / Linux）
 
@@ -39,6 +39,7 @@ npm run preview
 | `src/assets/procedural/roomV4/` | 默认房间的程序化模型、布局与环境效果 |
 | `src/assets/procedural/blueApartment/` | 蓝灰公寓的剖面结构、家具、环境效果和动作锚点 |
 | `src/assets/procedural/gardenLoft/` | 米绿 Loft 的两层剖面、分区家具、照明和楼梯寻路 |
+| `src/assets/procedural/hotelSuite/` | 酒店套房的剖面、家具、黑纹大理石、布艺和交互 |
 | `src/assets/procedural/character.ts` / `characterSurface.ts` | 结构研究截面、贴身服装裁切与骨骼蒙皮 |
 | `src/assets/procedural/materials.ts` / `textures.ts` | 材质与画布纹理 |
 | `src/assets/registry.ts` | 家具替换入口与默认回退 |
