@@ -37,7 +37,7 @@ function shoePrism(depth: number, bevel: number) {
   }).rotateX(-Math.PI / 2);
 }
 
-function buildShoe(color: number) {
+export function buildShoe(color: number, laceColor = 0xe5ddd1) {
   const shoe = new THREE.Group();
   shoe.name = "entry-shoe";
   const sole = new THREE.Mesh(shoePrism(.047, .012), toon(0xe3d8c4));
@@ -66,7 +66,7 @@ function buildShoe(color: number) {
   shoe.add(upper);
 
   for (const [z, y, angle] of [[-.13, .21, .07], [-.176, .191, -.07]]) {
-    const lace = bmesh(.158, .015, .024, toon(0xe5ddd1), .007, y, z, { cast: false });
+    const lace = bmesh(.158, .015, .024, toon(laceColor), .007, y, z, { cast: false });
     lace.rotation.y = angle;
     shoe.add(lace);
   }

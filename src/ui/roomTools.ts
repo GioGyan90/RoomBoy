@@ -1,4 +1,4 @@
-import type { createRoomEffects, RoomToggle } from "../assets/procedural/roomV4/effects";
+import type { RoomEffects, RoomToggle } from "../assets/procedural/roomV4/effects";
 
 const labels: Record<RoomToggle, string> = {
   night: "夜间",
@@ -7,7 +7,7 @@ const labels: Record<RoomToggle, string> = {
   curtains: "窗帘",
 };
 
-export function createRoomTools(effects: ReturnType<typeof createRoomEffects>) {
+export function createRoomTools(effects: RoomEffects) {
   const element = document.createElement("div");
   element.id = "room-controls";
   element.setAttribute("role", "group");
@@ -26,6 +26,7 @@ export function createRoomTools(effects: ReturnType<typeof createRoomEffects>) {
   }
 
   for (const [id, label] of Object.entries(labels) as [RoomToggle, string][]) {
+    if (effects.state[id] === undefined) continue;
     const button = document.createElement("button");
     button.type = "button";
     button.dataset.roomControl = id;

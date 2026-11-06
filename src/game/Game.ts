@@ -1,44 +1,43 @@
 import * as THREE from 'three';
 import {createRenderer} from '../core/renderer';
 import {createCameraController} from '../core/camera';
-import {createRoomV4} from '../assets/procedural/roomV4/entities';
-import {createRoomNavigation} from '../assets/procedural/roomV4/colliders';
-import {createRoomEffects} from '../assets/procedural/roomV4/effects';
-import {roomFrameScale} from '../assets/procedural/roomV4/definitions';
 import {createCharacter} from '../assets/procedural/character';
 import {createAnimation} from './animation';
 import {createActions} from './actions';
 import {createPieMenu} from '../ui/pieMenu';
 import {bindControls} from '../input/controls';
 import {element} from '../ui/dom';
-import {applyRoomOverrides} from '../assets/registry';
 import {createReview} from '../ui/review';
 import {createRoomTools} from '../ui/roomTools';
+import {rooms, type RoomId} from './rooms';
 
 export function startGame(){
   const {renderer,scene,camera,composer}=createRenderer();
-  const room=createRoomV4();
-  applyRoomOverrides(room.root,room.registry);
+  const query=new URLSearchParams(location.search);
+  const roomId:RoomId=query.get('room')==='apartment'?'apartment':'v4';
+  const profile=rooms[roomId];
+  const room=profile.create();
   scene.add(room.root);
 
-  const effects=createRoomEffects(room.refs);
+  const {effects,navigation}=room;
   const roomTools=createRoomTools(effects);
   const character=createCharacter(scene);
   scene.add(character.charRoot);
   const animation=createAnimation(character);
-  const navigation=createRoomNavigation(room);
-  const actions=createActions(scene,character,animation,navigation);
-  const controller=createCameraController(camera);
+  const actions=createActions(scene,character,animation,navigation,profile.layout,effects.state.monitor!==undefined);
+  const controller=createCameraController(camera,profile.camera.orthographic);
   const menu=createPieMenu(actions);
-  const review=createReview(scene,room.root,character,controller,actions,effects.background,roomTools.element);
+  const review=createReview(scene,room.root,character,controller,actions,effects.background,roomTools.element,roomId);
 
-  bindControls(renderer,camera,character,actions,menu,controller,{
+  bindControls(renderer,character,actions,menu,controller,{
     root:room.root,
     toggle:roomTools.toggle,
+    half:profile.layout.half,
+    frameScale:profile.frameScale,
     canWalk:()=>review.view==='game',
   });
 
-  const capture=new URLSearchParams(location.search).get('capture')==='1';
+  const capture=query.get('capture')==='1';
   const clock=new THREE.Clock();
   renderer.setAnimationLoop(()=>{
     const dt=Math.min(clock.getDelta(),.05);
@@ -55,14 +54,14 @@ export function startGame(){
     }else{
       renderer.toneMapping=THREE.NoToneMapping;
       effects.update(dt,time);
-      renderer.render(scene,camera);
+      renderer.render(scene,controller.camera);
     }
   });
 
   window.addEventListener('resize',()=>{
     const aspect=innerWidth/innerHeight;
     if(!review.portrait){
-      const scale=roomFrameScale(aspect)/roomFrameScale(camera.aspect);
+      const scale=profile.frameScale(aspect)/profile.frameScale(camera.aspect);
       controller.camState.radius*=scale;
       controller.camGoal.radius*=scale;
     }

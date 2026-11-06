@@ -3,12 +3,22 @@ import type {Actions} from '../game/actions';
 import type {createCameraController} from '../core/camera';
 import type {Character} from '../assets/procedural/character';
 import {addLighting} from '../core/lighting';
-import {GAME_LAYOUT,roomFrameScale} from '../assets/procedural/roomV4/definitions';
-export function createReview(scene:T.Scene,room:T.Group,character:Character,controller:ReturnType<typeof createCameraController>,actions:Actions,roomBackground:T.Color,roomTools:HTMLElement){
+import {rooms,type RoomId} from '../game/rooms';
+export function createReview(scene:T.Scene,room:T.Group,character:Character,controller:ReturnType<typeof createCameraController>,actions:Actions,roomBackground:T.Color,roomTools:HTMLElement,roomId:RoomId){
+ const profile=rooms[roomId];
  const query=new URLSearchParams(location.search);const requestedView=query.get('view')??'game';
  let view=['room','character','face'].includes(requestedView)?requestedView:'game';let angle=query.get('angle')??'front';
  const ui=document.createElement('div');ui.id='review-controls';ui.innerHTML='<button data-view="game">游玩</button><button data-view="room">房间</button><button data-view="character">人物</button><button data-view="face">脸部</button><button id="compare-toggle">概念图对照</button>';
  const structureLink=document.createElement('a');structureLink.href='?view=structure';structureLink.textContent='结构研究 ↗';ui.append(structureLink);document.body.append(ui);
+ const selector=document.createElement('select');selector.setAttribute('aria-label','选择房间');
+ for(const [id,room] of Object.entries(rooms))selector.add(new Option(room.label,id,id===roomId,id===roomId));
+ selector.addEventListener('change',()=>{
+  const url=new URL(location.href);
+  if(selector.value==='v4')url.searchParams.delete('room');else url.searchParams.set('room',selector.value);
+  if(view==='game')url.searchParams.delete('view');else url.searchParams.set('view',view);
+  location.assign(url);
+ });
+ roomTools.prepend(selector);
  const angles=document.createElement('div');angles.id='character-angles';angles.innerHTML='<button data-angle="front">正面</button><button data-angle="side">侧面</button><button data-angle="back">背面</button>';document.body.append(angles);
  const panel=document.createElement('aside');panel.id='reference-panel';panel.hidden=true;
  const image=document.createElement('img');image.alt='用户提供的原始概念图，仅用于对照';panel.append(image);
@@ -25,11 +35,13 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   actions.cancel();character.body.rotation.x=0;character.body.position.y=character.hipHeight;
   room.visible=!portrait;studio.visible=portrait;scene.background=portrait?new T.Color(0xa9afaf):roomBackground;character.charRoot.visible=view!=='room';
   character.plumbob.visible=view==='game';character.plumbobLight.visible=view==='game';
-  const {spawn}=GAME_LAYOUT;
+  const {spawn}=profile.layout;
+  controller.usePerspective(portrait);
+  const framing=profile.camera;
   character.charRoot.position.set(portrait?0:spawn.x,0,portrait?0:spawn.z);character.charRoot.rotation.y=portrait?0:spawn.rot;
   const state=portrait
     ? {theta:angle==='side'?Math.PI/2:angle==='back'?Math.PI:0,phi:close?1.46:1.52,radius:close?.49:2.72,target:new T.Vector3(0,close?1.65:.91,0)}
-    : {theta:.57,phi:1.03,radius:(view==='room'?12.0:11.3)*roomFrameScale(innerWidth/innerHeight),target:new T.Vector3(0,.65,0)};
+    : {theta:framing.theta,phi:framing.phi,radius:(view==='room'?framing.roomRadius:framing.gameRadius)*profile.frameScale(innerWidth/innerHeight),target:new T.Vector3(...framing.target)};
   for(const obj of [controller.camGoal,controller.camState]){obj.theta=state.theta;obj.phi=state.phi;obj.radius=state.radius;obj.target.copy(state.target);}
   angles.hidden=!portrait||query.get('capture')==='1';
   roomTools.hidden=portrait||query.get('capture')==='1';

@@ -86,3 +86,4 @@
 #room-controls button{color:#c3ccd5;background:transparent;border:0;padding:8px;border-radius:7px;cursor:pointer;font-size:12px}
 #room-controls button[aria-pressed="true"]{background:#e1e7ec;color:#17212a}
 @media(max-width:650px){#room-controls{top:18px;right:10px}}
+#room-controls select{font:inherit;font-size:12px;color:#dce7f5;background:#222c39;border:1px solid #ffffff29;border-radius:7px;padding:5px 7px;cursor:pointer}

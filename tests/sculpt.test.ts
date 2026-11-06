@@ -4,6 +4,8 @@ import * as T from 'three';
 import {createCharacter} from '../src/assets/procedural/character';
 import {createRoom} from '../src/assets/procedural/room';
 import {createRoomV4} from '../src/assets/procedural/roomV4/entities';
+import {createBlueApartment} from '../src/assets/procedural/blueApartment';
+import {apartmentLayout,plan as apartmentPlan} from '../src/assets/procedural/blueApartment/plan';
 import {createRoomNavigation} from '../src/assets/procedural/roomV4/colliders';
 import {DOOR_HEIGHT,GAME_LAYOUT,ROOM,ROOM_SCALE} from '../src/assets/procedural/roomV4/definitions';
 import {createAnimation} from '../src/game/animation';
@@ -33,6 +35,33 @@ test('room v4 keeps the asset slots and places the action anchors on its furnitu
  assert.ok(monitor.min.z-window.max.z>.08);
  assert.ok(DOOR_HEIGHT*ROOM_SCALE>1.89&&DOOR_HEIGHT*ROOM_SCALE<2);
  assert.equal(ROOM.bath.doorH,DOOR_HEIGHT);
+});
+test('blue apartment routes around the cutaway walls and uses its own furniture anchors',()=>{
+ const {root,navigation}=createBlueApartment();
+ const {spawn,desk,bed,toilet}=apartmentLayout;
+ assert.ok(validate(root)>0);
+ for(const point of [desk.stand,bed.stand,toilet.stand,{x:1.94,z:1.1},{x:1.66,z:-2.29},{x:-.54,z:3.72}]){
+  const route=navigation.findPath(spawn,point);
+  assert.ok(route,`No route to ${point.x}, ${point.z}`);
+  let previous=spawn;
+  for(const next of route){assert.ok(navigation.canTraverse(previous,next));previous={x:next.x,z:next.z,rot:0};}
+ }
+ assert.ok(!navigation.canTraverse(spawn,toilet.stand));
+ assert.ok(!navigation.canStand({x:-3.5,z:apartmentPlan.back+.4}));
+ assert.ok(!navigation.canStand({x:2.55,z:apartmentPlan.kitchenBack}));
+ assert.ok(!navigation.canStand({x:2.55,z:apartmentPlan.entryFront-.35}));
+
+ const scene=new T.Scene(),character=createCharacter(scene),animation=createAnimation(character);
+ const actions=createActions(scene,character,animation,navigation,apartmentLayout,false);
+ scene.add(character.charRoot);
+ character.charRoot.position.set(spawn.x,0,spawn.z);
+ assert.ok(!actions.ACTIONS.some(action=>action.id==='computer'));
+ for(const [id,anchor] of [['sitChair',desk.sit],['sitBed',bed.sit],['nap',bed.lie],['sitToilet',toilet.sit]] as const){
+  actions.runAction(actions.ACTIONS.find(action=>action.id===id)!);
+  for(let i=0;i<600;i++){actions.updateRunner(.02);animation.updateAnimation(.02,0);}
+  assert.ok(character.charRoot.position.distanceTo(new T.Vector3(anchor.x,0,anchor.z))<.001);
+  assert.ok(Math.abs(character.body.position.y-anchor.bodyY)<.001);
+ }
 });
 test('bed pillow rests on the sheet clear of the headboard and folded blanket',()=>{
  const {root}=createRoomV4();

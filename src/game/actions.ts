@@ -7,11 +7,15 @@ import type { Animation } from './animation';
 import type { RoomNavigation } from './navigation';
 import { seats } from './seating';
 import type { Action, PoseStep, Seat, Step } from './types';
+import type { RoomLayout } from './rooms';
 
-export function createActions(scene: THREE.Scene, character: Character, animation: Animation, navigation: RoomNavigation) {
+export function createActions(
+  scene: THREE.Scene, character: Character, animation: Animation, navigation: RoomNavigation,
+  layout: RoomLayout = GAME_LAYOUT, hasComputer = true,
+) {
   const { charRoot } = character;
   const { st, HIP } = animation;
-  const { desk, bed, toilet } = GAME_LAYOUT;
+  const { desk, bed, toilet } = layout;
   const seatLayouts = {
     chair: { ...desk, posture: 'sitChair' },
     bed: { ...bed, posture: 'sitBed' },
@@ -271,7 +275,10 @@ export function createActions(scene: THREE.Scene, character: Character, animatio
     marker.scale.setScalar(1 + (1 - markerLife) * 1.2);
   }
 
-  return { ACTIONS, runAction, sitAt, walkTo, updateRunner, updateMarker, cancel: finish };
+  return {
+    ACTIONS: hasComputer ? ACTIONS : ACTIONS.filter(action => action.id !== 'computer'),
+    runAction, sitAt, walkTo, updateRunner, updateMarker, cancel: finish,
+  };
 }
 
 export type Actions = ReturnType<typeof createActions>;

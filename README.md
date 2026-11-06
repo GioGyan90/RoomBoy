@@ -2,7 +2,9 @@
 
 [在线游玩 / 分享链接](https://giogyan90.github.io/RoomBoy/) · [GitHub 仓库](https://github.com/GioGyan90/RoomBoy)
 
-基于 `reference/roomboydeepseek.html` 拆分的 Three.js 房间小游戏。默认使用 Room v4 剖面场景。使用 Vite + TypeScript，游戏运行时不依赖 CDN。
+基于 `reference/roomboydeepseek.html` 拆分的 Three.js 房间小游戏。使用 Vite + TypeScript，游戏运行时不依赖 CDN。
+
+默认进入 Room v4。右上角「选择房间」可切换到蓝灰公寓，也可直达[公寓游玩](https://giogyan90.github.io/RoomBoy/?room=apartment)或[公寓剖面](https://giogyan90.github.io/RoomBoy/?room=apartment&view=room)。蓝灰公寓沿用 Haru 的走路、寻路和坐卧动作，并为卧室、玄关、浴室、厨房、阳台配置各自的模型和碰撞。
 
 ## 本地运行（Windows / macOS / Linux）
 
@@ -35,6 +37,7 @@ npm run preview
 | `src/game/actions.ts` | 动作队列、走路、坐卧与状态提示 |
 | `src/game/animation.ts` / `poses.ts` | 关节动画、姿势与动画状态 |
 | `src/assets/procedural/roomV4/` | 默认房间的程序化模型、布局与环境效果 |
+| `src/assets/procedural/blueApartment/` | 蓝灰公寓的剖面结构、家具、环境效果和动作锚点 |
 | `src/assets/procedural/character.ts` / `characterSurface.ts` | 结构研究截面、贴身服装裁切与骨骼蒙皮 |
 | `src/assets/procedural/materials.ts` / `textures.ts` | 材质与画布纹理 |
 | `src/assets/registry.ts` | 家具替换入口与默认回退 |

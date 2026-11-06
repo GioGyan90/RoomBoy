@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { clamp } from '../core/math';
-import { GAME_LAYOUT, roomFrameScale } from '../assets/procedural/roomV4/definitions';
 import type { RoomProp } from '../assets/procedural/roomV4/entities';
 import type { Character } from '../assets/procedural/character';
 import type { Actions } from '../game/actions';
@@ -10,6 +9,8 @@ import type { createCameraController } from '../core/camera';
 
 interface RoomInput {
   root: THREE.Group;
+  half: number;
+  frameScale(aspect: number): number;
   toggle(prop: RoomProp): void;
   canWalk(): boolean;
 }
@@ -21,11 +22,11 @@ type Target =
   | { kind: 'floor'; position: THREE.Vector3 };
 
 export function bindControls(
-  renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera, character: Character, actions: Actions,
+  renderer: THREE.WebGLRenderer, character: Character, actions: Actions,
   menu: PieMenu, controller: ReturnType<typeof createCameraController>, room: RoomInput,
 ) {
   const { camState, camGoal } = controller;
-  const { half } = GAME_LAYOUT;
+  const { half } = room;
   const dom = renderer.domElement;
   const raycaster = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
@@ -38,7 +39,7 @@ export function bindControls(
   }
 
   function pan(dx: number, dy: number) {
-    const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
+    const right = new THREE.Vector3().setFromMatrixColumn(controller.camera.matrix, 0);
     const forward = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), right).normalize();
     const scale = camState.radius * .0017;
     camGoal.target.addScaledVector(right, -dx * scale).addScaledVector(forward, dy * scale);
@@ -50,11 +51,11 @@ export function bindControls(
   function pick(x: number, y: number): Target | undefined {
     if (!room.root.visible) return;
     ndc.set(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1);
-    raycaster.setFromCamera(ndc, camera);
+    raycaster.setFromCamera(ndc, controller.camera);
     const walking = room.canWalk();
     const actor = walking ? raycaster.intersectObjects(character.charMeshes, false)[0] : undefined;
     const solid = raycaster.intersectObject(room.root, true)
-      .find(hit => hit.object instanceof THREE.Mesh);
+      .find(hit => hit.object instanceof THREE.Mesh && !hit.object.userData.pickThrough);
     if (actor && (!solid || actor.distance < solid.distance)) return { kind: 'character' };
     if (!solid) return;
 
@@ -113,7 +114,7 @@ export function bindControls(
   dom.addEventListener('pointercancel', () => { drag = null; });
   dom.addEventListener('wheel', event => {
     event.preventDefault();
-    camGoal.radius = clamp(camGoal.radius * Math.exp(event.deltaY * .0011), 2, 16 * roomFrameScale(camera.aspect));
+    camGoal.radius = clamp(camGoal.radius * Math.exp(event.deltaY * .0011), 2, 16 * room.frameScale(innerWidth / innerHeight));
   }, { passive: false });
   window.addEventListener('keydown', event => {
     if (event.key === 'Escape') menu.closePie();

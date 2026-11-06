@@ -4,6 +4,13 @@ import type { Refs, RoomProp } from "./entities";
 
 export type RoomToggle = RoomProp | "night";
 
+export interface RoomEffects {
+  state: Partial<Record<RoomToggle, boolean>>;
+  background: THREE.Color;
+  toggle(id: RoomToggle): void;
+  update(dt: number, time: number): void;
+}
+
 const DAY_SUN = new THREE.Color(0xfff0cf);
 const NIGHT_SUN = new THREE.Color(0x8fa8e8);
 const DAY_SKY = new THREE.Color(0xd8ecff);
