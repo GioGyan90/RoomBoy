@@ -1,12 +1,20 @@
 import * as THREE from 'three';
 import {clamp} from '../core/math';
-import {HW,HD} from '../assets/layout';
+import {GAME_LAYOUT,roomFrameScale} from '../assets/procedural/roomV4/definitions';
+import type {RoomProp} from '../assets/procedural/roomV4/entities';
 import type {Character} from '../assets/procedural/character';
 import type {Actions} from '../game/actions';
 import type {PieMenu} from '../ui/pieMenu';
 import type {createCameraController} from '../core/camera';
-export function bindControls(renderer:THREE.WebGLRenderer,camera:THREE.PerspectiveCamera,character:Character,actions:Actions,menu:PieMenu,controller:ReturnType<typeof createCameraController>){
+interface RoomInput {
+  pick(raycaster:THREE.Raycaster):RoomProp|undefined;
+  toggle(prop:RoomProp):void;
+  canWalk():boolean;
+}
+
+export function bindControls(renderer:THREE.WebGLRenderer,camera:THREE.PerspectiveCamera,character:Character,actions:Actions,menu:PieMenu,controller:ReturnType<typeof createCameraController>,room:RoomInput){
 const {charMeshes}=character;const {walkTo}=actions;const {openPie,closePie,isOpen}=menu;const {camState,camGoal}=controller;
+const {half}=GAME_LAYOUT;
 /* =========================================================
    9 · interaction
    ========================================================= */
@@ -15,7 +23,6 @@ const ndc = new THREE.Vector2();
 const groundPlane = new THREE.Plane(new THREE.Vector3(0,1,0), 0);
 
 /* --- camera controls --- */
-let hoverChar=false;
 let drag:{button:number;x:number;y:number;moved:number;shift:boolean}|null=null;
 
 function orbit(dx:number, dy:number){
@@ -28,8 +35,8 @@ function pan(dx:number, dy:number){
   const s = camState.radius * 0.0017;
   camGoal.target.addScaledVector(right, -dx*s);
   camGoal.target.addScaledVector(fwd,   dy*s);
-  camGoal.target.x = clamp(camGoal.target.x, -HW, HW);
-  camGoal.target.z = clamp(camGoal.target.z, -HD, HD);
+  camGoal.target.x = clamp(camGoal.target.x, -half, half);
+  camGoal.target.z = clamp(camGoal.target.z, -half, half);
   camGoal.target.y = clamp(camGoal.target.y, 0.2, 2.2);
 }
 
@@ -54,11 +61,8 @@ dom.addEventListener('pointermove', (e)=>{
   ndc.x = (e.clientX / innerWidth) * 2 - 1;
   ndc.y = -(e.clientY / innerHeight) * 2 + 1;
   raycaster.setFromCamera(ndc, camera);
-  const hit = raycaster.intersectObjects(charMeshes, false).length > 0;
-  if (hit !== hoverChar){
-    hoverChar = hit;
-    dom.style.cursor = hit ? 'pointer' : 'default';
-  }
+  const hitCharacter = room.canWalk() && raycaster.intersectObjects(charMeshes, false).length > 0;
+  dom.style.cursor = hitCharacter || room.pick(raycaster) ? 'pointer' : 'default';
 });
 
 dom.addEventListener('pointerup', (e)=>{
@@ -71,15 +75,22 @@ dom.addEventListener('pointerup', (e)=>{
   ndc.y = -(e.clientY / innerHeight) * 2 + 1;
   raycaster.setFromCamera(ndc, camera);
 
-  if (raycaster.intersectObjects(charMeshes, false).length > 0){
+  if (room.canWalk() && raycaster.intersectObjects(charMeshes, false).length > 0){
     if (isOpen()) closePie();
     else openPie(e.clientX, e.clientY);
     return;
   }
+  const prop = room.pick(raycaster);
+  if (prop){
+    closePie();
+    room.toggle(prop);
+    return;
+  }
+  if (!room.canWalk()) return;
   const p = new THREE.Vector3();
   if (raycaster.ray.intersectPlane(groundPlane, p)){
-    p.x = clamp(p.x, -HW + 0.3, HW - 0.3);
-    p.z = clamp(p.z, -HD + 0.3, HD - 0.3);
+    p.x = clamp(p.x, -half + 0.3, half - 0.3);
+    p.z = clamp(p.z, -half + 0.3, half - 0.3);
     closePie();
     walkTo(p);
   }
@@ -87,7 +98,7 @@ dom.addEventListener('pointerup', (e)=>{
 
 dom.addEventListener('wheel', (e)=>{
   e.preventDefault();
-  camGoal.radius = clamp(camGoal.radius * Math.exp(e.deltaY * 0.0011), 2.0, 11.0);
+  camGoal.radius = clamp(camGoal.radius * Math.exp(e.deltaY * 0.0011), 2.0, 16 * roomFrameScale(camera.aspect));
 }, { passive:false });
 
 window.addEventListener('keydown', (e)=>{

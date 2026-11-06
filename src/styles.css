@@ -75,3 +75,10 @@
 #structure-stats{max-width:calc(100vw - 40px);line-height:1.6}#structure-reference-panel details li{padding:2px 0}
 
 @media(max-width:650px){#structure-labels{bottom:80px}}
+
+#room-controls{position:fixed;right:18px;top:67px;z-index:30;display:flex;gap:4px;padding:5px;
+  border:1px solid #ffffff30;border-radius:12px;background:#141b22d9;backdrop-filter:blur(12px)}
+#room-controls[hidden]{display:none}
+#room-controls button{color:#c3ccd5;background:transparent;border:0;padding:8px;border-radius:7px;cursor:pointer;font-size:12px}
+#room-controls button[aria-pressed="true"]{background:#e1e7ec;color:#17212a}
+@media(max-width:650px){#room-controls{top:18px;right:10px}}

@@ -2,7 +2,7 @@
 
 [在线游玩 / 分享链接](https://giogyan90.github.io/RoomBoy/) · [GitHub 仓库](https://github.com/GioGyan90/RoomBoy)
 
-基于 `reference/roomboydeepseek.html` 拆分的 Three.js 房间小游戏。保留原版视觉与六种互动，使用 Vite + TypeScript，游戏运行时不依赖 CDN。
+基于 `reference/roomboydeepseek.html` 拆分的 Three.js 房间小游戏。默认使用 Room v4 剖面场景，Haru 有六种互动。使用 Vite + TypeScript，游戏运行时不依赖 CDN。
 
 ## 本地运行（Windows / macOS / Linux）
 
@@ -23,6 +23,8 @@ npm run preview
 
 点击角色开启动作菜单；点击地面移动；右键拖动旋转；Shift + 右键或中键拖动平移；滚轮缩放；Q/E 旋转；Esc 关闭菜单。
 
+右上角可以切换昼夜、灯光、电脑屏幕和窗帘，也可以点击房间内相应物件。
+
 ## 项目结构
 
 | 路径 | 职责 |
@@ -30,10 +32,9 @@ npm run preview
 | `src/game/Game.ts` | 场景装配与帧循环 |
 | `src/game/actions.ts` | 动作队列、走路、坐卧与状态提示 |
 | `src/game/animation.ts` / `poses.ts` | 关节动画、姿势与动画状态 |
-| `src/assets/procedural/room.ts` | 房间与家具的程序生成模型 |
+| `src/assets/procedural/roomV4/` | 默认房间的程序化模型、布局与环境效果 |
 | `src/assets/procedural/character.ts` | 角色与关节层级 |
 | `src/assets/procedural/materials.ts` / `textures.ts` | 材质与画布纹理 |
-| `src/assets/layout.ts` | 房间尺寸、家具位置 |
 | `src/assets/registry.ts` | 家具替换入口与默认回退 |
 | `src/assets/vertexAsset.ts` | 顶点资产格式和 Three.js 构建器 |
 | `src/assets/generated/` | 后续转换生成的顶点 TS 模块 |
@@ -64,7 +65,7 @@ Vite 使用相对资源路径，兼容仓库子路径。已创建公开仓库并
 
 ## 当前边界
 
-原版直线点击移动未包含家具碰撞和寻路；本次保留该行为。当前桌椅/床坐卧坐标按原版尺寸设定。替换成新尺寸时，需要同步动作锚点。当前以桌面鼠标操作为主，触屏相机操作尚未实现。
+点击地面时，角色沿直线移动。桌椅和床的尺寸与动作锚点位于 `roomV4/definitions.ts`。相机操作主要面向桌面鼠标。
 
 ## 人体结构研究
 

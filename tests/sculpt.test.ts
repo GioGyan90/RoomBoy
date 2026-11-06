@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import {createCharacter} from '../src/assets/procedural/character';
 import {createRoom} from '../src/assets/procedural/room';
+import {createRoomV4} from '../src/assets/procedural/roomV4/entities';
+import {GAME_LAYOUT} from '../src/assets/procedural/roomV4/definitions';
 import {createAnimation} from '../src/game/animation';
 import {createActions} from '../src/game/actions';
 const gradient={addColorStop(){}};
@@ -13,10 +15,34 @@ function validate(root:T.Object3D){let vertices=0;root.updateMatrixWorld(true);r
  if(o instanceof T.Mesh){const position=o.geometry.getAttribute('position');vertices+=position.count;for(const n of position.array)assert.ok(Number.isFinite(n),`Nonfinite vertex in ${o.name}`);assert.ok(o.matrixWorld.elements.every(Number.isFinite));}
 });return vertices;}
 test('sculpted room has finite geometry and every replaceable asset group',()=>{const room=createRoom();assert.deepEqual([...room.registry.keys()].sort(),['shell','window','outside','decor','bed','desk','chair','wardrobe','shelves','props'].sort());assert.ok(room.ceiling.parent);assert.ok(validate(room.root)>30000);});
+test('room v4 keeps the asset slots and places the action anchors on its furniture',()=>{
+ const {root,registry,refs}=createRoomV4();
+ assert.deepEqual([...registry.keys()].sort(),['shell','window','outside','decor','bed','desk','chair','wardrobe','shelves','props'].sort());
+ assert.ok(validate(root)>0);
+ const bed=new T.Box3().setFromObject(registry.get('bed')!);
+ for(const anchor of [GAME_LAYOUT.bed.sit,GAME_LAYOUT.bed.lie]){
+  assert.ok(bed.containsPoint(new T.Vector3(anchor.x,anchor.bodyY,anchor.z)));
+ }
+ const chair=new T.Box3().setFromObject(registry.get('chair')!);
+ const {x,z,bodyY}=GAME_LAYOUT.desk.sit;
+ assert.ok(chair.containsPoint(new T.Vector3(x,bodyY,z)));
+ assert.ok(refs.monitorScreen.getWorldPosition(new T.Vector3()).z<z);
+});
 test('adult rig remains finite throughout all six game interactions',()=>{
  const scene=new T.Scene();const character=createCharacter(scene);scene.add(character.charRoot);const animation=createAnimation(character);const actions=createActions(scene,character,animation);
  assert.equal(actions.ACTIONS.length,6);assert.ok(character.J.head);assert.ok(character.charMeshes.length>80);
- for(const action of actions.ACTIONS){actions.runAction(action);for(let i=0;i<500;i++){actions.updateRunner(.02);animation.updateAnimation(.02,i*.02);}validate(character.charRoot);}
+ const {desk,bed}=GAME_LAYOUT;
+ const anchors:Record<string,{x:number;z:number;bodyY:number}>={computer:desk.sit,lie:bed.lie,nap:bed.lie,sitBed:bed.sit};
+ for(const action of actions.ACTIONS){
+  actions.runAction(action);
+  for(let i=0;i<500;i++){actions.updateRunner(.02);animation.updateAnimation(.02,i*.02);}
+  validate(character.charRoot);
+  const anchor=anchors[action.id];
+  if(anchor){
+   assert.ok(character.charRoot.position.distanceTo(new T.Vector3(anchor.x,0,anchor.z))<.001);
+   assert.ok(Math.abs(character.body.position.y-anchor.bodyY)<.001);
+  }
+ }
  assert.ok(validate(character.charRoot)>20000);
 });
 

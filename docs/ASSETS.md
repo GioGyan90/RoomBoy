@@ -23,7 +23,7 @@ export const roomOverrides = {
 
 默认模型内的顶点/节点坐标已经是房间坐标；新模型建议以家具局部原点建模，再在 factory 外层 Group 上设置位置、旋转和缩放。约定单位米、Y 轴朝上。GLB 节点变换会保留，避免重复应用位移。
 
-`shell` 含墙体、地板、踢脚线和特殊的天花板引用，替换必须修改 `createRoom()`，不能直接覆盖以免悬空引用。
+默认场景的 `shell` 含墙体、地板和踢脚线，在 `roomV4/entities.ts` 的 `buildShell()` 中修改。
 
 ## 角色替换
 
@@ -35,4 +35,4 @@ export const roomOverrides = {
 
 ## 布局与动作
 
-`layout.ts` 管理视觉布局。`actions.ts` 中目前保留原版坐卧动作坐标；替换家具时应同步对应坐卧点和站起点。后续再把这些点迁移为每个资产的命名 anchor，接入碰撞与寻路。
+`roomV4/definitions.ts` 管理房间尺寸与桌椅、床的动作锚点。原始房间模型使用 `layout.ts`。替换默认场景的家具时，同步校准坐卧点、朝向和站起点。

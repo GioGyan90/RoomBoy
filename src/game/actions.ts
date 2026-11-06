@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import {angleLerp,damp} from '../core/math';
 import {element} from '../ui/dom';
+import {GAME_LAYOUT} from '../assets/procedural/roomV4/definitions';
 import type {Character} from '../assets/procedural/character';
 import type {Animation} from './animation';
-import type {Step,Posture,Action} from './types';
+import type {Step,Action} from './types';
 export function createActions(scene:THREE.Scene,character:Character,animation:Animation){
 const {charRoot}=character;const {st,HIP}=animation;
 /* =========================================================
@@ -15,12 +16,11 @@ function setStatus(txt:string){ statusEl.innerHTML = txt; }
 
 const V = (x:number,z:number)=>new THREE.Vector3(x,0,z);
 
-const DESK_STAND = { x:1.52, z:-0.80, rot:0 };
-const BED_STAND  = { x:-1.05, z:-0.95, rot:0 };
+const {desk,bed} = GAME_LAYOUT;
 
 function postureStandSpot(){
-  if (st.posture === 'sitDesk') return DESK_STAND;
-  if (st.posture === 'sitBed' || st.posture === 'lieBed') return BED_STAND;
+  if (st.posture === 'sitDesk') return desk.stand;
+  if (st.posture === 'sitBed' || st.posture === 'lieBed') return bed.stand;
   return null;
 }
 function standStep():Step|null{
@@ -28,8 +28,7 @@ function standStep():Step|null{
   if (!s) return null;
   return { type:'pose', posture:'stand', pos:V(s.x, s.z), rot:s.rot, bodyY:HIP, rotX:0, duration:0.85 };
 }
-function withStand(steps:Step[], targetPosture?:Posture){
-  if (st.posture === targetPosture) return steps;
+function withStand(steps:Step[]){
   const s = standStep();
   return s ? [s, ...steps] : steps;
 }
@@ -102,46 +101,52 @@ function updateRunner(dt:number){
 }
 
 /* ---------------- actions ---------------- */
+function approach(spot:{x:number;z:number}, pose:Extract<Step,{type:'pose'}>){
+  if (st.posture === pose.posture) return [pose];
+  return withStand([{ type:'walk', pos:V(spot.x,spot.z) }, pose]);
+}
+
+function lieSteps(){
+  return approach(bed.stand, {
+    type:'pose', posture:'lieBed', pos:V(bed.lie.x,bed.lie.z), rot:bed.lie.rot,
+    bodyY:bed.lie.bodyY, rotX:-Math.PI/2, hold:true,
+  });
+}
+
 const ACTIONS:Action[] = [
   { id:'computer', icon:'💻', label:'Use Computer',
-    steps: () => withStand([
-      { type:'walk', pos:V(1.52,-0.80) },
-      { type:'pose', posture:'sitDesk', pos:V(1.52,-1.13), rot:Math.PI, bodyY:0.47, rotX:0, duration:1.0 },
-      { type:'pose', posture:'sitDesk', pos:V(1.52,-1.13), rot:Math.PI, bodyY:0.47, rotX:0, hold:true },
-    ], 'sitDesk'),
+    steps: () => approach(desk.stand, {
+      type:'pose', posture:'sitDesk', pos:V(desk.sit.x,desk.sit.z), rot:desk.sit.rot,
+      bodyY:desk.sit.bodyY, hold:true,
+    }),
     status:'Surfing the web 💻' },
 
-  { id:'lie', icon:'🛏️', label:'Lie on Bed',
-    steps: () => withStand([
-      { type:'walk', pos:V(-1.05,-0.95) },
-      { type:'pose', posture:'lieBed', pos:V(-1.72,-0.95), rot:0, bodyY:0.72, rotX:-Math.PI/2, hold:true },
-    ], 'lieBed'),
-    status:'Lying on the bed' },
+  { id:'lie', icon:'🛏️', label:'Lie on Bed', steps:lieSteps, status:'Lying on the bed' },
 
-  { id:'nap', icon:'😴', label:'Take a Nap', nap:true,
-    steps: () => withStand([
-      { type:'walk', pos:V(-1.05,-0.95) },
-      { type:'pose', posture:'lieBed', pos:V(-1.72,-0.95), rot:0, bodyY:0.72, rotX:-Math.PI/2, hold:true },
-    ], 'lieBed'),
-    status:'Napping 😴' },
+  { id:'nap', icon:'😴', label:'Take a Nap', nap:true, steps:lieSteps, status:'Napping 😴' },
 
   { id:'sitBed', icon:'🪑', label:'Sit on Bed',
-    steps: () => withStand([
-      { type:'walk', pos:V(-1.02,-0.95) },
-      { type:'pose', posture:'sitBed', pos:V(-1.29,-0.95), rot:Math.PI/2, bodyY:0.60, rotX:0, hold:true },
-    ], 'sitBed'),
+    steps: () => approach(bed.stand, {
+      type:'pose', posture:'sitBed', pos:V(bed.sit.x,bed.sit.z), rot:bed.sit.rot,
+      bodyY:bed.sit.bodyY, hold:true,
+    }),
     status:'Sitting on the bed' },
 
   { id:'stretch', icon:'🙆', label:'Stretch',
-    steps: () => withStand([
-      { type:'pose', posture:'stretch', pos:charRoot.position.clone(), rot:charRoot.rotation.y, bodyY:HIP, rotX:0, duration:2.6 },
-    ]),
+    steps: () => {
+      const spot = postureStandSpot();
+      return withStand([
+        { type:'pose', posture:'stretch', pos:spot ? V(spot.x,spot.z) : charRoot.position.clone(),
+          rot:spot?.rot ?? charRoot.rotation.y, duration:2.6 },
+      ]);
+    },
     status:'Stretching 🙆' },
 
   { id:'stand', icon:'🧍', label:'Stand Here',
-    steps: () => withStand([
-      { type:'pose', posture:'stand', pos:charRoot.position.clone(), rot:charRoot.rotation.y, bodyY:HIP, rotX:0, duration:0.6 },
-    ]),
+    steps: () => [
+      standStep() ?? { type:'pose', posture:'stand', pos:charRoot.position.clone(),
+        rot:charRoot.rotation.y, duration:0.6 },
+    ],
     status:'Standing around' },
 ];
 

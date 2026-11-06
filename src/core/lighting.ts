@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-export function addLighting(scene:THREE.Scene){
+export function addLighting(scene:THREE.Object3D){
 /* =========================================================
    5 · lights
    ========================================================= */
