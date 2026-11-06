@@ -1,10 +1,12 @@
 import * as T from 'three';
 import { cage } from './bodyBlockout';
 import { measureReprojection, type MeshLandmarks } from './bodyConstraints';
-import { femaleBodyBands as bands, femaleStudyCrops, femaleStudyJoints, femaleY, type FemaleBand } from './femaleBodyReference';
+import { femaleBodyBands as bands, femaleCrotchY, femaleStudyCrops, femaleStudyJoints, femaleY, type FemaleBand } from './femaleBodyReference';
 
 const TORSO_SIDES = 16;
 const LIMB_SIDES = 8;
+const THIGH_INNER_FRONT = LIMB_SIDES - 1;
+const THIGH_INNER_BACK = LIMB_SIDES / 2 + 1;
 const { front, side } = femaleStudyCrops;
 
 function sectionGeometry(sections: readonly FemaleBand[], sides: number, centered = false) {
@@ -62,6 +64,27 @@ function vertex(geometry: T.BufferGeometry, i: number) {
   return new T.Vector3().fromBufferAttribute(geometry.getAttribute('position'), i);
 }
 
+function shapeThighCut(geometry: T.BufferGeometry) {
+  const top = (bands.thigh.length - 1) * LIMB_SIDES;
+  const [hipY] = bands.thigh.at(-1)!;
+  const [kneeY] = bands.thigh[0];
+  const positions = geometry.getAttribute('position');
+  for (let i = 0; i < LIMB_SIDES; i++) {
+    const across = Math.sin(i / LIMB_SIDES * Math.PI * 2);
+    const medial = Math.min(1, Math.max(0, -across) / Math.SQRT1_2);
+    const y = T.MathUtils.lerp(hipY, femaleCrotchY, medial) + Math.max(0, across) * 3.5;
+    positions.setY(top + i, femaleY(y));
+  }
+  for (const [row, [y]] of bands.thigh.entries()) {
+    const start = row * LIMB_SIDES;
+    const plane = .76 * (1 - T.MathUtils.smoothstep(y, 321, kneeY));
+    for (const [inner, extreme] of [[THIGH_INNER_FRONT, 0], [THIGH_INNER_BACK, LIMB_SIDES / 2]]) {
+      const depth = T.MathUtils.lerp(positions.getZ(start + inner), positions.getZ(start + extreme), plane);
+      positions.setZ(start + inner, depth);
+    }
+  }
+}
+
 /** Closed pelvis with two separate thigh collars. The visible join is
  * shared, and each cut stays closed when either part is inspected alone. */
 function pelvisGeometry(leftThigh: T.BufferGeometry) {
@@ -71,39 +94,36 @@ function pelvisGeometry(leftThigh: T.BufferGeometry) {
   const firstCapFace = (bands.pelvis.length - 1) * TORSO_SIDES * 6;
   const indices = Array.from(trunk.index!.array.slice(0, firstCapFace));
   const points = Array.from({ length: cap }, (_, i) => vertex(trunk, i));
-  for (let i = 0; i < TORSO_SIDES; i++) {
-    const angle = Math.min(i, TORSO_SIDES - i) / TORSO_SIDES * Math.PI * 2;
-    const depth = Math.cos(angle);
-    // Lower the anterior and posterior midline into the crotch; keep the
-    // outside of the hip high so it flows into the two separate thigh rims.
-    points[i].y -= Math.abs(depth) ** 3 * (depth >= 0 ? 12 : 10) * front.scale;
-  }
   const top = points.push(vertex(trunk, cap + 1)) - 1;
   for (let i = 0; i < TORSO_SIDES; i++) {
     indices.push(top, cap - TORSO_SIDES + i, cap - TORSO_SIDES + (i + 1) % TORSO_SIDES);
   }
   trunk.dispose();
 
-  const outerHalf = Array.from({ length: half + 1 }, (_, i) => i);
-  const saddle = Array.from({ length: half - 1 }, (_, i) => {
-    const t = (i + 1) / half;
-    const point = points[half].clone().lerp(points[0], t);
-    point.y -= 2.4 * front.scale * Math.sin(t * Math.PI);
-    return points.push(point) - 1;
-  });
-  const upperRim = [...outerHalf, ...saddle];
-  const lowerStart = points.length;
+  // Extend both central planes down to the medial thigh corners. These seven
+  // midline vertices form the flat opening between the separate leg rims.
   const thighTop = (bands.thigh.length - 1) * LIMB_SIDES;
+  const frontLip = vertex(leftThigh, thighTop + THIGH_INNER_FRONT);
+  const backLip = vertex(leftThigh, thighTop + THIGH_INNER_BACK);
+  frontLip.x = backLip.x = 0;
+  const frontIndex = points.push(frontLip) - 1;
+  const backIndex = points.push(backLip) - 1;
+  const outerHalf = Array.from({ length: half + 1 }, (_, i) => i);
+  const saddle = Array.from({ length: half - 3 }, (_, i) => {
+    const t = (i + 1) / (half - 2);
+    return points.push(backLip.clone().lerp(frontLip, t)) - 1;
+  });
+  const upperRim = [frontIndex, ...outerHalf, backIndex, ...saddle];
+  const lowerStart = points.length;
   for (let i = 0; i < LIMB_SIDES; i++) {
-    points.push(vertex(leftThigh, thighTop + (i + LIMB_SIDES - 1) % LIMB_SIDES));
+    points.push(vertex(leftThigh, thighTop + (i + THIGH_INNER_FRONT) % LIMB_SIDES));
   }
   const leftCap = points.push(vertex(leftThigh, bands.thigh.length * LIMB_SIDES + 1)) - 1;
   const rightStart = points.length;
   for (const point of points.slice(lowerStart)) points.push(point.clone().multiply(new T.Vector3(-1, 1, 1)));
 
-  // Match the 16 points around the hip to the eight around each thigh.
-  // These indices preserve the front, outer hip, and back turns at the cut.
-  const rimCuts = [0, 1, 3, 5, 7, 8, 10, 13, 16];
+  // Match the fork's front, outside, back, and inner turns to the thigh.
+  const rimCuts = [0, 2, 4, 5, 6, 8, 10, 13, 16];
   const mirror = (i: number) => i >= lowerStart ? rightStart + i - lowerStart
     : i > 0 && i < half ? TORSO_SIDES - i : i;
   function triangle(a: number, b: number, c: number) {
@@ -113,6 +133,13 @@ function pelvisGeometry(leftThigh: T.BufferGeometry) {
     const a = lowerStart + i;
     const b = lowerStart + (i + 1) % LIMB_SIDES;
     triangle(leftCap, b, a);
+    if (i === 0) {
+      // Keep the front lip between the two level medial rims.
+      triangle(a, b, upperRim[2]);
+      triangle(a, upperRim[2], upperRim[1]);
+      triangle(a, upperRim[1], upperRim[0]);
+      continue;
+    }
     triangle(a, b, upperRim[rimCuts[i]]);
     for (let j = rimCuts[i]; j < rimCuts[i + 1]; j++) {
       triangle(b, upperRim[(j + 1) % TORSO_SIDES], upperRim[j]);
@@ -158,6 +185,7 @@ export function createFemaleBodyBlockout() {
 
   const left = Object.fromEntries(limbParts.map(part => [part, sectionGeometry(bands[part], LIMB_SIDES)])) as
     Record<typeof limbParts[number], T.BufferGeometry>;
+  shapeThighCut(left.thigh);
   root.add(mesh('pelvis', pelvisGeometry(left.thigh)));
   for (const part of limbParts) {
     root.add(mesh('left-' + part, left[part]), mesh('right-' + part, reflected(left[part])));

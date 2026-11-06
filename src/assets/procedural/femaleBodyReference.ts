@@ -43,18 +43,20 @@ export type FemaleBand = readonly [
 ];
 const { front, side, back } = femaleStudyCrops;
 export const femaleY = (y: number) => (front.ground - y) * front.scale;
+// The gap starts at the same normalized row in the front and back silhouettes.
+export const femaleCrotchY = 258.25;
 
 function center(y: number, width: number, anterior: number, posterior: number, frontArc = 1, backArc = 1): FemaleBand {
   return [y, -width, width, anterior, posterior, frontArc, backArc];
 }
 
 type LeftJoint = Extract<JointName, `left${string}`>;
-function collar(name: LeftJoint, halfWidth: number, halfDepth: number): FemaleBand {
+function collar(name: LeftJoint, halfWidth: number, halfDepth: number, centerOffset = 0): FemaleBand {
   const measured = femaleStudyJoints[name];
   const [fx, fy] = measured.front!;
   const [sx, sy] = measured.side!;
   const [bx, by] = measured.back!;
-  const x = ((fx - front.axis) + (back.axis - bx) * back.scale / front.scale) / 2;
+  const x = ((fx - front.axis) + (back.axis - bx) * back.scale / front.scale) / 2 + centerOffset;
   const y = front.ground - (femaleY(fy) + (side.ground - sy) * side.scale + (back.ground - by) * back.scale) / (3 * front.scale);
   return [y, x - halfWidth, x + halfWidth, sx - halfDepth, sx + halfDepth];
 }
@@ -66,8 +68,8 @@ const shoulder = collar('leftShoulder', 11, 10.5);
 const shoulderHem: FemaleBand = [132, 33, 50, 387, 411];
 const elbow = collar('leftElbow', 9.2, 10.5);
 const wrist = collar('leftWrist', 4.7, 6.1);
-const hip = collar('leftHip', 20.8, 25.3);
-const knee = collar('leftKnee', 9.8, 15);
+const hip = collar('leftHip', 20.5, 25.3, .85);
+const knee = collar('leftKnee', 10.6, 15, -.55);
 const ankle = collar('leftAnkle', 6.3, 11.4);
 
 // All rows run from the ground upwards. Neighbouring parts use the same
@@ -141,10 +143,10 @@ export const femaleBodyBands = {
   ],
   thigh: [
     knee,
-    [343, 22.1, 43, 374.5, 412],
-    [321, 13.8, 45.2, 370, 415.2],
-    [294, 9.4, 47, 367.5, 418.5],
-    [276, 7.2, 47.6, 368.5, 419.3],
+    [343, 16.8, 43.8, 374.5, 412],
+    [321, 11.9, 46, 370, 415.2],
+    [294, 7.5, 47.2, 367.5, 418.5],
+    [276, 7, 47.7, 368.5, 419.3],
     hip,
   ],
   shin: [
@@ -169,7 +171,7 @@ export const femaleBodyPlan = {
   chin: femaleY(femaleBodyBands.head[0][0]),
   shoulder: femaleY(shoulder[0]),
   waist: femaleY(waist[0]),
-  crotch: femaleY(257),
+  crotch: femaleY(femaleCrotchY),
   knee: femaleY(knee[0]),
   ankle: femaleY(ankle[0]),
 };

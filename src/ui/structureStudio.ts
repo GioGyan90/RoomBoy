@@ -145,12 +145,13 @@ export function startStructureStudio() {
     const height = capture ? innerHeight : Math.max(180, innerHeight - top - 65);
     const aspect = innerWidth / height;
     const count = displayedViews().length;
+    const femaleHips = female && focus === 'hips';
     const baseSpan = partBounds ? Math.max(.16, (partBounds.max.y - partBounds.min.y) * 1.38)
-      : focus === 'body' ? 2.04 : .62;
+      : femaleHips ? plan.waist - plan.knee + .12 : focus === 'body' ? 2.04 : .62;
     const minWidth = count > 1 ? (count - 1) * spacing() + (paired ? 1.55 : .80) : paired ? 1.55 : .65;
     const span = Math.max(baseSpan, minWidth / aspect);
     const center = partBounds ? (partBounds.min.y + partBounds.max.y) / 2
-      : focus === 'neck' ? 1.50 : focus === 'hips' ? .95 : plan.height / 2;
+      : femaleHips ? (plan.waist + plan.knee) / 2 : focus === 'neck' ? 1.50 : focus === 'hips' ? .95 : plan.height / 2;
     camera.position.set(0, center, 5);
     camera.lookAt(0, center, 0);
     camera.left = -span * aspect / 2;

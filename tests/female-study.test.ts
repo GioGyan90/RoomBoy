@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import { createBodyBlockout } from '../src/assets/procedural/bodyBlockout';
 import { createFemaleBodyBlockout } from '../src/assets/procedural/femaleBodyBlockout';
-import { femaleBodyBands, femaleBodyPlan } from '../src/assets/procedural/femaleBodyReference';
+import { femaleBodyBands, femaleBodyPlan, femaleStudyCrops } from '../src/assets/procedural/femaleBodyReference';
 
 function coordinates(geometry: T.BufferGeometry) {
   const positions = geometry.getAttribute('position');
@@ -92,5 +92,33 @@ test('female meshes meet the independently read orthographic joint positions', (
   for (const view of ['front', 'side', 'back'] as const) {
     assert.ok(fitReport[view].rms < 3, view);
     assert.ok(fitReport[view].max < 5, view);
+  }
+});
+
+test('female leg split matches the flat opening and inner thigh contours in the source views', () => {
+  const body = createFemaleBodyBlockout();
+  body.updateMatrixWorld(true);
+  const ray = new T.Raycaster();
+  const samples = {
+    front: { opening: 258.3, edges: [[259.5, 6], [279, 7], [294.5, 7.5], [322.5, 12], [342.5, 16.5], [362.5, 22]] },
+    back: { opening: 257.3, edges: [[258.5, 5.8], [279, 7.5], [294.5, 8], [322.5, 12.3], [342.5, 16.5], [362.5, 22.5]] },
+  };
+  for (const view of ['front', 'back'] as const) {
+    const { ground, scale } = femaleStudyCrops[view];
+    const direction = view === 'front' ? 1 : -1;
+    const { opening, edges } = samples[view];
+    function occupied(x: number, y: number) {
+      ray.set(new T.Vector3(x * scale * direction, (ground - y) * scale, 2 * direction),
+        new T.Vector3(0, 0, -direction));
+      return ray.intersectObject(body, true).length > 0;
+    }
+    for (const x of [-4.5, 0, 4.5]) {
+      assert.ok(occupied(x, opening - .7), `${view} pelvis above the opening`);
+      assert.ok(!occupied(x, opening + .7), `${view} level opening at ${x}`);
+    }
+    for (const [y, edge] of edges) {
+      assert.ok(!occupied(edge - 1.4, y), `${view} gap at row ${y}`);
+      assert.ok(occupied(edge + 1.4, y), `${view} inner thigh at row ${y}`);
+    }
   }
 });
