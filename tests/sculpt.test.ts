@@ -5,6 +5,8 @@ import {createCharacter} from '../src/assets/procedural/character';
 import {createRoom} from '../src/assets/procedural/room';
 import {createRoomV4} from '../src/assets/procedural/roomV4/entities';
 import {createBlueApartment} from '../src/assets/procedural/blueApartment';
+import {createGardenLoft} from '../src/assets/procedural/gardenLoft';
+import {loftLayout,plan as loftPlan,stair} from '../src/assets/procedural/gardenLoft/plan';
 import {apartmentLayout,plan as apartmentPlan} from '../src/assets/procedural/blueApartment/plan';
 import {createRoomNavigation} from '../src/assets/procedural/roomV4/colliders';
 import {DOOR_HEIGHT,GAME_LAYOUT,ROOM,ROOM_SCALE} from '../src/assets/procedural/roomV4/definitions';
@@ -65,6 +67,60 @@ test('blue apartment routes around the cutaway walls and uses its own furniture 
   assert.ok(Math.abs(character.body.position.y-anchor.bodyY)<.001);
  }
 });
+test('the loft routes between floors only through the staircase and keeps the cutaway edges solid', () => {
+ const {root,navigation}=createGardenLoft();
+ assert.ok(validate(root)>0);
+ assert.ok(root.getObjectByName('double-height-window'));
+ assert.ok(root.getObjectByName('loft-tread-13'));
+ const {spawn,bed,desk,toilet}=loftLayout;
+ const stairX=(stair.left+stair.right)/2;
+ const steps=navigation.findPath(spawn,bed.stand);
+ assert.ok(steps);
+ assert.ok(steps.some(p=>Math.abs(p.x-stairX)<1e-6&&p.z===stair.bottom&&p.y===0));
+ assert.ok(steps.some(p=>Math.abs(p.x-stairX)<1e-6&&p.z===stair.top&&p.y===loftPlan.deckY));
+ assert.ok(!navigation.canTraverse(spawn,bed.stand));
+ assert.ok(!navigation.canStand({x:stairX,z:(stair.top+stair.bottom)/2}));
+ assert.ok(!navigation.canStand({x:bed.stand.x,y:loftPlan.deckY,z:loftPlan.deckFront+.10}));
+ assert.ok(!navigation.canStand({x:1,y:0,z:loftPlan.front+.18}));
+
+ for(const destination of [desk.stand,toilet.stand,{x:4.07,y:.035,z:1.31},{x:4.04,z:4.57},{x:-3.64,z:5.27}]){
+  const route=navigation.findPath(bed.stand,destination);
+  assert.ok(route,`No route down to ${destination.x}, ${destination.z}`);
+  let previous=new T.Vector3(bed.stand.x,loftPlan.deckY,bed.stand.z);
+  for(const point of route){
+   assert.ok(navigation.canTraverse(previous,point));
+   previous=point;
+  }
+  assert.equal(previous.y,0);
+ }
+ const tread=new T.Vector3(stairX,loftPlan.deckY*7/stair.steps,(stair.top+stair.bottom)/2);
+ const stairRoute=navigation.findPath(spawn,tread);
+ assert.ok(stairRoute);
+ const normalized=stairRoute.at(-1)!;
+ assert.ok(Math.abs(normalized.y-loftPlan.deckY/2)<1e-6);
+ assert.ok(navigation.findPath(normalized,bed.stand));
+ assert.ok(navigation.findPath(normalized,desk.stand));
+});
+
+test('loft seating preserves the mezzanine height while sitting, napping and returning downstairs', () => {
+ const {navigation}=createGardenLoft();
+ const {spawn,desk,bed,toilet}=loftLayout;
+ const scene=new T.Scene(),character=createCharacter(scene),animation=createAnimation(character);
+ scene.add(character.charRoot);
+ character.charRoot.position.set(spawn.x,0,spawn.z);
+ const actions=createActions(scene,character,animation,navigation,loftLayout,false);
+ for(const [id,anchor] of [['sitChair',desk.sit],['sitBed',bed.sit],['nap',bed.lie],['sitToilet',toilet.sit]] as const){
+  actions.runAction(actions.ACTIONS.find(action=>action.id===id)!);
+  for(let i=0;i<1200;i++){
+   actions.updateRunner(.02);
+   animation.updateAnimation(.02,0);
+   if(animation.st.mode==='walk')assert.ok(navigation.canStand(character.charRoot.position));
+  }
+  assert.ok(character.charRoot.position.distanceTo(new T.Vector3(anchor.x,anchor.y??0,anchor.z))<.001,id);
+  assert.ok(Math.abs(character.body.position.y-anchor.bodyY)<.001,id);
+ }
+});
+
 test('bed pillow rests on the sheet clear of the headboard and folded blanket',()=>{
  const {root}=createRoomV4();
  root.updateMatrixWorld(true);

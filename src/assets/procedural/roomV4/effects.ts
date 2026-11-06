@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { ROOM_SCALE } from "./definitions";
 import type { Refs, RoomProp } from "./entities";
 
-export type RoomToggle = RoomProp | "night";
+export type RoomToggle = RoomProp | "night" | "television";
 
 export interface RoomEffects {
   state: Partial<Record<RoomToggle, boolean>>;
@@ -22,7 +22,7 @@ const NIGHT_BACKGROUND = new THREE.Color(0x101729);
 const POINT_LIGHT_SCALE = ROOM_SCALE ** 2;
 
 export function createRoomEffects(refs: Refs) {
-  const state: Record<RoomToggle, boolean> = {
+  const state: Record<RoomProp | "night", boolean> = {
     night: false,
     lamps: false,
     monitor: true,
@@ -38,6 +38,7 @@ export function createRoomEffects(refs: Refs) {
   let curtainBlend = 0.42;
 
   function toggle(id: RoomToggle) {
+    if (id === "television") return;
     state[id] = !state[id];
     if (id === "night") state.lamps = state.night;
   }

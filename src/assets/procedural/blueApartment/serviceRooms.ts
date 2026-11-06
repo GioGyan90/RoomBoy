@@ -21,7 +21,7 @@ function rectangle(width: number, depth: number, radius: number, x = 0, z = 0) {
   return shape;
 }
 
-function counterWithBasin(root: T.Group, width: number, depth: number, top: number,
+export function counterWithBasin(root: T.Group, width: number, depth: number, top: number,
   holeX: number, holeWidth: number, holeDepth: number, surface: T.Material, bowl: T.Material) {
   const opening = rectangle(holeWidth, holeDepth, .055, holeX);
   const topShape = rectangle(width, depth, .022);
@@ -55,7 +55,7 @@ function counterWithBasin(root: T.Group, width: number, depth: number, top: numb
   disc(root, .022, .006, paint.chrome, [holeX + .028, top - .112, .023]);
 }
 
-function faucet(root: T.Group, x: number, y: number, z: number, tall: boolean) {
+export function faucet(root: T.Group, x: number, y: number, z: number, tall: boolean) {
   disc(root, .045, .028, paint.chrome, [x, y + .013, z]);
   const height = tall ? .34 : .155;
   tube(root, [[x, y + .024, z], [x, y + height * .67, z], [x, y + height, z + .040],
@@ -122,11 +122,10 @@ export function buildKitchen(root: T.Group) {
   return { run, fridge };
 }
 
-export function buildBathroom(root: T.Group) {
-  const face = p.bathBack + p.wall / 2;
+export function buildToilet(root: T.Group, { x, z, seatY }: { x: number; z: number; seatY: number }) {
   const toilet = new T.Group();
   toilet.name = "toilet";
-  toilet.position.set(seat.x, 0, seat.z);
+  toilet.position.set(x, 0, z);
   root.add(toilet);
   rounded(toilet, [.442, .63, .207], paint.ceramic, [0, .448, -.454], .053);
   rounded(toilet, [.455, .064, .223], paint.white, [0, .770, -.454], .022);
@@ -139,9 +138,15 @@ export function buildBathroom(root: T.Group) {
   lid.absellipse(0, 0, .217, .306, 0, Math.PI * 2, false, 0);
   mesh(toilet, new T.ExtrudeGeometry(lid, {
     depth: .031, bevelEnabled: true, bevelThickness: .011, bevelSize: .011, bevelSegments: 3, curveSegments: 18,
-  }).rotateX(-Math.PI / 2), paint.white, [0, seat.seatY - .042, .007]);
+  }).rotateX(-Math.PI / 2), paint.white, [0, seatY - .042, .007]);
   rounded(toilet, [.326, .055, .313], paint.ceramic, [0, .053, -.075], .022);
 
+  return toilet;
+}
+
+export function buildBathroom(root: T.Group) {
+  const face = p.bathBack + p.wall / 2;
+  const toilet = buildToilet(root, seat);
   const sink = new T.Group();
   sink.name = "bath-sink";
   sink.position.set(-2.376, 0, face + .214);

@@ -32,11 +32,11 @@ function floor(root: T.Group, x0: number, x1: number, z0: number, z1: number,
   root.add(surface);
 }
 
-function shadowRoof(root: T.Group, x0: number, x1: number, z0: number, z1: number) {
+export function shadowRoof(root: T.Group, x0: number, x1: number, z0: number, z1: number, height: number = p.ceiling) {
   // The removed ceiling still shades the interior, leaving the actual window openings to form the sun patches.
   const roof = plane(root, x1 - x0, z1 - z0, new T.MeshBasicMaterial({
     colorWrite: false, depthWrite: false, side: T.DoubleSide,
-  }), [(x0 + x1) / 2, p.ceiling - .006, (z0 + z1) / 2]);
+  }), [(x0 + x1) / 2, height - .006, (z0 + z1) / 2]);
   roof.rotation.x = -Math.PI / 2;
   roof.castShadow = true;
   roof.raycast = () => {};
@@ -54,8 +54,8 @@ function glazedPanel(width: number, height: number, pullX: number, pullSides: re
   return panel;
 }
 
-function buildDoor(root: T.Group, id: string, x: number, z: number, width: number, angle: number,
-  finish: "glass" | "wood"): FixedBody {
+export function buildDoor(root: T.Group, id: string, x: number, z: number, width: number, angle: number,
+  finish: "glass" | "wood", peephole = true): FixedBody {
   const pivot = new T.Group();
   pivot.name = id;
   pivot.position.set(x, 0, z);
@@ -78,7 +78,7 @@ function buildDoor(root: T.Group, id: string, x: number, z: number, width: numbe
       rounded(pivot, [.049, .158, .018], paint.steel, [width - .11, .93, side * .042], .009);
       tube(pivot, [[width - .11, .95, side * .047], [width - .11, .95, side * .085],
         [width - .22, .95, side * .088]], .013, paint.chrome, 8);
-      rounded(pivot, [.030, .030, .014], paint.chrome, [width * .46, 1.40, side * .044], .013);
+      if (peephole) rounded(pivot, [.030, .030, .014], paint.chrome, [width * .46, 1.40, side * .044], .013);
     }
   }
   for (const y of [.25, 1.04, 1.75]) {

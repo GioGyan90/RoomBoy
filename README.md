@@ -4,7 +4,7 @@
 
 基于 `reference/roomboydeepseek.html` 拆分的 Three.js 房间小游戏。使用 Vite + TypeScript，游戏运行时不依赖 CDN。
 
-默认进入 Room v4。右上角「选择房间」可切换到蓝灰公寓，也可直达[公寓游玩](https://giogyan90.github.io/RoomBoy/?room=apartment)或[公寓剖面](https://giogyan90.github.io/RoomBoy/?room=apartment&view=room)。蓝灰公寓沿用 Haru 的走路、寻路和坐卧动作，并为卧室、玄关、浴室、厨房、阳台配置各自的模型和碰撞。
+默认进入 Room v4。右上角「选择房间」可切换到[蓝灰公寓](https://giogyan90.github.io/RoomBoy/?room=apartment)或[米绿 Loft](https://giogyan90.github.io/RoomBoy/?room=loft)。两套房间都支持 Haru 行走、坐下和小睡。米绿 Loft 的左侧楼梯通往夹层卧室，底层设有书桌、厨房、客厅、浴室和窗边运动区。可直接打开[公寓剖面](https://giogyan90.github.io/RoomBoy/?room=apartment&view=room)或 [Loft 剖面](https://giogyan90.github.io/RoomBoy/?room=loft&view=room)。
 
 ## 本地运行（Windows / macOS / Linux）
 
@@ -38,6 +38,7 @@ npm run preview
 | `src/game/animation.ts` / `poses.ts` | 关节动画、姿势与动画状态 |
 | `src/assets/procedural/roomV4/` | 默认房间的程序化模型、布局与环境效果 |
 | `src/assets/procedural/blueApartment/` | 蓝灰公寓的剖面结构、家具、环境效果和动作锚点 |
+| `src/assets/procedural/gardenLoft/` | 米绿 Loft 的两层剖面、分区家具、照明和楼梯寻路 |
 | `src/assets/procedural/character.ts` / `characterSurface.ts` | 结构研究截面、贴身服装裁切与骨骼蒙皮 |
 | `src/assets/procedural/materials.ts` / `textures.ts` | 材质与画布纹理 |
 | `src/assets/registry.ts` | 家具替换入口与默认回退 |
@@ -70,7 +71,7 @@ Vite 使用相对资源路径，兼容仓库子路径。已创建公开仓库并
 
 ## 当前边界
 
-墙壁和家具采用固定碰撞体。行走以 Haru 的水平占位扫掠检测，并在家具与门框之间寻找路径。桌椅和床的尺寸与动作锚点位于 `roomV4/definitions.ts`。相机操作主要面向桌面鼠标。
+墙壁和家具采用固定碰撞体。行走以 Haru 的水平占位扫掠检测，在家具与门框之间寻找路径。米绿 Loft 在两层各自计算碰撞，并通过楼梯连接两层路线。桌椅和床的尺寸与动作锚点位于 `roomV4/definitions.ts`。相机操作主要面向桌面鼠标。
 
 ## 坐下动作
 

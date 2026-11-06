@@ -67,7 +67,7 @@ function noise(seed: number) {
   };
 }
 
-export function timber() {
+export function timber(base: P3 = [215, 169, 148]) {
   const { canvas, ctx } = makeCanvas(1024, 256);
   const rand = noise(22);
   ctx.fillStyle = "#b99a8a";
@@ -78,7 +78,7 @@ export function timber() {
     for (let col = -1; col < 4; col++) {
       const x = col * 350 + offset;
       const tint = Math.round(rand() * 14);
-      ctx.fillStyle = `rgb(${215 + tint},${169 + tint},${148 + tint})`;
+      ctx.fillStyle = `rgb(${base[0] + tint},${base[1] + tint},${base[2] + tint})`;
       ctx.fillRect(x + .8, y + .8, 348.4, 30.4);
       for (let grain = 0; grain < 9; grain++) {
         const gy = y + 3 + rand() * 26;

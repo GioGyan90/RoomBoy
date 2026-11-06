@@ -3,7 +3,7 @@ import type {Actions} from '../game/actions';
 import type {createCameraController} from '../core/camera';
 import type {Character} from '../assets/procedural/character';
 import {addLighting} from '../core/lighting';
-import {rooms,type RoomId} from '../game/rooms';
+import {rooms,type RoomId,type RoomLayout} from '../game/rooms';
 export function createReview(scene:T.Scene,room:T.Group,character:Character,controller:ReturnType<typeof createCameraController>,actions:Actions,roomBackground:T.Color,roomTools:HTMLElement,roomId:RoomId){
  const profile=rooms[roomId];
  const query=new URLSearchParams(location.search);const requestedView=query.get('view')??'game';
@@ -35,10 +35,10 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   actions.cancel();character.body.rotation.x=0;character.body.position.y=character.hipHeight;
   room.visible=!portrait;studio.visible=portrait;scene.background=portrait?new T.Color(0xa9afaf):roomBackground;character.charRoot.visible=view!=='room';
   character.plumbob.visible=view==='game';character.plumbobLight.visible=view==='game';
-  const {spawn}=profile.layout;
+  const {spawn}:RoomLayout=profile.layout;
   controller.usePerspective(portrait);
   const framing=profile.camera;
-  character.charRoot.position.set(portrait?0:spawn.x,0,portrait?0:spawn.z);character.charRoot.rotation.y=portrait?0:spawn.rot;
+  character.charRoot.position.set(portrait?0:spawn.x,portrait?0:spawn.y??0,portrait?0:spawn.z);character.charRoot.rotation.y=portrait?0:spawn.rot;
   const state=portrait
     ? {theta:angle==='side'?Math.PI/2:angle==='back'?Math.PI:0,phi:close?1.46:1.52,radius:close?.49:2.72,target:new T.Vector3(0,close?1.65:.91,0)}
     : {theta:framing.theta,phi:framing.phi,radius:(view==='room'?framing.roomRadius:framing.gameRadius)*profile.frameScale(innerWidth/innerHeight),target:new T.Vector3(...framing.target)};

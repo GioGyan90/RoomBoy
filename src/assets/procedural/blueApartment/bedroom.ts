@@ -109,7 +109,7 @@ export function buildBed(root: T.Group) {
   return group;
 }
 
-function buildBook(root: T.Group, x: number, y: number, z: number, color: number, angle: number) {
+export function buildBook(root: T.Group, x: number, y: number, z: number, color: number, angle: number) {
   const book = new T.Group();
   book.position.set(x, y, z);
   book.rotation.y = angle;
@@ -201,11 +201,16 @@ export function buildNightstand(root: T.Group) {
   }
   tube(group, [[-.087, .374, .277], [-.055, .363, .301], [.058, .363, .301], [.086, .374, .277]], .010, paint.chrome, 8);
 
+  const lamp = buildLamp(group, [-.025, .581, -.023]);
+  lamp.group.name = "bedside-lamp";
+  return { group, light: lamp.light, shade: lamp.shade };
+}
+
+export function buildLamp(parent: T.Object3D, at: [number, number, number]) {
   const lamp = new T.Group();
-  lamp.name = "bedside-lamp";
-  lamp.position.set(-.025, .581, -.023);
+  lamp.position.set(...at);
   lamp.userData.interactive = { id: "lamps" };
-  group.add(lamp);
+  parent.add(lamp);
   disc(lamp, .122, .038, paint.white, [0, .02, 0]);
   disc(lamp, .028, .199, paint.chrome, [0, .131, 0]);
   const shade = new T.MeshStandardMaterial({ color: 0xffedd7, emissive: 0xffc88f, emissiveIntensity: .15,
@@ -217,5 +222,5 @@ export function buildNightstand(root: T.Group) {
   const light = new T.PointLight(0xffcb8c, .14, 3.3, 2);
   light.position.set(0, .25, 0);
   lamp.add(light);
-  return { group, light, shade };
+  return { group: lamp, light, shade };
 }

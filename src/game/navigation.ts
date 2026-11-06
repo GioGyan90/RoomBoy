@@ -19,9 +19,9 @@ interface FloorBounds {
   maxZ: number;
 }
 
-type Point = Pick<Vector3, 'x' | 'z'>;
+export type NavigationPoint = Pick<Vector3, 'x' | 'z'> & Partial<Pick<Vector3, 'y'>>;
 
-export function createNavigation(bodies: FixedBody[], bounds: FloorBounds) {
+export function createNavigation(bodies: FixedBody[], bounds: FloorBounds, floorY = 0) {
   const solids = bodies.map(body => ({
     ...body,
     cos: Math.cos(body.angle ?? 0),
@@ -33,11 +33,11 @@ export function createNavigation(bodies: FixedBody[], bounds: FloorBounds) {
   const maxX = bounds.maxX - CHARACTER_RADIUS;
   const minZ = bounds.minZ + CHARACTER_RADIUS;
   const maxZ = bounds.maxZ - CHARACTER_RADIUS;
-  const withinFloor = (p: Point) => p.x >= minX && p.x <= maxX && p.z >= minZ && p.z <= maxZ;
+  const withinFloor = (p: NavigationPoint) => p.x >= minX && p.x <= maxX && p.z >= minZ && p.z <= maxZ;
 
   // Sweep Haru's horizontal footprint against each fixed body in that body's local axes.
   // This rejects the whole swept segment, including both endpoints.
-  function intersects(solid: typeof solids[number], from: Point, to: Point) {
+  function intersects(solid: typeof solids[number], from: NavigationPoint, to: NavigationPoint) {
     const x = from.x - solid.x;
     const z = from.z - solid.z;
     const dx = to.x - from.x;
@@ -62,12 +62,12 @@ export function createNavigation(bodies: FixedBody[], bounds: FloorBounds) {
     return true;
   }
 
-  function canTraverse(from: Point, to: Point, occupiedSeat?: Seat) {
+  function canTraverse(from: NavigationPoint, to: NavigationPoint, occupiedSeat?: Seat) {
     return withinFloor(from) && withinFloor(to) &&
       !solids.some(solid => solid.id !== occupiedSeat && intersects(solid, from, to));
   }
 
-  function canStand(point: Point) {
+  function canStand(point: NavigationPoint) {
     return canTraverse(point, point);
   }
 
@@ -77,7 +77,7 @@ export function createNavigation(bodies: FixedBody[], bounds: FloorBounds) {
       for (const z of [-solid.depth - .016, solid.depth + .016]) {
         const corner = new Vector3(
           solid.x + x * solid.cos + z * solid.sin,
-          0,
+          floorY,
           solid.z - x * solid.sin + z * solid.cos,
         );
         if (canStand(corner)) corners.push(corner);
@@ -85,15 +85,15 @@ export function createNavigation(bodies: FixedBody[], bounds: FloorBounds) {
     }
   }
 
-  const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.z - b.z);
+  const distance = (a: NavigationPoint, b: NavigationPoint) => Math.hypot(a.x - b.x, a.z - b.z);
 
-  function findPath(from: Point, to: Point): Vector3[] | null {
+  function findPath(from: NavigationPoint, to: NavigationPoint): Vector3[] | null {
     if (!canStand(from) || !canStand(to)) return null;
-    const goal = new Vector3(to.x, 0, to.z);
+    const goal = new Vector3(to.x, floorY, to.z);
     if (canTraverse(from, goal)) return [goal];
 
     // The corners form a small visibility graph for the room, including the open door leaf.
-    const points = [new Vector3(from.x, 0, from.z), goal, ...corners];
+    const points = [new Vector3(from.x, floorY, from.z), goal, ...corners];
     const costs = Array<number>(points.length).fill(Infinity);
     const closed = Array<boolean>(points.length).fill(false);
     const parent = Array<number>(points.length).fill(-1);

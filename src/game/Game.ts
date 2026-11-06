@@ -14,7 +14,8 @@ import {rooms, type RoomId} from './rooms';
 export function startGame(){
   const {renderer,scene,camera,composer}=createRenderer();
   const query=new URLSearchParams(location.search);
-  const roomId:RoomId=query.get('room')==='apartment'?'apartment':'v4';
+  const requestedRoom=query.get('room');
+  const roomId:RoomId=requestedRoom&&Object.hasOwn(rooms,requestedRoom)?requestedRoom as RoomId:'v4';
   const profile=rooms[roomId];
   const room=profile.create();
   scene.add(room.root);

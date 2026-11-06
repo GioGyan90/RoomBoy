@@ -4,6 +4,7 @@ const labels: Record<RoomToggle, string> = {
   night: "夜间",
   lamps: "灯光",
   monitor: "电脑",
+  television: "电视",
   curtains: "窗帘",
 };
 

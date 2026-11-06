@@ -67,7 +67,7 @@ function environment(root: T.Group, window: ReturnType<typeof buildBedroomWindow
   return { state, background, toggle, update };
 }
 
-function addContactShadows(root: T.Group, bodies: FixedBody[]) {
+export function addContactShadows(root: T.Group, bodies: FixedBody[], floorY = 0) {
   const { canvas, ctx } = makeCanvas(96, 96);
   const gradient = ctx.createRadialGradient(48, 48, 5, 48, 48, 48);
   gradient.addColorStop(0, "rgba(48,37,54,.42)");
@@ -77,13 +77,13 @@ function addContactShadows(root: T.Group, bodies: FixedBody[]) {
   ctx.fillRect(0, 0, 96, 96);
   const material = new T.MeshBasicMaterial({ map: canvasTexture(canvas), transparent: true, depthWrite: false });
   for (const { x, z, halfWidth, halfDepth } of bodies) {
-    const shadow = plane(root, (halfWidth + .14) * 2.4, (halfDepth + .14) * 2.4, material, [x, .004, z]);
+    const shadow = plane(root, (halfWidth + .14) * 2.4, (halfDepth + .14) * 2.4, material, [x, floorY + .004, z]);
     shadow.rotation.x = -Math.PI / 2;
     shadow.raycast = () => {};
   }
 }
 
-function footprint(object: T.Object3D): FixedBody {
+export function footprint(object: T.Object3D): FixedBody {
   const { min, max } = new T.Box3().setFromObject(object);
   return obstacle(object.name, min.x, max.x, min.z, max.z);
 }

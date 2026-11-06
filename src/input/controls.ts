@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { clamp } from '../core/math';
-import type { RoomProp } from '../assets/procedural/roomV4/entities';
+import type { RoomToggle } from '../assets/procedural/roomV4/effects';
 import type { Character } from '../assets/procedural/character';
 import type { Actions } from '../game/actions';
 import type { Seat } from '../game/types';
@@ -11,14 +11,14 @@ interface RoomInput {
   root: THREE.Group;
   half: number;
   frameScale(aspect: number): number;
-  toggle(prop: RoomProp): void;
+  toggle(prop: RoomToggle): void;
   canWalk(): boolean;
 }
 
 type Target =
   | { kind: 'character' }
   | { kind: 'seat'; seat: Seat }
-  | { kind: 'prop'; id: RoomProp }
+  | { kind: 'prop'; id: RoomToggle }
   | { kind: 'floor'; position: THREE.Vector3 };
 
 export function bindControls(
@@ -66,9 +66,7 @@ export function bindControls(
         return { kind: 'seat', seat: object.name };
       }
       if (object.userData.walkable) {
-        const p = solid.point.clone();
-        p.y = 0;
-        return { kind: 'floor', position: p };
+        return { kind: 'floor', position: solid.point };
       }
     }
   }

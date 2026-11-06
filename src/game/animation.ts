@@ -57,7 +57,7 @@ function groundSeatedFeet() {
   let lowest = 0;
   for (const index of footVertices) {
     skin.getVertexPosition(index, footPoint).applyMatrix4(skin.matrixWorld);
-    lowest = Math.min(lowest, footPoint.y);
+    lowest = Math.min(lowest, footPoint.y - charRoot.position.y);
   }
   body.position.y -= lowest;
 }

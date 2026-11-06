@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GAME_LAYOUT } from '../assets/procedural/roomV4/definitions';
 import type { Character } from '../assets/procedural/character';
-import { angleLerp, damp } from '../core/math';
+import { angleLerp } from '../core/math';
 import { element } from '../ui/dom';
 import type { Animation } from './animation';
 import type { RoomNavigation } from './navigation';
@@ -22,7 +22,7 @@ export function createActions(
     toilet: { ...toilet, posture: 'sitToilet' },
   } as const;
   const statusEl = element('status');
-  const position = (spot: { x: number; z: number }) => new THREE.Vector3(spot.x, 0, spot.z);
+  const position = (spot: { x: number; y?: number; z: number }) => new THREE.Vector3(spot.x, spot.y ?? 0, spot.z);
   const nextPosition = new THREE.Vector3();
   let occupied: Seat | undefined;
   let steps: Step[] = [];
@@ -132,7 +132,7 @@ export function createActions(
     const distance = Math.hypot(dx, dz);
     const length = Math.min(distance, 1.15 * dt);
     const portion = distance > 0 ? length / distance : 1;
-    nextPosition.set(p.x + dx * portion, 0, p.z + dz * portion);
+    nextPosition.lerpVectors(p, target, portion);
     if (!navigation.canTraverse(p, nextPosition)) {
       blocked();
       return;
@@ -164,7 +164,7 @@ export function createActions(
       st.bodyYTarget = THREE.MathUtils.lerp(height, step.bodyY ?? HIP, progress(c.height, a.height, b.height));
       st.seating.time = time;
     } else {
-      nextPosition.set(damp(p.x, step.pos.x, 5, dt), 0, damp(p.z, step.pos.z, 5, dt));
+      nextPosition.copy(p).lerp(step.pos, 1 - Math.exp(-5 * dt));
     }
 
     const complete = !step.hold && elapsed >= duration;
@@ -259,12 +259,14 @@ export function createActions(
 
   function walkTo(p: THREE.Vector3) {
     const origin = occupied ? seatLayouts[occupied].stand : charRoot.position;
-    if (!navigation.findPath(origin, p)) {
+    const path = navigation.findPath(origin, p);
+    if (!path) {
       setStatus('Path blocked');
       return;
     }
     start(withStand([{ type: 'walk', pos: p.clone() }]), 'Walking');
-    marker.position.set(p.x, .015, p.z);
+    marker.position.copy(path[path.length - 1]);
+    marker.position.y = Math.max(marker.position.y, p.y) + .015;
     markerLife = 1;
   }
 
