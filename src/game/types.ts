@@ -1,7 +1,7 @@
 import type { Vector3 } from 'three';
 
-export type Seat = 'bed' | 'chair';
-export type Posture = 'stand' | 'sitChair' | 'sitDesk' | 'sitBed' | 'lieBed' | 'stretch';
+export type Seat = 'bed' | 'chair' | 'toilet';
+export type Posture = 'stand' | 'sitChair' | 'sitDesk' | 'sitBed' | 'sitToilet' | 'lieBed' | 'stretch';
 export type PoseStep = {
   type: 'pose';
   posture: Posture;

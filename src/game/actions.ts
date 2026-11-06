@@ -11,11 +11,14 @@ import type { Action, PoseStep, Seat, Step } from './types';
 export function createActions(scene: THREE.Scene, character: Character, animation: Animation, navigation: RoomNavigation) {
   const { charRoot } = character;
   const { st, HIP } = animation;
-  const { desk, bed } = GAME_LAYOUT;
+  const { desk, bed, toilet } = GAME_LAYOUT;
+  const seatLayouts = {
+    chair: { ...desk, posture: 'sitChair' },
+    bed: { ...bed, posture: 'sitBed' },
+    toilet: { ...toilet, posture: 'sitToilet' },
+  } as const;
   const statusEl = element('status');
   const position = (spot: { x: number; z: number }) => new THREE.Vector3(spot.x, 0, spot.z);
-  const standSpot = (seat: Seat) => seat === 'chair' ? desk.stand : bed.stand;
-  const sitSpot = (seat: Seat) => seat === 'chair' ? desk.sit : bed.sit;
   const nextPosition = new THREE.Vector3();
   let occupied: Seat | undefined;
   let steps: Step[] = [];
@@ -53,7 +56,7 @@ export function createActions(scene: THREE.Scene, character: Character, animatio
 
   function standStep(): PoseStep | undefined {
     if (!occupied) return;
-    const spot = standSpot(occupied);
+    const spot = seatLayouts[occupied].stand;
     return {
       type: 'pose', posture: 'stand', pos: position(spot), rot: spot.rot, duration: .95,
       seat: occupied, exitSeat: true, motion: st.posture === 'lieBed' ? undefined : 'rise',
@@ -183,16 +186,16 @@ export function createActions(scene: THREE.Scene, character: Character, animatio
   }
 
   function sitStep(kind: Seat, hold: boolean): PoseStep {
-    const spot = sitSpot(kind);
+    const { sit, posture } = seatLayouts[kind];
     return {
-      type: 'pose', posture: kind === 'chair' ? 'sitChair' : 'sitBed', seat: kind, motion: 'sit',
-      pos: position(spot), rot: spot.rot, bodyY: spot.bodyY, hold,
+      type: 'pose', posture, seat: kind, motion: 'sit',
+      pos: position(sit), rot: sit.rot, bodyY: sit.bodyY, hold,
     };
   }
 
   function seatSteps(kind: Seat, next: PoseStep[]) {
     if (occupied === kind && st.posture !== 'lieBed') return next;
-    return withStand([{ type: 'walk', pos: position(standSpot(kind)) }, ...next]);
+    return withStand([{ type: 'walk', pos: position(seatLayouts[kind].stand) }, ...next]);
   }
 
   function lieSteps(): Step[] {
@@ -217,10 +220,11 @@ export function createActions(scene: THREE.Scene, character: Character, animatio
       steps: () => seatSteps('chair', [sitStep('chair', true)]) },
     { id: 'sitBed', icon: '🛏️', label: 'Sit on Bed', status: 'Sitting on the bed',
       steps: () => seatSteps('bed', [sitStep('bed', true)]) },
-    { id: 'lie', icon: '🛌', label: 'Lie on Bed', steps: lieSteps, status: 'Lying on the bed' },
+    { id: 'sitToilet', icon: '🚽', label: 'Sit on Toilet', status: 'Sitting on the toilet',
+      steps: () => seatSteps('toilet', [sitStep('toilet', true)]) },
     { id: 'nap', icon: '😴', label: 'Take a Nap', nap: true, steps: lieSteps, status: 'Napping 😴' },
     { id: 'stretch', icon: '🙆', label: 'Stretch', status: 'Stretching 🙆', steps: () => {
-      const spot = occupied ? standSpot(occupied) : undefined;
+      const spot = occupied ? seatLayouts[occupied].stand : undefined;
       return withStand([{
         type: 'pose', posture: 'stretch', pos: spot ? position(spot) : charRoot.position.clone(),
         rot: spot?.rot ?? charRoot.rotation.y, duration: 2.6,
@@ -238,7 +242,7 @@ export function createActions(scene: THREE.Scene, character: Character, animatio
   }
 
   function sitAt(seat: Seat) {
-    runAction(ACTIONS.find(action => action.id === (seat === 'chair' ? 'sitChair' : 'sitBed'))!);
+    runAction(ACTIONS.find(action => action.id === seatLayouts[seat].posture)!);
   }
 
   const marker = new THREE.Mesh(
@@ -250,7 +254,7 @@ export function createActions(scene: THREE.Scene, character: Character, animatio
   let markerLife = 0;
 
   function walkTo(p: THREE.Vector3) {
-    const origin = occupied ? standSpot(occupied) : charRoot.position;
+    const origin = occupied ? seatLayouts[occupied].stand : charRoot.position;
     if (!navigation.findPath(origin, p)) {
       setStatus('Path blocked');
       return;

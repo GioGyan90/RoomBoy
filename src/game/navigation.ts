@@ -1,4 +1,5 @@
 import { Vector3 } from 'three';
+import type { Seat } from './types';
 
 export const CHARACTER_RADIUS = .24;
 
@@ -61,7 +62,7 @@ export function createNavigation(bodies: FixedBody[], bounds: FloorBounds) {
     return true;
   }
 
-  function canTraverse(from: Point, to: Point, occupiedSeat?: 'chair' | 'bed') {
+  function canTraverse(from: Point, to: Point, occupiedSeat?: Seat) {
     return withinFloor(from) && withinFloor(to) &&
       !solids.some(solid => solid.id !== occupiedSeat && intersects(solid, from, to));
   }

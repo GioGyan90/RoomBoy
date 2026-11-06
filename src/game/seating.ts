@@ -25,7 +25,9 @@ function createClip(clip: typeof data.chair) {
   };
 }
 
+const chair = createClip(data.chair);
 export const seats: Record<Seat, ReturnType<typeof createClip>> = {
-  chair: createClip(data.chair),
+  chair,
   bed: createClip(data.bed),
+  toilet: chair,
 };

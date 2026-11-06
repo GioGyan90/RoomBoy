@@ -84,12 +84,14 @@ test('skinned rig remains finite throughout all seven game interactions',()=>{
  const navigation=createRoomNavigation(createRoomV4());
  const animation=createAnimation(character);const actions=createActions(scene,character,animation,navigation);
  assert.equal(actions.ACTIONS.length,7);
+ assert.equal(actions.ACTIONS.find(action=>action.id==='sitToilet')?.icon,'🚽');
+ assert.ok(!actions.ACTIONS.some(action=>action.id==='lie'));
  const skin=character.charMeshes[0];
  character.charRoot.updateMatrixWorld(true);
  const index=skin.geometry.getAttribute('position').count-20;
  const rest=skin.getVertexPosition(index,new T.Vector3());
- const {desk,bed}=GAME_LAYOUT;
- const anchors:Record<string,{x:number;z:number;bodyY:number}>={computer:desk.sit,sitChair:desk.sit,lie:bed.lie,nap:bed.lie,sitBed:bed.sit};
+ const {desk,bed,toilet}=GAME_LAYOUT;
+ const anchors:Record<string,{x:number;z:number;bodyY:number}>={computer:desk.sit,sitChair:desk.sit,nap:bed.lie,sitBed:bed.sit,sitToilet:toilet.sit};
  for(const action of actions.ACTIONS){
   actions.runAction(action);
   for(let i=0;i<500;i++){actions.updateRunner(.02);animation.updateAnimation(.02,i*.02);}
@@ -99,6 +101,11 @@ test('skinned rig remains finite throughout all seven game interactions',()=>{
   if(action.id==='computer'){
    assert.ok(deformed.distanceTo(rest)>.05);
    assert.ok(new T.Box3().setFromObject(skin,true).min.y>-.018);
+  }
+  if(action.id==='sitToilet'){
+   assert.equal(animation.st.seating?.kind,'toilet');
+   const floorClearance=new T.Box3().setFromObject(skin,true).min.y;
+   assert.ok(floorClearance>.005&&floorClearance<.025);
   }
   const anchor=anchors[action.id];
   if(anchor){
@@ -112,7 +119,8 @@ test('skinned rig remains finite throughout all seven game interactions',()=>{
 test('walking sweeps against walls and furniture, routing through the actual bathroom doorway',()=>{
  const navigation=createRoomNavigation(createRoomV4());
  const from=new T.Vector3(GAME_LAYOUT.spawn.x,0,GAME_LAYOUT.spawn.z);
- const bathroom=new T.Vector3(1.81,0,1.91);
+ const {stand,sit}=GAME_LAYOUT.toilet;
+ const bathroom=new T.Vector3(stand.x,0,stand.z);
  assert.equal(navigation.canTraverse(from,bathroom),false);
  const route=navigation.findPath(from,bathroom);
  assert.ok(route&&route.length>1);
@@ -124,7 +132,8 @@ test('walking sweeps against walls and furniture, routing through the actual bat
   }
   previous=point;
  }
- for(const point of [GAME_LAYOUT.desk.sit,GAME_LAYOUT.bed.sit,{x:-3,z:1}]){
+ assert.ok(navigation.canTraverse(stand,sit,'toilet'));
+ for(const point of [GAME_LAYOUT.desk.sit,GAME_LAYOUT.bed.sit,sit,{x:-3,z:1}]){
   assert.equal(navigation.findPath(from,point),null);
  }
 });

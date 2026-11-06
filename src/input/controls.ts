@@ -61,7 +61,9 @@ export function bindControls(
     for (let object: THREE.Object3D | null = solid.object; object; object = object.parent) {
       if (object.userData.interactive) return { kind: 'prop', id: object.userData.interactive.id };
       if (!walking) continue;
-      if (object.name === 'bed' || object.name === 'chair') return { kind: 'seat', seat: object.name };
+      if (object.name === 'bed' || object.name === 'chair' || object.name === 'toilet') {
+        return { kind: 'seat', seat: object.name };
+      }
       if (object.userData.walkable) {
         const p = solid.point.clone();
         p.y = 0;

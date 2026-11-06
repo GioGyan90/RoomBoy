@@ -7,7 +7,7 @@ export function createRoomNavigation({ root, registry }: ReturnType<typeof creat
   root.updateMatrixWorld(true);
   const bodies: FixedBody[] = [];
 
-  for (const id of ["bed", "desk", "chair", "wardrobe", "shelves", "nightstand", "fan", "laundry-basket", "bath-sink", "bath-toilet"]) {
+  for (const id of ["bed", "desk", "chair", "wardrobe", "shelves", "nightstand", "fan", "laundry-basket", "bath-sink", "toilet"]) {
     const model = registry.get(id) ?? root.getObjectByName(id);
     if (!model) continue;
     const footprint = model.getObjectByName(id + "-footprint") ?? model;

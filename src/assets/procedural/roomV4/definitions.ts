@@ -53,6 +53,7 @@ export const COLORS = {
 export const BED = { x: -3.85, z: -1.95, length: 3.6, depth: 2.9, blanketY: 1.14, blanketHeight: 0.3 };
 export const DESK = { x: -0.30, z: -4.22 };
 export const CHAIR = { x: DESK.x, z: DESK.z + 1.37, rotation: Math.PI, cushionY: 1.14, cushionHeight: 0.1, heightScale: 0.8 };
+export const TOILET = { x: 4.25, z: 2.45, tankZ: 1.8, lidY: 1.24, lidHeight: 0.07, heightScale: 0.73 };
 
 const bedFoot = (BED.x + BED.length / 2) * ROOM_SCALE;
 const bedZ = BED.z * ROOM_SCALE;
@@ -60,6 +61,9 @@ const blanketTop = (BED.blanketY + BED.blanketHeight / 2) * ROOM_SCALE;
 const chairX = CHAIR.x * ROOM_SCALE;
 const chairZ = CHAIR.z * ROOM_SCALE;
 const chairTop = (CHAIR.cushionY + CHAIR.cushionHeight / 2) * CHAIR.heightScale * ROOM_SCALE;
+const toiletX = TOILET.x * ROOM_SCALE;
+const toiletZ = TOILET.z * ROOM_SCALE;
+const toiletTop = (TOILET.lidY + TOILET.lidHeight / 2) * TOILET.heightScale * ROOM_SCALE;
 
 export const GAME_LAYOUT = {
   half: ROOM.half * ROOM_SCALE,
@@ -72,6 +76,10 @@ export const GAME_LAYOUT = {
     stand: { x: bedFoot + 0.36, z: bedZ, rot: Math.PI / 2 },
     sit: { x: bedFoot - 0.09, z: bedZ, rot: Math.PI / 2, bodyY: blanketTop + 0.07 },
     lie: { x: BED.x * ROOM_SCALE - 0.05, z: bedZ, rot: Math.PI / 2, bodyY: blanketTop + 0.11 },
+  },
+  toilet: {
+    stand: { x: toiletX, z: toiletZ + 0.60, rot: 0 },
+    sit: { x: toiletX, z: toiletZ + 0.015, rot: 0, bodyY: toiletTop + 0.124 },
   },
 };
 

@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { createRoomDust } from "./dust";
 import { buildEntryShoes, buildHangingJacket } from "./entryProps";
-import { BED, CHAIR, COLORS, DESK, DOOR_HEIGHT, ROOM, ROOM_SCALE, WINDOW } from "./definitions";
+import { BED, CHAIR, COLORS, DESK, DOOR_HEIGHT, ROOM, ROOM_SCALE, TOILET, WINDOW } from "./definitions";
 import {
   bmesh,
   curtainMesh,
@@ -882,17 +882,19 @@ function buildBathroom(root: THREE.Group, refs: Refs): void {
   root.add(ring);
   root.add(bmesh(0.06, 0.72, 0.44, toon(0xf3c860), bath.x0 + 0.26, 1.34, 2.9, { outline: 0.014 }));
 
-  const toilet = new THREE.Group();
-  toilet.name = "bath-toilet";
   /* toilet ---------------------------------------------------------- */
-  toilet.add(bmesh(0.86, 0.95, 0.36, ceramic, 4.25, 1.6, 1.8, { outline: 0.024 }));
-  toilet.add(bmesh(0.94, 0.1, 0.42, ceramic, 4.25, 2.1, 1.8));
-  toilet.add(cyl(0.08, 0.08, 0.04, 10, metal, 4.25, 2.17, 1.8));
-  toilet.add(bmesh(0.5, 0.72, 0.6, ceramic, 4.25, 0.36, 2.35, { outline: 0.02 }));
-  toilet.add(cyl(0.44, 0.32, 0.42, 12, ceramic, 4.25, 0.92, 2.45, { outline: 0.024 }));
-  toilet.add(cyl(0.49, 0.49, 0.1, 14, ceramic, 4.25, 1.16, 2.45, { outline: 0.02 }));
-  toilet.add(cyl(0.47, 0.47, 0.07, 14, toon(0xeaf4f4), 4.25, 1.24, 2.45));
-  toilet.add(bmesh(0.14, 0.18, 0.3, ceramic, 4.25, 0.75, 1.95));
+  const toilet = new THREE.Group();
+  toilet.name = "toilet";
+  toilet.scale.y = TOILET.heightScale;
+  const { x, z, tankZ, lidY, lidHeight } = TOILET;
+  toilet.add(bmesh(0.86, 0.95, 0.36, ceramic, x, 1.6, tankZ, { outline: 0.024 }));
+  toilet.add(bmesh(0.94, 0.1, 0.42, ceramic, x, 2.1, tankZ));
+  toilet.add(cyl(0.08, 0.08, 0.04, 10, metal, x, 2.17, tankZ));
+  toilet.add(bmesh(0.5, 0.72, 0.6, ceramic, x, 0.36, z - 0.10, { outline: 0.02 }));
+  toilet.add(cyl(0.44, 0.32, 0.42, 12, ceramic, x, 0.92, z, { outline: 0.024 }));
+  toilet.add(cyl(0.49, 0.49, 0.1, 14, ceramic, x, 1.16, z, { outline: 0.02 }));
+  toilet.add(cyl(0.47, 0.47, lidHeight, 14, toon(0xeaf4f4), x, lidY, z));
+  toilet.add(bmesh(0.14, 0.18, 0.3, ceramic, x, 0.75, tankZ + 0.15));
 
   root.add(toilet);
 
