@@ -1,4 +1,6 @@
 import * as THREE from "three";
+import { createRoomDust } from "./dust";
+import { buildEntryShoes, buildHangingJacket } from "./entryProps";
 import { BED, CHAIR, COLORS, DESK, ROOM, ROOM_SCALE, WINDOW } from "./definitions";
 import {
   bmesh,
@@ -42,7 +44,7 @@ export interface Refs {
   curtainL: THREE.Group;
   curtainR: THREE.Group;
   fanBlades: THREE.Group;
-  dust: THREE.Points;
+  dust: ReturnType<typeof createRoomDust>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -704,22 +706,7 @@ function buildEntry(root: THREE.Group): void {
 
   root.add(bmesh(1.7, 0.05, 1.9, toon(0x5b8fa3), -5.0, 0.03, doorZ, { outline: 0.014 }));
 
-  const shoe = (sx: number, sz: number, rot: number, color: number) => {
-    const group = new THREE.Group();
-    const sole = cyl(0.13, 0.12, 0.07, 14, toon(0xece4d4), 0, 0.035, 0);
-    sole.scale.set(1, 1, 2.2);
-    group.add(sole);
-    group.add(bmesh(0.24, 0.16, 0.4, toon(color), 0, 0.12, -0.05));
-    group.add(bmesh(0.24, 0.11, 0.18, toon(color), 0, 0.1, 0.19));
-    group.position.set(sx, 0, sz);
-    group.rotation.y = rot;
-    root.add(group);
-  };
-  shoe(-4.72, 3.9, 0.15, 0x4a5b76);
-  shoe(-4.45, 3.95, 0.05, 0x4a5b76);
-  shoe(-4.75, 4.45, -0.2, 0x8a6b56);
-  shoe(-4.5, 4.5, -0.1, 0x8a6b56);
-  shoe(-4.9, 3.35, 0.35, 0x6ba8c4);
+  root.add(buildEntryShoes());
 
   /* coat rack ------------------------------------------------------ */
   root.add(bmesh(0.12, 0.16, 1.5, toon(COLORS.woodDark), -5.74, 3.22, 2.3, { outline: 0.018 }));
@@ -729,13 +716,7 @@ function buildEntry(root: THREE.Group): void {
     root.add(peg);
   }
 
-  const coat = new THREE.Group();
-  coat.add(bmesh(0.16, 1.5, 0.86, toon(0x6f9ec9), 0, 0, 0, { outline: 0.02 }));
-  coat.add(bmesh(0.14, 0.9, 0.22, toon(0x6f9ec9), 0.02, -0.1, -0.5));
-  coat.add(bmesh(0.14, 0.9, 0.22, toon(0x6f9ec9), 0.02, -0.1, 0.5));
-  coat.position.set(-5.6, 2.5, 1.85);
-  coat.rotation.y = 0.04;
-  root.add(coat);
+  root.add(buildHangingJacket());
 
   const bag = new THREE.Group();
   bag.add(bmesh(0.2, 0.72, 0.62, toon(0xd9c4a3), 0, 0, 0, { outline: 0.018 }));
@@ -934,44 +915,6 @@ function buildPosters(root: THREE.Group): void {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Dust motes                                                         */
-/* ------------------------------------------------------------------ */
-function buildDust(root: THREE.Group, refs: Refs): void {
-  const count = 190;
-  const positions = new Float32Array(count * 3);
-  const speeds = new Float32Array(count);
-  const phases = new Float32Array(count);
-
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = randRange(-4.6, 1.6);
-    positions[i * 3 + 1] = randRange(0.2, 5.2);
-    positions[i * 3 + 2] = randRange(-5.6, -0.4);
-    speeds[i] = randRange(0.05, 0.24);
-    phases[i] = randRange(0, Math.PI * 2);
-  }
-
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-  geometry.userData.speeds = speeds;
-  geometry.userData.phases = phases;
-
-  const material = new THREE.PointsMaterial({
-    size: 0.09,
-    map: makeGlowTexture(),
-    color: 0xfff0c8,
-    transparent: true,
-    opacity: 0.6,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    sizeAttenuation: true,
-  });
-
-  const points = new THREE.Points(geometry, material);
-  root.add(points);
-  refs.dust = points;
-}
-
-/* ------------------------------------------------------------------ */
 /*  Lights                                                             */
 /* ------------------------------------------------------------------ */
 function buildLights(root: THREE.Group, refs: Refs): void {
@@ -1046,7 +989,8 @@ export function createRoomV4() {
   addGroup("entry", buildEntry);
   addGroup("bathroom", group => buildBathroom(group, refs));
   addGroup("environment", group => {
-    buildDust(group, refs);
+    refs.dust = createRoomDust();
+    group.add(refs.dust.points);
     buildLights(group, refs);
   });
 

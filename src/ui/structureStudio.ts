@@ -22,7 +22,7 @@ export function startStructureStudio(){
  let angle=query.get('angle')??'three',silhouette=false,wire=false,showGuides=true;
  let showPoints=query.get('points')==='1',overlay=false,referenceReady=false,referenceOpacity=.55,paired=false;let labelPositions:number[]=[];
  const ui=document.createElement('section');ui.id='structure-ui';
- ui.innerHTML=`<header><div><small>CHARACTER STUDY · 01</small><h1>先把结构做准</h1><p>旧臀块已移除，新分块等待确认。<a href="?view=pelvis">审阅独立臀块 ↗</a></p></div><a href="?view=character">查看旧版 ↗</a></header>
+ ui.innerHTML=`<header><div><small>CHARACTER STUDY · 01</small><h1>先把结构做准</h1><p>旧臀块已移除，新分块等待确认。<a href="?view=pelvis">审阅独立臀块 ↗</a></p></div><a href="?view=character">查看游戏人物 ↗</a></header>
  <nav aria-label="建模阶段"><button data-stage="blockout">01 几何体块</button><button data-stage="planes" disabled title="完成简化体块对齐后再进入低面细化">02 低面结构</button></nav>
  <nav aria-label="检查视角"><button data-angle="three">三视同屏</button><button data-angle="front">正面</button><button data-angle="side">侧面</button><button data-angle="back">背面</button><button data-angle="quarter">前斜侧</button><button data-angle="rear-quarter">后斜侧</button></nav>
  <nav aria-label="局部放大"><button data-focus="body">全身</button><button data-focus="neck">颈胸放大</button><button data-focus="hips">臀腿放大</button></nav>

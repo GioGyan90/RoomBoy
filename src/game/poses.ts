@@ -10,7 +10,7 @@ export function standPose(t:number):Pose{
     lThigh:[0,0,0.02], rThigh:[0,0,-0.02],
     lShin:[0.03,0,0],  rShin:[0.03,0,0],
     lFoot:[-0.02,0,0], rFoot:[-0.02,0,0],
-    lUpperArm:[0.05, 0, 0.11 + b*0.5], rUpperArm:[0.05, 0, -0.11 - b*0.5],
+    lUpperArm:[0.05, 0, 0.025 + b*0.5], rUpperArm:[0.05, 0, -0.025 - b*0.5],
     lForeArm:[-0.18, 0, 0], rForeArm:[-0.18, 0, 0],
     lHand:[0,0,0.04], rHand:[0,0,-0.04],
   };
@@ -42,12 +42,12 @@ export function sitDeskPose(t:number):Pose{
     spine:[0.13, 0, 0], chest:[0.04, 0, 0],
     neck:[-0.10, 0, 0],
     head:[-0.04 + Math.sin(t*1.1)*0.02, 0.35 + Math.sin(t*0.7)*0.07, 0],
-    lThigh:[-1.50, 0, 0.06], rThigh:[-1.50, 0, -0.06],
-    lShin:[1.50, 0, 0], rShin:[1.50, 0, 0],
+    lThigh:[-1.475, 0, 0.04], rThigh:[-1.475, 0, -0.04],
+    lShin:[1.475, 0, 0], rShin:[1.475, 0, 0],
     lFoot:[0,0,0], rFoot:[0,0,0],
-    lUpperArm:[-0.84, 0, -0.10], rUpperArm:[-0.84, 0, 0.10],
-    lForeArm:[-1.75 + ty, 0, 0], rForeArm:[-1.75 - ty, 0, 0],
-    lHand:[0.82,0,0], rHand:[0.82,0,0],
+    lUpperArm:[-0.91, 0, -0.18], rUpperArm:[-0.91, 0, 0.18],
+    lForeArm:[-1.24 + ty, 0, 0], rForeArm:[-1.24 - ty, 0, 0],
+    lHand:[0.63,0,0], rHand:[0.63,0,0],
   };
 }
 

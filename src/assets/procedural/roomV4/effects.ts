@@ -30,9 +30,6 @@ export function createRoomEffects(root: THREE.Group, refs: Refs) {
   const lamps = [refs.deskLamp, refs.nightLamp];
   const screen = refs.monitorScreen.material as THREE.MeshBasicMaterial;
   const monitorHalo = refs.monitorHalo.material as THREE.SpriteMaterial;
-  const dustMaterial = refs.dust.material as THREE.PointsMaterial;
-  const dustPosition = refs.dust.geometry.getAttribute("position");
-  const { speeds, phases } = refs.dust.geometry.userData;
   let nightBlend = 0;
   let lampBlend = 0;
   let monitorBlend = 1;
@@ -87,13 +84,9 @@ export function createRoomEffects(root: THREE.Group, refs: Refs) {
     refs.curtainR.scale.x = curtainBlend;
     refs.fanBlades.rotation.z -= dt * 7.5;
 
-    dustMaterial.opacity = THREE.MathUtils.lerp(0.62, 0.16, nightBlend);
-    for (let i = 0; i < dustPosition.count; i++) {
-      const y = dustPosition.getY(i) + speeds[i] * dt;
-      dustPosition.setY(i, y > 5.3 ? 0.15 : y);
-      dustPosition.setX(i, dustPosition.getX(i) + Math.sin(time * 0.6 + phases[i]) * dt * 0.096);
-    }
-    dustPosition.needsUpdate = true;
+    const daylight = THREE.MathUtils.lerp(.75, .12, nightBlend);
+    const exposure = THREE.MathUtils.lerp(1, .44, (curtainBlend - .42) / .58);
+    refs.dust.update(time, daylight * exposure);
   }
 
   return { state, background, toggle, pick, update };

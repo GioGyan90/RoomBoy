@@ -28,22 +28,76 @@ test('room v4 keeps the asset slots and places the action anchors on its furnitu
  assert.ok(chair.containsPoint(new T.Vector3(x,bodyY,z)));
  assert.ok(refs.monitorScreen.getWorldPosition(new T.Vector3()).z<z);
 });
-test('adult rig remains finite throughout all six game interactions',()=>{
+test('entry garments and shoes have cut faces and window dust has varied motion',()=>{
+ const {root,refs}=createRoomV4();
+ for(const name of ['carved-jacket','carved-shoe-upper']){
+  const mesh=root.getObjectByName(name) as T.Mesh;
+  assert.ok(mesh.geometry.groups.some(group=>group.materialIndex===1&&group.count>0));
+  assert.ok(validate(mesh)>0);
+ }
+ const geometry=refs.dust.points.geometry;
+ const sizes=geometry.getAttribute('moteSize').array;
+ assert.ok(Math.max(...sizes)>4*Math.min(...sizes));
+ const velocity=geometry.getAttribute('moteAmplitude').array;
+ assert.ok(velocity.some(value=>value<0)&&velocity.some(value=>value>0));
+ assert.ok(new Set(geometry.getAttribute('moteFrequency').array).size>30);
+});
+test('Haru has one closed skinned surface with fitted garment openings',()=>{
+ const character=createCharacter(new T.Scene());
+ assert.equal(character.charMeshes.length,1);
+ const skin=character.charMeshes[0];
+ assert.ok(skin instanceof T.SkinnedMesh);
+ assert.ok(character.J.head instanceof T.Bone);
+ const {geometry}=skin;
+ const index=geometry.index!;
+ const position=geometry.getAttribute('position');
+ const weights=geometry.getAttribute('skinWeight');
+ const edges=new Map<string,[number,number]>();
+ const a=new T.Vector3(),b=new T.Vector3(),c=new T.Vector3();
+ for(let i=0;i<index.count;i+=3){
+  const [u,v,w]=[index.getX(i),index.getX(i+1),index.getX(i+2)];
+  a.fromBufferAttribute(position,u);
+  b.fromBufferAttribute(position,v).sub(a);
+  c.fromBufferAttribute(position,w).sub(a);
+  assert.ok(b.cross(c).lengthSq()>1e-12);
+  for(const [from,to] of [[u,v],[v,w],[w,u]]){
+   const key=from<to?`${from}:${to}`:`${to}:${from}`;
+   const [count,direction]=edges.get(key)??[0,0];
+   edges.set(key,[count+1,direction+(from<to?1:-1)]);
+  }
+ }
+ assert.ok([...edges.values()].every(([count,direction])=>count===2&&direction===0));
+ assert.deepEqual(geometry.groups.map(group=>group.materialIndex),[0,1,2,3]);
+ for(let i=0;i<weights.count;i++){
+  assert.ok(Math.abs(weights.getX(i)+weights.getY(i)-1)<1e-6);
+ }
+});
+test('skinned rig remains finite throughout all six game interactions',()=>{
  const scene=new T.Scene();const character=createCharacter(scene);scene.add(character.charRoot);const animation=createAnimation(character);const actions=createActions(scene,character,animation);
- assert.equal(actions.ACTIONS.length,6);assert.ok(character.J.head);assert.ok(character.charMeshes.length>80);
+ assert.equal(actions.ACTIONS.length,6);
+ const skin=character.charMeshes[0];
+ character.charRoot.updateMatrixWorld(true);
+ const index=skin.geometry.getAttribute('position').count-20;
+ const rest=skin.getVertexPosition(index,new T.Vector3());
  const {desk,bed}=GAME_LAYOUT;
  const anchors:Record<string,{x:number;z:number;bodyY:number}>={computer:desk.sit,lie:bed.lie,nap:bed.lie,sitBed:bed.sit};
  for(const action of actions.ACTIONS){
   actions.runAction(action);
   for(let i=0;i<500;i++){actions.updateRunner(.02);animation.updateAnimation(.02,i*.02);}
   validate(character.charRoot);
+  const deformed=skin.getVertexPosition(index,new T.Vector3());
+  assert.ok(deformed.toArray().every(Number.isFinite));
+  if(action.id==='computer'){
+   assert.ok(deformed.distanceTo(rest)>.05);
+   assert.ok(new T.Box3().setFromObject(skin,true).min.y>-.018);
+  }
   const anchor=anchors[action.id];
   if(anchor){
    assert.ok(character.charRoot.position.distanceTo(new T.Vector3(anchor.x,0,anchor.z))<.001);
    assert.ok(Math.abs(character.body.position.y-anchor.bodyY)<.001);
   }
  }
- assert.ok(validate(character.charRoot)>20000);
+ assert.ok(validate(character.charRoot)>0);
 });
 
 test('structural cages stay closed, finite and proportionate at both densities',async()=>{

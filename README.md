@@ -33,7 +33,7 @@ npm run preview
 | `src/game/actions.ts` | 动作队列、走路、坐卧与状态提示 |
 | `src/game/animation.ts` / `poses.ts` | 关节动画、姿势与动画状态 |
 | `src/assets/procedural/roomV4/` | 默认房间的程序化模型、布局与环境效果 |
-| `src/assets/procedural/character.ts` | 角色与关节层级 |
+| `src/assets/procedural/character.ts` / `characterSurface.ts` | 结构研究截面、贴身服装裁切与骨骼蒙皮 |
 | `src/assets/procedural/materials.ts` / `textures.ts` | 材质与画布纹理 |
 | `src/assets/registry.ts` | 家具替换入口与默认回退 |
 | `src/assets/vertexAsset.ts` | 顶点资产格式和 Three.js 构建器 |
@@ -69,7 +69,7 @@ Vite 使用相对资源路径，兼容仓库子路径。已创建公开仓库并
 
 ## 人体结构研究
 
-[打开体块与低面三视图](https://giogyan90.github.io/RoomBoy/?view=structure) · [建模顺序与比例基准](docs/STRUCTURE_STUDY.md)。独立静态研究，保留旧人物作对照。
+[打开体块与低面三视图](https://giogyan90.github.io/RoomBoy/?view=structure) · [建模顺序与比例基准](docs/STRUCTURE_STUDY.md)。游戏人物沿用研究截面和关节位置，使用可变形的身体与贴身服装表面。头部保留素模供轮廓检查。
 
 点位校准版支持“定位点”与“原图叠合”，在参考图面板中选择原始设定图即可检查。[坐标与校准记录](docs/POINT_CALIBRATION.md)。
 

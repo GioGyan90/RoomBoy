@@ -21,14 +21,14 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
  const studio=new T.Group();scene.add(studio);addLighting(studio);
  const floor=new T.Mesh(new T.PlaneGeometry(200,200),new T.MeshStandardMaterial({color:0xa9afaf,roughness:1}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;studio.add(floor);
  function apply(next:string){
-  view=next;character.J.lHand.position.z=0;character.J.rHand.position.z=0;const close=view==='face',portrait=view==='character'||close;
-  actions.cancel();character.body.rotation.x=0;character.body.position.y=.95;
+  view=next;const close=view==='face',portrait=view==='character'||close;
+  actions.cancel();character.body.rotation.x=0;character.body.position.y=character.hipHeight;
   room.visible=!portrait;studio.visible=portrait;scene.background=portrait?new T.Color(0xa9afaf):roomBackground;character.charRoot.visible=view!=='room';
   character.plumbob.visible=view==='game';character.plumbobLight.visible=view==='game';
   const {spawn}=GAME_LAYOUT;
   character.charRoot.position.set(portrait?0:spawn.x,0,portrait?0:spawn.z);character.charRoot.rotation.y=portrait?0:spawn.rot;
   const state=portrait
-    ? {theta:angle==='side'?Math.PI/2:angle==='back'?Math.PI:(close?.35:0),phi:close?1.46:1.52,radius:close?.49:2.72,target:new T.Vector3(0,close?1.65:.91,0)}
+    ? {theta:angle==='side'?Math.PI/2:angle==='back'?Math.PI:0,phi:close?1.46:1.52,radius:close?.49:2.72,target:new T.Vector3(0,close?1.65:.91,0)}
     : {theta:.57,phi:1.03,radius:(view==='room'?12.0:11.3)*roomFrameScale(innerWidth/innerHeight),target:new T.Vector3(0,.65,0)};
   for(const obj of [controller.camGoal,controller.camState]){obj.theta=state.theta;obj.phi=state.phi;obj.radius=state.radius;obj.target.copy(state.target);}
   angles.hidden=!portrait||query.get('capture')==='1';

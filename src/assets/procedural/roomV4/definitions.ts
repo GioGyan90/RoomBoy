@@ -61,7 +61,7 @@ export const GAME_LAYOUT = {
   spawn: { x: -0.86, z: 0.4, rot: 0.45 },
   desk: {
     stand: { x: chairX + 0.43, z: chairZ + 0.25, rot: Math.PI },
-    sit: { x: chairX, z: chairZ, rot: CHAIR.rotation, bodyY: chairTop + 0.07 },
+    sit: { x: chairX, z: chairZ, rot: CHAIR.rotation, bodyY: chairTop + 0.124 },
   },
   bed: {
     stand: { x: bedFoot + 0.36, z: bedZ, rot: Math.PI / 2 },

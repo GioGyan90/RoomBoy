@@ -8,7 +8,7 @@ const {body,J,plumbob,plumbobLight,zzz}=character;
 /* =========================================================
    7 · state, poses, animation
    ========================================================= */
-const HIP = 0.95;               // hip height standing
+const HIP = character.hipHeight;               // hip height standing
 const st = {
   mode:'idle' as 'idle'|'walk'|'pose',                  // idle | walk | pose
   posture:'stand' as Posture,              // stand | sitDesk | sitBed | lieBed | stretch
@@ -60,7 +60,7 @@ function updateAnimation(dt:number, t:number){
   plumbob.position.set(hp.x, hp.y + 0.34 + Math.sin(t*2.2)*0.02, hp.z);
   plumbob.rotation.y += dt*1.7;
   plumbobLight.position.copy(plumbob.position);
-  plumbobLight.intensity = 0.45 + Math.sin(t*3)*0.12;
+  plumbobLight.intensity = 0.08 + Math.sin(t*3)*0.02;
 
   // Zzz
   const sleep = st.napping && st.posture === 'lieBed';

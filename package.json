@@ -14,7 +14,8 @@
   "author": "",
   "type": "module",
   "dependencies": {
-    "three": "^0.160.0"
+    "three": "^0.160.0",
+    "three-csg-ts": "3.2.0"
   },
   "devDependencies": {
     "@gltf-transform/core": "^4.5.1",
