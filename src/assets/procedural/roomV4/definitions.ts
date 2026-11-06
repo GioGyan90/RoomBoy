@@ -1,5 +1,6 @@
 // The diorama is authored at twice the scale used by Haru's rig.
 export const ROOM_SCALE = 0.5;
+export const DOOR_HEIGHT = 3.84;
 
 export const ROOM = {
   half: 6,
@@ -9,9 +10,13 @@ export const ROOM = {
     x0: 1.4,
     z0: 1.4,
     wallH: 3.0,
-    doorZ0: 4.0,
+    wallStart: 1.25,
+    wallEnd: 5.9,
+    wallT: 0.3,
+    doorZ0: 3.84,
     doorZ1: 5.5,
-    doorH: 2.55,
+    doorH: DOOR_HEIGHT,
+    doorWallH: 4.16,
   },
 };
 
@@ -46,8 +51,8 @@ export const COLORS = {
 };
 
 export const BED = { x: -3.85, z: -1.95, length: 3.6, depth: 2.9, blanketY: 1.14, blanketHeight: 0.3 };
-export const DESK = { x: -0.9, z: -5.15 };
-export const CHAIR = { x: DESK.x, z: -3.78, rotation: Math.PI, cushionY: 1.14, cushionHeight: 0.1, heightScale: 0.8 };
+export const DESK = { x: -0.30, z: -4.22 };
+export const CHAIR = { x: DESK.x, z: DESK.z + 1.37, rotation: Math.PI, cushionY: 1.14, cushionHeight: 0.1, heightScale: 0.8 };
 
 const bedFoot = (BED.x + BED.length / 2) * ROOM_SCALE;
 const bedZ = BED.z * ROOM_SCALE;
@@ -60,7 +65,7 @@ export const GAME_LAYOUT = {
   half: ROOM.half * ROOM_SCALE,
   spawn: { x: -0.86, z: 0.4, rot: 0.45 },
   desk: {
-    stand: { x: chairX + 0.43, z: chairZ + 0.25, rot: Math.PI },
+    stand: { x: chairX + 0.57, z: chairZ + 0.12, rot: Math.PI },
     sit: { x: chairX, z: chairZ, rot: CHAIR.rotation, bodyY: chairTop + 0.124 },
   },
   bed: {

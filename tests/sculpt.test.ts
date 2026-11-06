@@ -4,7 +4,8 @@ import * as T from 'three';
 import {createCharacter} from '../src/assets/procedural/character';
 import {createRoom} from '../src/assets/procedural/room';
 import {createRoomV4} from '../src/assets/procedural/roomV4/entities';
-import {GAME_LAYOUT} from '../src/assets/procedural/roomV4/definitions';
+import {createRoomNavigation} from '../src/assets/procedural/roomV4/colliders';
+import {DOOR_HEIGHT,GAME_LAYOUT,ROOM,ROOM_SCALE} from '../src/assets/procedural/roomV4/definitions';
 import {createAnimation} from '../src/game/animation';
 import {createActions} from '../src/game/actions';
 const gradient={addColorStop(){}};
@@ -27,6 +28,11 @@ test('room v4 keeps the asset slots and places the action anchors on its furnitu
  const {x,z,bodyY}=GAME_LAYOUT.desk.sit;
  assert.ok(chair.containsPoint(new T.Vector3(x,bodyY,z)));
  assert.ok(refs.monitorScreen.getWorldPosition(new T.Vector3()).z<z);
+ const monitor=new T.Box3().setFromObject(root.getObjectByName('crt-monitor')!);
+ const window=new T.Box3().setFromObject(registry.get('window')!);
+ assert.ok(monitor.min.z-window.max.z>.08);
+ assert.ok(DOOR_HEIGHT*ROOM_SCALE>1.89&&DOOR_HEIGHT*ROOM_SCALE<2);
+ assert.equal(ROOM.bath.doorH,DOOR_HEIGHT);
 });
 test('entry garments and shoes have cut faces and window dust has varied motion',()=>{
  const {root,refs}=createRoomV4();
@@ -72,15 +78,18 @@ test('Haru has one closed skinned surface with fitted garment openings',()=>{
   assert.ok(Math.abs(weights.getX(i)+weights.getY(i)-1)<1e-6);
  }
 });
-test('skinned rig remains finite throughout all six game interactions',()=>{
- const scene=new T.Scene();const character=createCharacter(scene);scene.add(character.charRoot);const animation=createAnimation(character);const actions=createActions(scene,character,animation);
- assert.equal(actions.ACTIONS.length,6);
+test('skinned rig remains finite throughout all seven game interactions',()=>{
+ const scene=new T.Scene();const character=createCharacter(scene);scene.add(character.charRoot);
+ const {spawn}=GAME_LAYOUT;character.charRoot.position.set(spawn.x,0,spawn.z);
+ const navigation=createRoomNavigation(createRoomV4());
+ const animation=createAnimation(character);const actions=createActions(scene,character,animation,navigation);
+ assert.equal(actions.ACTIONS.length,7);
  const skin=character.charMeshes[0];
  character.charRoot.updateMatrixWorld(true);
  const index=skin.geometry.getAttribute('position').count-20;
  const rest=skin.getVertexPosition(index,new T.Vector3());
  const {desk,bed}=GAME_LAYOUT;
- const anchors:Record<string,{x:number;z:number;bodyY:number}>={computer:desk.sit,lie:bed.lie,nap:bed.lie,sitBed:bed.sit};
+ const anchors:Record<string,{x:number;z:number;bodyY:number}>={computer:desk.sit,sitChair:desk.sit,lie:bed.lie,nap:bed.lie,sitBed:bed.sit};
  for(const action of actions.ACTIONS){
   actions.runAction(action);
   for(let i=0;i<500;i++){actions.updateRunner(.02);animation.updateAnimation(.02,i*.02);}
@@ -98,6 +107,56 @@ test('skinned rig remains finite throughout all six game interactions',()=>{
   }
  }
  assert.ok(validate(character.charRoot)>0);
+});
+
+test('walking sweeps against walls and furniture, routing through the actual bathroom doorway',()=>{
+ const navigation=createRoomNavigation(createRoomV4());
+ const from=new T.Vector3(GAME_LAYOUT.spawn.x,0,GAME_LAYOUT.spawn.z);
+ const bathroom=new T.Vector3(1.81,0,1.91);
+ assert.equal(navigation.canTraverse(from,bathroom),false);
+ const route=navigation.findPath(from,bathroom);
+ assert.ok(route&&route.length>1);
+ let previous=from;
+ for(const point of route){
+  assert.ok(navigation.canTraverse(previous,point));
+  if(previous.x<ROOM.bath.x0*ROOM_SCALE&&point.x>ROOM.bath.x0*ROOM_SCALE){
+   assert.ok(point.z>ROOM.bath.doorZ0*ROOM_SCALE&&point.z<ROOM.bath.doorZ1*ROOM_SCALE);
+  }
+  previous=point;
+ }
+ for(const point of [GAME_LAYOUT.desk.sit,GAME_LAYOUT.bed.sit,{x:-3,z:1}]){
+  assert.equal(navigation.findPath(from,point),null);
+ }
+});
+
+test('seating can be redirected mid-clip and walking resumes from the correct exit',()=>{
+ const scene=new T.Scene(),character=createCharacter(scene);
+ const navigation=createRoomNavigation(createRoomV4());
+ const animation=createAnimation(character);
+ const actions=createActions(scene,character,animation,navigation);
+ scene.add(character.charRoot);
+ character.charRoot.position.set(GAME_LAYOUT.spawn.x,0,GAME_LAYOUT.spawn.z);
+ const tick=(dt:number)=>{
+  actions.updateRunner(dt);
+  animation.updateAnimation(dt,0);
+  if(animation.st.mode==='walk')assert.ok(navigation.canStand(character.charRoot.position));
+  if(animation.st.seating){
+   character.charRoot.updateMatrixWorld(true);
+   assert.ok(new T.Box3().setFromObject(character.charMeshes[0],true).min.y>-1e-5);
+  }
+ };
+ actions.sitAt('chair');
+ for(let i=0;i<400&&(animation.st.seating?.time??0)<.5;i++)tick(.02);
+ assert.equal(animation.st.seating?.kind,'chair');
+ assert.ok(animation.st.seating!.time<1.3);
+ actions.sitAt('bed');
+ for(let i=0;i<500;i++)tick(.02);
+ assert.equal(animation.st.posture,'sitBed');
+ const target=new T.Vector3(1.81,0,1.91);
+ actions.walkTo(target);
+ for(let i=0;i<125;i++)tick(.1);
+ assert.equal(animation.st.posture,'stand');
+ assert.ok(character.charRoot.position.distanceTo(target)<.001);
 });
 
 test('structural cages stay closed, finite and proportionate at both densities',async()=>{

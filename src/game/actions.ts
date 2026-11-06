@@ -1,187 +1,273 @@
 import * as THREE from 'three';
-import {angleLerp,damp} from '../core/math';
-import {element} from '../ui/dom';
-import {GAME_LAYOUT} from '../assets/procedural/roomV4/definitions';
-import type {Character} from '../assets/procedural/character';
-import type {Animation} from './animation';
-import type {Step,Action} from './types';
-export function createActions(scene:THREE.Scene,character:Character,animation:Animation){
-const {charRoot}=character;const {st,HIP}=animation;
-/* =========================================================
-   8 · action runner
-   ========================================================= */
-const runner = { steps:[] as Step[], i:-1, t:0 };
-const statusEl = element('status');
-function setStatus(txt:string){ statusEl.innerHTML = txt; }
+import { GAME_LAYOUT } from '../assets/procedural/roomV4/definitions';
+import type { Character } from '../assets/procedural/character';
+import { angleLerp, damp } from '../core/math';
+import { element } from '../ui/dom';
+import type { Animation } from './animation';
+import type { RoomNavigation } from './navigation';
+import { seats } from './seating';
+import type { Action, PoseStep, Seat, Step } from './types';
 
-const V = (x:number,z:number)=>new THREE.Vector3(x,0,z);
+export function createActions(scene: THREE.Scene, character: Character, animation: Animation, navigation: RoomNavigation) {
+  const { charRoot } = character;
+  const { st, HIP } = animation;
+  const { desk, bed } = GAME_LAYOUT;
+  const statusEl = element('status');
+  const position = (spot: { x: number; z: number }) => new THREE.Vector3(spot.x, 0, spot.z);
+  const standSpot = (seat: Seat) => seat === 'chair' ? desk.stand : bed.stand;
+  const sitSpot = (seat: Seat) => seat === 'chair' ? desk.sit : bed.sit;
+  const nextPosition = new THREE.Vector3();
+  let occupied: Seat | undefined;
+  let steps: Step[] = [];
+  let stepIndex = -1;
+  let elapsed = 0;
+  let route: THREE.Vector3[] = [];
+  let waypoint = 0;
+  let seatMove: { from: THREE.Vector3; height: number; start: number; end: number } | undefined;
 
-const {desk,bed} = GAME_LAYOUT;
-
-function postureStandSpot(){
-  if (st.posture === 'sitDesk') return desk.stand;
-  if (st.posture === 'sitBed' || st.posture === 'lieBed') return bed.stand;
-  return null;
-}
-function standStep():Step|null{
-  const s = postureStandSpot();
-  if (!s) return null;
-  return { type:'pose', posture:'stand', pos:V(s.x, s.z), rot:s.rot, bodyY:HIP, rotX:0, duration:0.85 };
-}
-function withStand(steps:Step[]){
-  const s = standStep();
-  return s ? [s, ...steps] : steps;
-}
-
-function beginStep(){
-  const s = runner.steps[runner.i];
-  if (!s){ finishSteps(); return; }
-  runner.t = 0;
-  if (s.type === 'walk'){
-    st.mode = 'walk';
-  } else {
-    st.mode = 'pose';
-    st.posture = s.posture;
-    st.poseTime = 0;
-    st.bodyYTarget = s.bodyY ?? HIP;
-    st.bodyRotXTarget = s.rotX ?? 0;
-    st.posTarget.copy(s.pos);
-    st.rotTarget = s.rot ?? 0;
-    if (!s.hold && s.duration == null) s.duration = 0.9;
+  function setStatus(text: string) {
+    statusEl.textContent = text;
   }
-}
-function nextStep(){
-  runner.i++;
-  if (runner.i >= runner.steps.length){ finishSteps(); return; }
-  beginStep();
-}
-function startSteps(steps:Step[]){
-  runner.steps = steps; runner.i = 0; runner.t = 0;
-  beginStep();
-}
-function finishSteps(){
-  runner.steps = []; runner.i = -1;
-  st.mode = 'idle';
-  st.posture = 'stand';
-  st.napping = false;
-  st.bodyYTarget = HIP;
-  st.bodyRotXTarget = 0;
-  setStatus('Idle');
-}
 
-function updateRunner(dt:number){
-  if (runner.i < 0) return;
-  const s = runner.steps[runner.i];
-  if (!s) return;
-  runner.t += dt;
+  function finish() {
+    steps = [];
+    stepIndex = -1;
+    occupied = undefined;
+    st.mode = 'idle';
+    st.posture = 'stand';
+    st.seating = null;
+    st.napping = false;
+    st.bodyYTarget = HIP;
+    st.bodyRotXTarget = 0;
+    setStatus('Idle');
+  }
 
-  if (s.type === 'walk'){
-    const p = charRoot.position;
-    const dx = s.pos.x - p.x, dz = s.pos.z - p.z;
-    const dist = Math.hypot(dx, dz);
-    if (dist > 0.045){
-      const spd = 1.15;
-      const stepLen = Math.min(dist, spd*dt);
-      p.x += dx/dist*stepLen;
-      p.z += dz/dist*stepLen;
-      const want = Math.atan2(dx, dz);
-      charRoot.rotation.y = angleLerp(charRoot.rotation.y, want, 1-Math.exp(-10*dt));
-      st.walkPhase += dt*7.4;
-      st.mode = 'walk';
-    } else {
-      nextStep();
+  function blocked() {
+    if (occupied) {
+      steps = [];
+      stepIndex = -1;
+    } else finish();
+    setStatus('Path blocked');
+    return false;
+  }
+
+  function standStep(): PoseStep | undefined {
+    if (!occupied) return;
+    const spot = standSpot(occupied);
+    return {
+      type: 'pose', posture: 'stand', pos: position(spot), rot: spot.rot, duration: .95,
+      seat: occupied, exitSeat: true, motion: st.posture === 'lieBed' ? undefined : 'rise',
+    };
+  }
+
+  function withStand(next: Step[]) {
+    const stand = standStep();
+    return stand ? [stand, ...next] : next;
+  }
+
+  function begin(): boolean {
+    const step = steps[stepIndex];
+    if (!step) {
+      finish();
+      return true;
     }
-  } else {
-    st.poseTime += dt;
-    charRoot.position.x = damp(charRoot.position.x, s.pos.x, 5.0, dt);
-    charRoot.position.z = damp(charRoot.position.z, s.pos.z, 5.0, dt);
-    charRoot.rotation.y = angleLerp(charRoot.rotation.y, s.rot ?? 0, 1-Math.exp(-6*dt));
-    if (!s.hold && s.duration != null && runner.t >= s.duration) nextStep();
+    elapsed = 0;
+    seatMove = undefined;
+    if (step.type === 'walk') {
+      const path = navigation.findPath(charRoot.position, step.pos);
+      if (!path) return blocked();
+      route = path;
+      waypoint = 0;
+      st.seating = null;
+      st.mode = 'walk';
+      return true;
+    }
+
+    if (!navigation.canTraverse(charRoot.position, step.pos, step.seat)) return blocked();
+    if (step.motion && step.seat) {
+      const kind = step.seat;
+      const end = step.motion === 'rise' ? 0 : seats[kind].duration;
+      const previous = st.seating?.kind === kind ? st.seating.time : undefined;
+      const seated = occupied === kind && st.posture === 'sitDesk';
+      const start = previous ?? (step.motion === 'rise' || seated ? seats[kind].duration : 0);
+      seatMove = { from: charRoot.position.clone(), height: character.body.position.y, start, end };
+      st.seating = { kind, time: start };
+    } else {
+      st.seating = null;
+    }
+    if (step.seat) occupied = step.seat;
+    st.mode = 'pose';
+    st.posture = step.posture;
+    st.poseTime = 0;
+    st.bodyRotXTarget = step.rotX ?? 0;
+    if (!seatMove) st.bodyYTarget = step.bodyY ?? HIP;
+    return true;
   }
+
+  function advance() {
+    stepIndex++;
+    begin();
+  }
+
+  function start(next: Step[], status: string, napping = false) {
+    steps = next;
+    stepIndex = 0;
+    if (!begin()) return;
+    st.napping = napping;
+    setStatus(status);
+  }
+
+  function updateWalk(dt: number) {
+    const target = route[waypoint];
+    const p = charRoot.position;
+    const dx = target.x - p.x;
+    const dz = target.z - p.z;
+    const distance = Math.hypot(dx, dz);
+    const length = Math.min(distance, 1.15 * dt);
+    const portion = distance > 0 ? length / distance : 1;
+    nextPosition.set(p.x + dx * portion, 0, p.z + dz * portion);
+    if (!navigation.canTraverse(p, nextPosition)) {
+      blocked();
+      return;
+    }
+    p.copy(nextPosition);
+    if (distance > 1e-6) {
+      charRoot.rotation.y = angleLerp(charRoot.rotation.y, Math.atan2(dx, dz), 1 - Math.exp(-10 * dt));
+      st.walkPhase += length * (7.4 / 1.15);
+    }
+    if (length === distance && ++waypoint >= route.length) advance();
+  }
+
+  function updatePose(step: PoseStep, dt: number) {
+    st.poseTime += dt;
+    let duration = step.duration ?? .9;
+    const p = charRoot.position;
+    if (seatMove && st.seating) {
+      const clip = seats[st.seating.kind];
+      const { from, height, start, end } = seatMove;
+      duration = Math.max(.16, Math.abs(end - start));
+      const fraction = Math.min(1, elapsed / duration);
+      const time = THREE.MathUtils.lerp(start, end, fraction);
+      const a = clip.placement(start);
+      const b = clip.placement(end);
+      const c = clip.placement(time);
+      const progress = (value: number, low: number, high: number) =>
+        Math.abs(high - low) < 1e-5 ? fraction : THREE.MathUtils.clamp((value - low) / (high - low), 0, 1);
+      nextPosition.lerpVectors(from, step.pos, progress(c.horizontal, a.horizontal, b.horizontal));
+      st.bodyYTarget = THREE.MathUtils.lerp(height, step.bodyY ?? HIP, progress(c.height, a.height, b.height));
+      st.seating.time = time;
+    } else {
+      nextPosition.set(damp(p.x, step.pos.x, 5, dt), 0, damp(p.z, step.pos.z, 5, dt));
+    }
+
+    const complete = !step.hold && elapsed >= duration;
+    if (complete) nextPosition.copy(step.pos);
+    if (!navigation.canTraverse(p, nextPosition, step.seat)) {
+      blocked();
+      return;
+    }
+    p.copy(nextPosition);
+    charRoot.rotation.y = angleLerp(charRoot.rotation.y, step.rot, 1 - Math.exp(-12 * dt));
+    if (complete) {
+      if (step.exitSeat) occupied = undefined;
+      advance();
+    }
+  }
+
+  function updateRunner(dt: number) {
+    const step = steps[stepIndex];
+    if (!step) return;
+    elapsed += dt;
+    if (step.type === 'walk') updateWalk(dt);
+    else updatePose(step, dt);
+  }
+
+  function sitStep(kind: Seat, hold: boolean): PoseStep {
+    const spot = sitSpot(kind);
+    return {
+      type: 'pose', posture: kind === 'chair' ? 'sitChair' : 'sitBed', seat: kind, motion: 'sit',
+      pos: position(spot), rot: spot.rot, bodyY: spot.bodyY, hold,
+    };
+  }
+
+  function seatSteps(kind: Seat, next: PoseStep[]) {
+    if (occupied === kind && st.posture !== 'lieBed') return next;
+    return withStand([{ type: 'walk', pos: position(standSpot(kind)) }, ...next]);
+  }
+
+  function lieSteps(): Step[] {
+    const lie: PoseStep = {
+      type: 'pose', posture: 'lieBed', seat: 'bed', pos: position(bed.lie), rot: bed.lie.rot,
+      bodyY: bed.lie.bodyY, rotX: -Math.PI / 2, hold: true,
+    };
+    if (st.posture === 'lieBed') return [lie];
+    return withStand([{ type: 'walk', pos: position(bed.stand) }, lie]);
+  }
+
+  const ACTIONS: Action[] = [
+    { id: 'computer', icon: '💻', label: 'Use Computer', status: 'Surfing the web 💻', steps: () => {
+      const typing: PoseStep = {
+        type: 'pose', posture: 'sitDesk', seat: 'chair', pos: position(desk.sit), rot: desk.sit.rot,
+        bodyY: desk.sit.bodyY, hold: true,
+      };
+      return occupied === 'chair' && st.posture === 'sitDesk'
+        ? [typing] : seatSteps('chair', [sitStep('chair', false), typing]);
+    } },
+    { id: 'sitChair', icon: '🪑', label: 'Sit on Chair', status: 'Sitting on the chair',
+      steps: () => seatSteps('chair', [sitStep('chair', true)]) },
+    { id: 'sitBed', icon: '🛏️', label: 'Sit on Bed', status: 'Sitting on the bed',
+      steps: () => seatSteps('bed', [sitStep('bed', true)]) },
+    { id: 'lie', icon: '🛌', label: 'Lie on Bed', steps: lieSteps, status: 'Lying on the bed' },
+    { id: 'nap', icon: '😴', label: 'Take a Nap', nap: true, steps: lieSteps, status: 'Napping 😴' },
+    { id: 'stretch', icon: '🙆', label: 'Stretch', status: 'Stretching 🙆', steps: () => {
+      const spot = occupied ? standSpot(occupied) : undefined;
+      return withStand([{
+        type: 'pose', posture: 'stretch', pos: spot ? position(spot) : charRoot.position.clone(),
+        rot: spot?.rot ?? charRoot.rotation.y, duration: 2.6,
+      }]);
+    } },
+    { id: 'stand', icon: '🧍', label: 'Stand Here', status: 'Standing around', steps: () => [
+      standStep() ?? {
+        type: 'pose', posture: 'stand', pos: charRoot.position.clone(), rot: charRoot.rotation.y, duration: .6,
+      },
+    ] },
+  ];
+
+  function runAction(action: Action) {
+    start(action.steps(), action.status, !!action.nap);
+  }
+
+  function sitAt(seat: Seat) {
+    runAction(ACTIONS.find(action => action.id === (seat === 'chair' ? 'sitChair' : 'sitBed'))!);
+  }
+
+  const marker = new THREE.Mesh(
+    new THREE.RingGeometry(.16, .22, 36),
+    new THREE.MeshBasicMaterial({ color: 0x8fd3ff, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false }),
+  );
+  marker.rotation.x = -Math.PI / 2;
+  scene.add(marker);
+  let markerLife = 0;
+
+  function walkTo(p: THREE.Vector3) {
+    const origin = occupied ? standSpot(occupied) : charRoot.position;
+    if (!navigation.findPath(origin, p)) {
+      setStatus('Path blocked');
+      return;
+    }
+    start(withStand([{ type: 'walk', pos: p.clone() }]), 'Walking');
+    marker.position.set(p.x, .015, p.z);
+    markerLife = 1;
+  }
+
+  function updateMarker(dt: number) {
+    if (markerLife <= 0) return;
+    markerLife = Math.max(0, markerLife - dt * 1.4);
+    marker.material.opacity = markerLife * .85;
+    marker.scale.setScalar(1 + (1 - markerLife) * 1.2);
+  }
+
+  return { ACTIONS, runAction, sitAt, walkTo, updateRunner, updateMarker, cancel: finish };
 }
 
-/* ---------------- actions ---------------- */
-function approach(spot:{x:number;z:number}, pose:Extract<Step,{type:'pose'}>){
-  if (st.posture === pose.posture) return [pose];
-  return withStand([{ type:'walk', pos:V(spot.x,spot.z) }, pose]);
-}
-
-function lieSteps(){
-  return approach(bed.stand, {
-    type:'pose', posture:'lieBed', pos:V(bed.lie.x,bed.lie.z), rot:bed.lie.rot,
-    bodyY:bed.lie.bodyY, rotX:-Math.PI/2, hold:true,
-  });
-}
-
-const ACTIONS:Action[] = [
-  { id:'computer', icon:'💻', label:'Use Computer',
-    steps: () => approach(desk.stand, {
-      type:'pose', posture:'sitDesk', pos:V(desk.sit.x,desk.sit.z), rot:desk.sit.rot,
-      bodyY:desk.sit.bodyY, hold:true,
-    }),
-    status:'Surfing the web 💻' },
-
-  { id:'lie', icon:'🛏️', label:'Lie on Bed', steps:lieSteps, status:'Lying on the bed' },
-
-  { id:'nap', icon:'😴', label:'Take a Nap', nap:true, steps:lieSteps, status:'Napping 😴' },
-
-  { id:'sitBed', icon:'🪑', label:'Sit on Bed',
-    steps: () => approach(bed.stand, {
-      type:'pose', posture:'sitBed', pos:V(bed.sit.x,bed.sit.z), rot:bed.sit.rot,
-      bodyY:bed.sit.bodyY, hold:true,
-    }),
-    status:'Sitting on the bed' },
-
-  { id:'stretch', icon:'🙆', label:'Stretch',
-    steps: () => {
-      const spot = postureStandSpot();
-      return withStand([
-        { type:'pose', posture:'stretch', pos:spot ? V(spot.x,spot.z) : charRoot.position.clone(),
-          rot:spot?.rot ?? charRoot.rotation.y, duration:2.6 },
-      ]);
-    },
-    status:'Stretching 🙆' },
-
-  { id:'stand', icon:'🧍', label:'Stand Here',
-    steps: () => [
-      standStep() ?? { type:'pose', posture:'stand', pos:charRoot.position.clone(),
-        rot:charRoot.rotation.y, duration:0.6 },
-    ],
-    status:'Standing around' },
-];
-
-function runAction(action:Action){
-  startSteps(action.steps());
-  st.napping = !!action.nap;
-  setStatus(action.status);
-}
-
-/* ---------------- ground walk command ---------------- */
-const marker = new THREE.Mesh(
-  new THREE.RingGeometry(0.16, 0.22, 36),
-  new THREE.MeshBasicMaterial({ color:0x8fd3ff, transparent:true, opacity:0, side:THREE.DoubleSide, depthWrite:false })
-);
-marker.rotation.x = -Math.PI/2;
-marker.position.y = 0.015;
-scene.add(marker);
-let markerLife = 0;
-
-function walkTo(p:THREE.Vector3){
-  const steps:Step[] = [];
-  const s = standStep();
-  if (s) steps.push(s);
-  steps.push({ type:'walk', pos:p.clone() });
-  startSteps(steps);
-  st.napping = false;
-  setStatus('Walking');
-  marker.position.set(p.x, 0.015, p.z);
-  markerLife = 1;
-}
-
-
-function updateMarker(dt:number){
- if(markerLife>0){markerLife=Math.max(0,markerLife-dt*1.4);marker.material.opacity=markerLife*.85;marker.scale.setScalar(1+(1-markerLife)*1.2);}
-}
-return {ACTIONS,runAction,walkTo,updateRunner,updateMarker,setStatus,cancel:finishSteps};
-}
-export type Actions=ReturnType<typeof createActions>;
+export type Actions = ReturnType<typeof createActions>;

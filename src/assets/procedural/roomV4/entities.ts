@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { createRoomDust } from "./dust";
 import { buildEntryShoes, buildHangingJacket } from "./entryProps";
-import { BED, CHAIR, COLORS, DESK, ROOM, ROOM_SCALE, WINDOW } from "./definitions";
+import { BED, CHAIR, COLORS, DESK, DOOR_HEIGHT, ROOM, ROOM_SCALE, WINDOW } from "./definitions";
 import {
   bmesh,
   curtainMesh,
@@ -151,6 +151,7 @@ function buildShell(root: THREE.Group): void {
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = 0.012;
   floor.receiveShadow = true;
+  floor.userData.walkable = true;
   root.add(floor);
 
   /* back wall with window hole ------------------------------------- */
@@ -304,10 +305,13 @@ function buildBed(root: THREE.Group): void {
 /* ------------------------------------------------------------------ */
 function buildNightstand(root: THREE.Group, refs: Refs): void {
   const group = new THREE.Group();
+  group.name = "nightstand";
   group.position.set(-5.12, 0, 0.62);
 
   group.add(bmesh(1.24, 1.3, 1.2, toon(COLORS.wood), 0, 0.68, 0, { outline: 0.028 }));
-  group.add(bmesh(1.34, 0.1, 1.3, toon(COLORS.woodLight), 0, 1.38, 0, { outline: 0.02 }));
+  const top = bmesh(1.34, 0.1, 1.3, toon(COLORS.woodLight), 0, 1.38, 0, { outline: 0.02 });
+  top.name = "nightstand-footprint";
+  group.add(top);
   for (const sz of [-0.5, 0.5]) {
     for (const sx of [-0.5, 0.5]) {
       group.add(bmesh(0.13, 0.2, 0.13, toon(COLORS.woodDark), sx, 0.1, sz));
@@ -355,7 +359,9 @@ function buildDesk(root: THREE.Group, refs: Refs): void {
   const desk = new THREE.Group();
   desk.position.set(DESK.x, 0, DESK.z);
 
-  desk.add(bmesh(3.5, 0.14, 1.42, woodLight, 0, 1.82, 0, { outline: 0.028 }));
+  const deskTop = bmesh(3.5, 0.14, 1.42, woodLight, 0, 1.82, 0, { outline: 0.028 });
+  deskTop.name = "desk-footprint";
+  desk.add(deskTop);
   desk.add(bmesh(0.13, 1.8, 1.3, wood, -1.66, 0.9, 0, { outline: 0.02 }));
   desk.add(bmesh(0.13, 1.8, 1.3, wood, 1.66, 0.9, 0, { outline: 0.02 }));
   desk.add(bmesh(3.3, 0.1, 0.1, wood, 0, 1.0, -0.6));
@@ -366,6 +372,7 @@ function buildDesk(root: THREE.Group, refs: Refs): void {
 
   /* monitor -------------------------------------------------------- */
   const monitorGroup = new THREE.Group();
+  monitorGroup.name = "crt-monitor";
   monitorGroup.position.set(-1.1, 0, -0.42);
 
   monitorGroup.add(bmesh(0.62, 0.2, 0.52, toon(0xe7dcc4), 0, 2.03, 0, { outline: 0.02 }));
@@ -566,6 +573,7 @@ function buildBookshelf(root: THREE.Group): void {
 /* ------------------------------------------------------------------ */
 function buildFan(root: THREE.Group, refs: Refs): void {
   const group = new THREE.Group();
+  group.name = "fan";
   group.position.set(4.72, 0, -3.15);
   group.rotation.y = -0.55;
 
@@ -610,6 +618,7 @@ function buildFan(root: THREE.Group, refs: Refs): void {
 
 function buildLaundryBasket(root: THREE.Group): void {
   const group = new THREE.Group();
+  group.name = "laundry-basket";
   group.position.set(5.24, 0, -0.85);
   group.rotation.y = 0.3;
 
@@ -637,6 +646,7 @@ function buildRug(root: THREE.Group): void {
   const rug = bmesh(3.2, 0.06, 2.1, toon(0xffffff, { map: makeRugTexture() }), -3.0, 0.035, 2.15, {
     outline: 0.02,
   });
+  rug.userData.walkable = true;
   root.add(rug);
 
   /* softly rounded, oval house slippers ----------------------------- */
@@ -686,7 +696,7 @@ function buildRug(root: THREE.Group): void {
 function buildEntry(root: THREE.Group): void {
   const doorZ = 4.1;
   const doorW = 1.78;
-  const doorH = 4.35;
+  const doorH = DOOR_HEIGHT;
   const x = -5.78;
 
   const frame = toon(COLORS.woodDark);
@@ -695,16 +705,19 @@ function buildEntry(root: THREE.Group): void {
   root.add(bmesh(0.22, 0.16, doorW + 0.28, frame, x, doorH + 0.16, doorZ, { outline: 0.02 }));
 
   const door = bmesh(0.12, doorH, doorW, toon(COLORS.wood), x + 0.02, doorH / 2, doorZ, { outline: 0.026 });
+  door.name = "entry-door";
   root.add(door);
 
   for (const dz of [-0.4, 0.4]) {
-    root.add(bmesh(0.04, 1.4, 0.6, toon(COLORS.woodLight), x + 0.09, 3.0, doorZ + dz));
-    root.add(bmesh(0.04, 1.2, 0.6, toon(COLORS.woodLight), x + 0.09, 1.3, doorZ + dz));
+    root.add(bmesh(0.04, doorH * .32, 0.6, toon(COLORS.woodLight), x + 0.09, doorH * .69, doorZ + dz));
+    root.add(bmesh(0.04, doorH * .28, 0.6, toon(COLORS.woodLight), x + 0.09, doorH * .29, doorZ + dz));
   }
-  root.add(sph(0.1, 10, toon(COLORS.metal), x + 0.14, 2.25, doorZ + 0.64));
-  root.add(cyl(0.04, 0.04, 0.22, 8, toon(COLORS.metal), x + 0.1, 2.25, doorZ + 0.72));
+  root.add(sph(0.1, 10, toon(COLORS.metal), x + 0.14, doorH * .51, doorZ + 0.64));
+  root.add(cyl(0.04, 0.04, 0.22, 8, toon(COLORS.metal), x + 0.1, doorH * .51, doorZ + 0.72));
 
-  root.add(bmesh(1.7, 0.05, 1.9, toon(0x5b8fa3), -5.0, 0.03, doorZ, { outline: 0.014 }));
+  const mat = bmesh(1.7, 0.05, 1.9, toon(0x5b8fa3), -5.0, 0.03, doorZ, { outline: 0.014 });
+  mat.userData.walkable = true;
+  root.add(mat);
 
   root.add(buildEntryShoes());
 
@@ -740,17 +753,17 @@ function buildBathroom(root: THREE.Group, refs: Refs): void {
 
   const doorwayZ0 = bath.doorZ0;
   const doorwayZ1 = bath.doorZ1;
-  const wallEnd = 5.9;
+  const { wallStart, wallEnd } = bath;
 
   /* partition along z = bath.z0 ------------------------------------ */
   const partA = extrudeWall(
     wallShape([
-      [1.25, 0],
-      [5.9, 0],
-      [5.9, bath.wallH],
-      [1.25, bath.wallH],
+      [wallStart, 0],
+      [wallEnd, 0],
+      [wallEnd, bath.wallH],
+      [wallStart, bath.wallH],
     ]),
-    0.3,
+    bath.wallT,
     cream,
     0.045,
   );
@@ -759,16 +772,20 @@ function buildBathroom(root: THREE.Group, refs: Refs): void {
 
   /* partition along x = bath.x0 with doorway ------------------------ */
   const partBShape = wallShape([
-    [1.25, 0],
+    [wallStart, 0],
     [doorwayZ0, 0],
     [doorwayZ0, bath.doorH],
     [doorwayZ1, bath.doorH],
     [doorwayZ1, 0],
     [wallEnd, 0],
     [wallEnd, bath.wallH],
-    [1.25, bath.wallH],
+    [doorwayZ1 + .22, bath.wallH],
+    [doorwayZ1 + .22, bath.doorWallH],
+    [doorwayZ0 - .22, bath.doorWallH],
+    [doorwayZ0 - .22, bath.wallH],
+    [wallStart, bath.wallH],
   ]);
-  const partB = extrudeWall(partBShape, 0.3, cream, 0.045);
+  const partB = extrudeWall(partBShape, bath.wallT, cream, 0.045);
   partB.rotation.y = -Math.PI / 2;
   partB.position.set(bath.x0, 0, 0);
   root.add(partB);
@@ -811,16 +828,18 @@ function buildBathroom(root: THREE.Group, refs: Refs): void {
   /* door leaf, swung open into the bathroom -------------------------- */
   const hinge = new THREE.Group();
   hinge.position.set(bath.x0, 0, doorwayZ1 - 0.04);
-  hinge.rotation.y = -1.15;
+  hinge.rotation.y = -1.33;
 
   const leafLen = doorwayZ1 - doorwayZ0 - 0.12;
-  hinge.add(bmesh(0.08, bath.doorH - 0.1, leafLen, toon(COLORS.wood), 0, (bath.doorH - 0.1) / 2, -leafLen / 2, {
+  const bathDoor = bmesh(0.08, bath.doorH - 0.1, leafLen, toon(COLORS.wood), 0, (bath.doorH - 0.1) / 2, -leafLen / 2, {
     outline: 0.02,
-  }));
-  hinge.add(bmesh(0.1, 0.66, leafLen - 0.34, toon(COLORS.woodLight), 0, 1.9, -leafLen / 2));
-  hinge.add(bmesh(0.1, 0.66, leafLen - 0.34, toon(COLORS.woodLight), 0, 0.8, -leafLen / 2));
-  hinge.add(sph(0.055, 8, toon(COLORS.metal), 0.08, 1.08, -leafLen + 0.2));
-  hinge.add(sph(0.055, 8, toon(COLORS.metal), -0.08, 1.08, -leafLen + 0.2));
+  });
+  bathDoor.name = "bath-door-leaf";
+  hinge.add(bathDoor);
+  hinge.add(bmesh(0.1, bath.doorH * .31, leafLen - 0.34, toon(COLORS.woodLight), 0, bath.doorH * .71, -leafLen / 2));
+  hinge.add(bmesh(0.1, bath.doorH * .28, leafLen - 0.34, toon(COLORS.woodLight), 0, bath.doorH * .27, -leafLen / 2));
+  hinge.add(sph(0.055, 8, toon(COLORS.metal), 0.08, bath.doorH * .51, -leafLen + 0.2));
+  hinge.add(sph(0.055, 8, toon(COLORS.metal), -0.08, bath.doorH * .51, -leafLen + 0.2));
   root.add(hinge);
 
   const bathFloor = new THREE.Mesh(
@@ -830,19 +849,24 @@ function buildBathroom(root: THREE.Group, refs: Refs): void {
   bathFloor.rotation.x = -Math.PI / 2;
   bathFloor.position.set(3.68, 0.02, 3.68);
   bathFloor.receiveShadow = true;
+  bathFloor.userData.walkable = true;
   root.add(bathFloor);
 
   /* sink ------------------------------------------------------------ */
-  root.add(cyl(0.16, 0.23, 0.8, 8, ceramic, 2.6, 0.4, 1.96, { outline: 0.02 }));
-  root.add(bmesh(0.96, 0.3, 0.64, ceramic, 2.6, 0.95, 1.96, { outline: 0.024 }));
-  root.add(bmesh(1.04, 0.07, 0.7, ceramic, 2.6, 1.13, 1.96));
-  root.add(bmesh(0.8, 0.04, 0.48, toon(0xdfeef1), 2.6, 1.17, 1.98, { cast: false }));
+  const sink = new THREE.Group();
+  sink.name = "bath-sink";
+  sink.add(cyl(0.16, 0.23, 0.8, 8, ceramic, 2.6, 0.4, 1.96, { outline: 0.02 }));
+  sink.add(bmesh(0.96, 0.3, 0.64, ceramic, 2.6, 0.95, 1.96, { outline: 0.024 }));
+  sink.add(bmesh(1.04, 0.07, 0.7, ceramic, 2.6, 1.13, 1.96));
+  sink.add(bmesh(0.8, 0.04, 0.48, toon(0xdfeef1), 2.6, 1.17, 1.98, { cast: false }));
 
-  root.add(cyl(0.035, 0.035, 0.3, 8, metal, 2.6, 1.31, 1.8));
+  sink.add(cyl(0.035, 0.035, 0.3, 8, metal, 2.6, 1.31, 1.8));
   const spout = cyl(0.032, 0.032, 0.28, 8, metal, 2.6, 1.45, 1.9);
   spout.rotation.x = Math.PI / 2;
-  root.add(spout);
-  root.add(cyl(0.05, 0.05, 0.05, 8, metal, 2.6, 1.31, 1.8));
+  sink.add(spout);
+  sink.add(cyl(0.05, 0.05, 0.05, 8, metal, 2.6, 1.31, 1.8));
+
+  root.add(sink);
 
   root.add(bmesh(1.0, 1.06, 0.05, toon(COLORS.woodLight), 2.6, 2.25, bath.z0 + 0.18, { outline: 0.018 }));
   root.add(bmesh(0.88, 0.94, 0.04, new THREE.MeshBasicMaterial({ color: 0xcfe8f0 }), 2.6, 2.25, bath.z0 + 0.21));
@@ -858,15 +882,19 @@ function buildBathroom(root: THREE.Group, refs: Refs): void {
   root.add(ring);
   root.add(bmesh(0.06, 0.72, 0.44, toon(0xf3c860), bath.x0 + 0.26, 1.34, 2.9, { outline: 0.014 }));
 
+  const toilet = new THREE.Group();
+  toilet.name = "bath-toilet";
   /* toilet ---------------------------------------------------------- */
-  root.add(bmesh(0.86, 0.95, 0.36, ceramic, 4.25, 1.6, 1.8, { outline: 0.024 }));
-  root.add(bmesh(0.94, 0.1, 0.42, ceramic, 4.25, 2.1, 1.8));
-  root.add(cyl(0.08, 0.08, 0.04, 10, metal, 4.25, 2.17, 1.8));
-  root.add(bmesh(0.5, 0.72, 0.6, ceramic, 4.25, 0.36, 2.35, { outline: 0.02 }));
-  root.add(cyl(0.44, 0.32, 0.42, 12, ceramic, 4.25, 0.92, 2.45, { outline: 0.024 }));
-  root.add(cyl(0.49, 0.49, 0.1, 14, ceramic, 4.25, 1.16, 2.45, { outline: 0.02 }));
-  root.add(cyl(0.47, 0.47, 0.07, 14, toon(0xeaf4f4), 4.25, 1.24, 2.45));
-  root.add(bmesh(0.14, 0.18, 0.3, ceramic, 4.25, 0.75, 1.95));
+  toilet.add(bmesh(0.86, 0.95, 0.36, ceramic, 4.25, 1.6, 1.8, { outline: 0.024 }));
+  toilet.add(bmesh(0.94, 0.1, 0.42, ceramic, 4.25, 2.1, 1.8));
+  toilet.add(cyl(0.08, 0.08, 0.04, 10, metal, 4.25, 2.17, 1.8));
+  toilet.add(bmesh(0.5, 0.72, 0.6, ceramic, 4.25, 0.36, 2.35, { outline: 0.02 }));
+  toilet.add(cyl(0.44, 0.32, 0.42, 12, ceramic, 4.25, 0.92, 2.45, { outline: 0.024 }));
+  toilet.add(cyl(0.49, 0.49, 0.1, 14, ceramic, 4.25, 1.16, 2.45, { outline: 0.02 }));
+  toilet.add(cyl(0.47, 0.47, 0.07, 14, toon(0xeaf4f4), 4.25, 1.24, 2.45));
+  toilet.add(bmesh(0.14, 0.18, 0.3, ceramic, 4.25, 0.75, 1.95));
+
+  root.add(toilet);
 
   /* paper holder ---------------------------------------------------- */
   root.add(bmesh(0.05, 0.3, 0.05, metal, 3.55, 1.75, bath.z0 + 0.2));
@@ -884,7 +912,9 @@ function buildBathroom(root: THREE.Group, refs: Refs): void {
   root.add(cyl(0.1, 0.1, 0.08, 8, metal, 5.3, 1.35, bath.z0 + 0.24));
 
   root.add(cyl(0.17, 0.17, 0.02, 12, toon(0x9fb2b8), 4.6, 0.03, 3.2));
-  root.add(bmesh(1.3, 0.03, 0.85, toon(0xd7e9ec), 3.5, 0.045, 3.4, { outline: 0.012 }));
+  const bathMat = bmesh(1.3, 0.03, 0.85, toon(0xd7e9ec), 3.5, 0.045, 3.4, { outline: 0.012 });
+  bathMat.userData.walkable = true;
+  root.add(bathMat);
 
   /* bathroom light -------------------------------------------------- */
   const bathLight = new THREE.PointLight(0xffe6bd, 0, 7 * ROOM_SCALE, 2);

@@ -14,7 +14,7 @@ const DAY_BACKGROUND = new THREE.Color(0x35405c);
 const NIGHT_BACKGROUND = new THREE.Color(0x101729);
 const POINT_LIGHT_SCALE = ROOM_SCALE ** 2;
 
-export function createRoomEffects(root: THREE.Group, refs: Refs) {
+export function createRoomEffects(refs: Refs) {
   const state: Record<RoomToggle, boolean> = {
     night: false,
     lamps: false,
@@ -22,11 +22,6 @@ export function createRoomEffects(root: THREE.Group, refs: Refs) {
     curtains: true,
   };
   const background = DAY_BACKGROUND.clone();
-  const interactive: THREE.Object3D[] = [];
-  root.traverse(object => {
-    if (object.userData.interactive) interactive.push(object);
-  });
-
   const lamps = [refs.deskLamp, refs.nightLamp];
   const screen = refs.monitorScreen.material as THREE.MeshBasicMaterial;
   const monitorHalo = refs.monitorHalo.material as THREE.SpriteMaterial;
@@ -38,15 +33,6 @@ export function createRoomEffects(root: THREE.Group, refs: Refs) {
   function toggle(id: RoomToggle) {
     state[id] = !state[id];
     if (id === "night") state.lamps = state.night;
-  }
-
-  function pick(raycaster: THREE.Raycaster): RoomProp | undefined {
-    if (!root.visible) return;
-    const hit = raycaster.intersectObjects(interactive, true)
-      .find(({ object }) => object instanceof THREE.Mesh);
-    for (let object = hit?.object; object; object = object.parent ?? undefined) {
-      if (object.userData.interactive) return object.userData.interactive.id;
-    }
   }
 
   function update(dt: number, time: number) {
@@ -89,5 +75,5 @@ export function createRoomEffects(root: THREE.Group, refs: Refs) {
     refs.dust.update(time, daylight * exposure);
   }
 
-  return { state, background, toggle, pick, update };
+  return { state, background, toggle, update };
 }

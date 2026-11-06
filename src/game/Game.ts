@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {createRenderer} from '../core/renderer';
 import {createCameraController} from '../core/camera';
 import {createRoomV4} from '../assets/procedural/roomV4/entities';
+import {createRoomNavigation} from '../assets/procedural/roomV4/colliders';
 import {createRoomEffects} from '../assets/procedural/roomV4/effects';
 import {roomFrameScale} from '../assets/procedural/roomV4/definitions';
 import {createCharacter} from '../assets/procedural/character';
@@ -20,18 +21,19 @@ export function startGame(){
   applyRoomOverrides(room.root,room.registry);
   scene.add(room.root);
 
-  const effects=createRoomEffects(room.root,room.refs);
+  const effects=createRoomEffects(room.refs);
   const roomTools=createRoomTools(effects);
   const character=createCharacter(scene);
   scene.add(character.charRoot);
   const animation=createAnimation(character);
-  const actions=createActions(scene,character,animation);
+  const navigation=createRoomNavigation(room);
+  const actions=createActions(scene,character,animation,navigation);
   const controller=createCameraController(camera);
   const menu=createPieMenu(actions);
   const review=createReview(scene,room.root,character,controller,actions,effects.background,roomTools.element);
 
   bindControls(renderer,camera,character,actions,menu,controller,{
-    pick:effects.pick,
+    root:room.root,
     toggle:roomTools.toggle,
     canWalk:()=>review.view==='game',
   });

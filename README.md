@@ -2,7 +2,7 @@
 
 [在线游玩 / 分享链接](https://giogyan90.github.io/RoomBoy/) · [GitHub 仓库](https://github.com/GioGyan90/RoomBoy)
 
-基于 `reference/roomboydeepseek.html` 拆分的 Three.js 房间小游戏。默认使用 Room v4 剖面场景，Haru 有六种互动。使用 Vite + TypeScript，游戏运行时不依赖 CDN。
+基于 `reference/roomboydeepseek.html` 拆分的 Three.js 房间小游戏。默认使用 Room v4 剖面场景。使用 Vite + TypeScript，游戏运行时不依赖 CDN。
 
 ## 本地运行（Windows / macOS / Linux）
 
@@ -22,6 +22,8 @@ npm run preview
 ```
 
 点击角色开启动作菜单；点击地面移动；右键拖动旋转；Shift + 右键或中键拖动平移；滚轮缩放；Q/E 旋转；Esc 关闭菜单。
+
+点击床沿或椅子，Haru 会绕到家具边坐下。再点击地面会起身并沿可通行的路线移动，浴室通过门洞进出。
 
 右上角可以切换昼夜、灯光、电脑屏幕和窗帘，也可以点击房间内相应物件。
 
@@ -65,7 +67,17 @@ Vite 使用相对资源路径，兼容仓库子路径。已创建公开仓库并
 
 ## 当前边界
 
-点击地面时，角色沿直线移动。桌椅和床的尺寸与动作锚点位于 `roomV4/definitions.ts`。相机操作主要面向桌面鼠标。
+墙壁和家具采用固定碰撞体。行走以 Haru 的水平占位扫掠检测，并在家具与门框之间寻找路径。桌椅和床的尺寸与动作锚点位于 `roomV4/definitions.ts`。相机操作主要面向桌面鼠标。
+
+## 坐下动作
+
+床沿和椅子的 `motion-plan v1` 源方案位于 `assets/source/motions/`。通过 [3D_AItool 的 Prompt2Rig](https://github.com/GioGyan90/3D_AItool/tree/0434ddfaee268531cf6141b8cbf19c6d64c2decf/experiments/prompt2rig) 校验、采样和重定向到 Haru 的关节，再按当前座面和实际脚底校准高度。游戏读取生成的本地动画数据。
+
+在 RoomBoy 与 3D_AItool 并排检出的情况下，修改动作方案后重新烘焙。
+
+```sh
+node --import tsx --experimental-loader ../3D_AItool/experiments/prompt2rig/tests/vendor-loader.mjs tools/bake-seating.ts ../3D_AItool/experiments/prompt2rig
+```
 
 ## 人体结构研究
 

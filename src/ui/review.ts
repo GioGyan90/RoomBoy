@@ -46,7 +46,7 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
  function pose(){
   if(!['character','face'].includes(view))return;
   const j=character.J;
-  for(const name of ['pelvis','spine','chest','neck','head','lThigh','rThigh','lShin','rShin','lFoot','rFoot'])j[name].rotation.set(0,0,0);
+  for(const name of ['pelvis','spine','chest','neck','head','lShoulder','rShoulder','lThigh','rThigh','lShin','rShin','lFoot','rFoot'])j[name].rotation.set(0,0,0);
   j.lUpperArm.rotation.set(0,0,.035);j.rUpperArm.rotation.set(0,0,-.035);
   j.lForeArm.rotation.set(-.045,0,0);j.rForeArm.rotation.set(-.045,0,0);
   j.lHand.rotation.set(-.02,0,.02);j.rHand.rotation.set(-.02,0,-.02);

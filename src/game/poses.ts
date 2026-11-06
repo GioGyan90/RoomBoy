@@ -51,20 +51,6 @@ export function sitDeskPose(t:number):Pose{
   };
 }
 
-export function sitBedPose(t:number):Pose{
-  const sw = Math.sin(t*1.6)*0.13;
-  return {
-    spine:[0.10, 0, 0], chest:[0.02, 0, 0], neck:[-0.02, 0, 0],
-    head:[-0.02 + Math.sin(t*0.6)*0.05, Math.sin(t*0.45)*0.16, 0],
-    lThigh:[-1.52, 0, 0.13], rThigh:[-1.52, 0, -0.13],
-    lShin:[1.18 + sw, 0, 0], rShin:[1.18 - sw, 0, 0],
-    lFoot:[0.22,0,0], rFoot:[0.22,0,0],
-    lUpperArm:[0.15, 0, 0.22], rUpperArm:[0.15, 0, -0.22],
-    lForeArm:[-0.55, 0, 0], rForeArm:[-0.55, 0, 0],
-    lHand:[-0.25,0,0], rHand:[-0.25,0,0],
-  };
-}
-
 export function liePose(t:number):Pose{
   const br = Math.sin(t*1.15)*0.025;
   return {

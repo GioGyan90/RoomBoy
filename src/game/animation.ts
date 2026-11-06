@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import {damp} from '../core/math';
 import type {Character} from '../assets/procedural/character';
-import type {Posture} from './types';
-import {standPose,walkPose,sitDeskPose,sitBedPose,liePose,stretchPose,type Pose} from './poses';
+import type {Posture,Seat} from './types';
+import {seats} from './seating';
+import {standPose,walkPose,sitDeskPose,liePose,stretchPose,type Pose} from './poses';
 export function createAnimation(character:Character){
-const {body,J,plumbob,plumbobLight,zzz}=character;
+const {charRoot,body,J,plumbob,plumbobLight,zzz}=character;
 /* =========================================================
    7 · state, poses, animation
    ========================================================= */
@@ -16,20 +17,18 @@ const st = {
   walkPhase:0,
   bodyYTarget:HIP,
   bodyRotXTarget:0,
-  posTarget:new THREE.Vector3(0,0,0),
-  rotTarget:0,
+  seating:null as {kind:Seat;time:number}|null,
   napping:false,
 };
 
 const JOINTS = ['pelvis','spine','chest','neck','head',
-  'lUpperArm','lForeArm','lHand','rUpperArm','rForeArm','rHand',
+  'lShoulder','lUpperArm','lForeArm','lHand','rShoulder','rUpperArm','rForeArm','rHand',
   'lThigh','lShin','lFoot','rThigh','rShin','rFoot'];
 
 function currentPose(t:number):Pose{
   if (st.mode === 'walk') return walkPose(st.walkPhase);
   switch(st.posture){
     case 'sitDesk':  return sitDeskPose(t);
-    case 'sitBed':   return sitBedPose(t);
     case 'lieBed':   return liePose(t);
     case 'stretch':  return stretchPose(st.poseTime);
     default:         return standPose(t);
@@ -38,21 +37,50 @@ function currentPose(t:number):Pose{
 
 const ZERO = [0,0,0];
 
+const skin = character.charMeshes[0];
+const footBones = new Set([J.lFoot, J.rFoot].map(bone => skin.skeleton.bones.indexOf(bone)));
+const skinIndices = skin.geometry.getAttribute('skinIndex');
+const skinWeights = skin.geometry.getAttribute('skinWeight');
+const footVertices: number[] = [];
+for (let i = 0; i < skinIndices.count; i++) {
+  // The procedural surface assigns up to two weighted joints per vertex.
+  if ((skinWeights.getX(i) > 0 && footBones.has(skinIndices.getX(i))) ||
+      (skinWeights.getY(i) > 0 && footBones.has(skinIndices.getY(i)))) {
+    footVertices.push(i);
+  }
+}
+const footPoint = new THREE.Vector3();
+
+function groundSeatedFeet() {
+  // Blending out of a walking stride can briefly push a sole below the floor.
+  charRoot.updateMatrixWorld(true);
+  let lowest = 0;
+  for (const index of footVertices) {
+    skin.getVertexPosition(index, footPoint).applyMatrix4(skin.matrixWorld);
+    lowest = Math.min(lowest, footPoint.y);
+  }
+  body.position.y -= lowest;
+}
 
 function updateAnimation(dt:number, t:number){
-  const pose = currentPose(t);
-  const k = st.mode === 'walk' ? 22 : (st.posture === 'stretch' ? 9 : 8);
-  for (const name of JOINTS){
-    const j = J[name];
-    if (!j) continue;
-    const tg = pose[name] || ZERO;
-    j.rotation.x = damp(j.rotation.x, tg[0], k, dt);
-    j.rotation.y = damp(j.rotation.y, tg[1], k, dt);
-    j.rotation.z = damp(j.rotation.z, tg[2], k, dt);
+  if(st.seating){
+    const {kind,time}=st.seating;
+    seats[kind].apply(J,time,1-Math.exp(-dt*22));
+  }else{
+    const pose = currentPose(t);
+    const k = st.mode === 'walk' ? 22 : (st.posture === 'stretch' ? 9 : 8);
+    for (const name of JOINTS){
+      const j = J[name];
+      const tg = pose[name] || ZERO;
+      j.rotation.x = damp(j.rotation.x, tg[0], k, dt);
+      j.rotation.y = damp(j.rotation.y, tg[1], k, dt);
+      j.rotation.z = damp(j.rotation.z, tg[2], k, dt);
+    }
   }
   const bob = st.mode === 'walk' ? -0.018 + 0.018*Math.cos(st.walkPhase*2) : 0;
-  body.position.y = damp(body.position.y, st.bodyYTarget + bob, 10, dt);
+  body.position.y = damp(body.position.y, st.bodyYTarget + bob, st.seating?22:10, dt);
   body.rotation.x = damp(body.rotation.x, st.bodyRotXTarget, 7, dt);
+  if (st.seating) groundSeatedFeet();
 
   // plumbob follows the head
   const hp = new THREE.Vector3();
