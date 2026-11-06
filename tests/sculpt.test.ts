@@ -40,6 +40,8 @@ test('blue apartment routes around the cutaway walls and uses its own furniture 
  const {root,navigation}=createBlueApartment();
  const {spawn,desk,bed,toilet}=apartmentLayout;
  assert.ok(validate(root)>0);
+ assert.ok(!root.getObjectByName('bedroom-door'));
+ assert.ok(navigation.canStand({x:-.77,z:1.45}));
  for(const point of [desk.stand,bed.stand,toilet.stand,{x:1.94,z:1.1},{x:1.66,z:-2.29},{x:-.54,z:3.72}]){
   const route=navigation.findPath(spawn,point);
   assert.ok(route,`No route to ${point.x}, ${point.z}`);

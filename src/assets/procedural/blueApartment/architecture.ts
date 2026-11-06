@@ -42,26 +42,42 @@ function shadowRoof(root: T.Group, x0: number, x1: number, z0: number, z1: numbe
   roof.raycast = () => {};
 }
 
-function buildDoor(root: T.Group, id: string, x: number, z: number, width: number, angle: number, entry = false): FixedBody {
+function glazedPanel(width: number, height: number, pullX: number, pullSides: readonly number[] = [1]) {
+  const panel = new T.Group();
+  frame(panel, width, height, .044, .051, paint.steel);
+  frame(panel, width - .08, height - .08, .049, .016, paint.chrome);
+  glass(panel, width - .086, height - .088, [0, 0, 0], .18);
+  for (const side of pullSides) {
+    tube(panel, [[pullX, -.10, side * .019], [pullX, -.09, side * .057],
+      [pullX, .12, side * .057], [pullX, .13, side * .019]], .010, paint.chrome, 8);
+  }
+  return panel;
+}
+
+function buildDoor(root: T.Group, id: string, x: number, z: number, width: number, angle: number,
+  finish: "glass" | "wood"): FixedBody {
   const pivot = new T.Group();
   pivot.name = id;
   pivot.position.set(x, 0, z);
   pivot.rotation.y = angle;
   root.add(pivot);
   const height = p.doorHeight;
-  const leaf = rounded(pivot, [width, height, .052], paint.door, [width / 2, height / 2 + .014, 0], .012);
-  leaf.name = id + "-leaf";
-  for (const side of [-1, 1]) {
-    rounded(pivot, [width - .103, height - .13, .016], paint.oakDark,
-      [width / 2, height / 2 + .014, side * .026], .015);
-    rounded(pivot, [width - .13, height - .155, .014], paint.door,
-      [width / 2, height / 2 + .014, side * .034], .012);
-    rounded(pivot, [.049, .158, .018], paint.steel, [width - .11, .93, side * .042], .009);
-    tube(pivot, [[width - .11, .95, side * .047], [width - .11, .95, side * .085],
-      [width - .22, .95, side * .088]], .013, paint.chrome, 8);
-  }
-  if (entry) {
+  if (finish === "glass") {
+    const leaf = glazedPanel(width, height, width / 2 - .077, [-1, 1]);
+    leaf.name = id + "-leaf";
+    leaf.position.set(width / 2, height / 2 + .014, 0);
+    pivot.add(leaf);
+  } else {
+    const leaf = rounded(pivot, [width, height, .052], paint.door, [width / 2, height / 2 + .014, 0], .012);
+    leaf.name = id + "-leaf";
     for (const side of [-1, 1]) {
+      rounded(pivot, [width - .103, height - .13, .016], paint.oakDark,
+        [width / 2, height / 2 + .014, side * .026], .015);
+      rounded(pivot, [width - .13, height - .155, .014], paint.door,
+        [width / 2, height / 2 + .014, side * .034], .012);
+      rounded(pivot, [.049, .158, .018], paint.steel, [width - .11, .93, side * .042], .009);
+      tube(pivot, [[width - .11, .95, side * .047], [width - .11, .95, side * .085],
+        [width - .22, .95, side * .088]], .013, paint.chrome, 8);
       rounded(pivot, [.030, .030, .014], paint.chrome, [width * .46, 1.40, side * .044], .013);
     }
   }
@@ -172,20 +188,16 @@ export function buildArchitecture(root: T.Group): FixedBody[] {
   shadowRoof(root, p.left, p.backLeft, p.notch, p.bathBack);
   shadowRoof(root, p.divider, p.right, p.kitchenBack, p.kitchenFront);
 
-  const bathDoor = buildDoor(root, "bath-door", p.bathRight + .017, p.bathDoor[1] - .043, .925, .76);
-  const kitchenDoor = buildDoor(root, "kitchen-door", p.divider + .06, p.kitchenDoor[0] + .03, .94, 1.43);
-  const bedroomHingeX = p.bathRight + .32;
-  const bedroomHingeZ = p.bathBack - .76;
-  const bedroomDoor = buildDoor(root, "bedroom-door", bedroomHingeX, bedroomHingeZ, .91, -1.43);
-  const frontDoor = buildDoor(root, "entry-door", -.29, p.entryFront, .814, Math.PI + .135, true);
-  const frameTrim = matte(0xbd9a7c);
-  box(root, [.064, p.doorHeight + .046, .076], frameTrim, [bedroomHingeX - .022, 1.008, bedroomHingeZ]);
+  const bathDoor = buildDoor(root, "bath-door", p.bathRight + .017, p.bathDoor[1] - .043, .925, .76, "glass");
+  const kitchenDoor = buildDoor(root, "kitchen-door", p.divider + .06, p.kitchenDoor[0] + .03, .94, 1.43, "glass");
+  const frontDoor = buildDoor(root, "entry-door", -.29, p.entryFront, .814, Math.PI + .135, "wood");
   for (const [x, z, height] of [
     [p.bathRight, p.bathDoor[0], bathWallHeight], [p.bathRight, p.bathDoor[1], 2.02],
     [p.divider, p.kitchenDoor[0], p.doorHeight + .03], [p.divider, p.kitchenDoor[1], .88],
   ]) {
-    box(root, [p.wall + .025, height, .048], frameTrim, [x, height / 2, z]);
+    box(root, [p.wall + .025, height, .048], paint.steel, [x, height / 2, z]);
   }
+  const frameTrim = matte(0xbd9a7c);
   for (const x of [-1.14, -.29]) {
     box(root, [.05, p.doorHeight + .06, .17], frameTrim, [x, (p.doorHeight + .06) / 2, p.entryFront]);
   }
@@ -203,7 +215,7 @@ export function buildArchitecture(root: T.Group): FixedBody[] {
     obstacle("bath-jamb", p.bathRight - halfWall, p.bathRight + halfWall, p.bathDoor[1] - .025, p.bathFront),
     obstacle("bedroom-kitchen-wall", p.divider - halfWall, p.divider + halfWall, p.balconyBack, p.kitchenDoor[0] + .025),
     obstacle("entry-kitchen-wall", p.divider - halfWall, p.divider + halfWall, p.kitchenDoor[1] - .025, p.bathFront),
-    bathDoor, kitchenDoor, bedroomDoor, frontDoor,
+    bathDoor, kitchenDoor, frontDoor,
   ];
 }
 
@@ -219,15 +231,10 @@ export function buildBalconyFront(root: T.Group) {
   const panelHeight = 1.974;
   const rightCenter = right - panelWidth / 2;
   for (const [x, dz] of [[rightCenter, .036], [rightCenter - .106, -.041]]) {
-    const panel = new T.Group();
+    const panel = glazedPanel(panelWidth, panelHeight, -panelWidth / 2 + .077);
     panel.name = "balcony-glass-panel";
     panel.position.set(x, 1.043, z + dz);
     root.add(panel);
-    frame(panel, panelWidth, panelHeight, .044, .051, rail);
-    frame(panel, panelWidth - .08, panelHeight - .08, .049, .016, paint.chrome);
-    glass(panel, panelWidth - .086, panelHeight - .088, [0, 0, 0], .18);
-    tube(panel, [[-panelWidth / 2 + .077, -.10, .019], [-panelWidth / 2 + .077, -.09, .057],
-      [-panelWidth / 2 + .077, .12, .057], [-panelWidth / 2 + .077, .13, .019]], .010, paint.chrome, 8);
   }
 
   const back = p.balconyBack;
