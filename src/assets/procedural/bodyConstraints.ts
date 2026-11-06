@@ -1,4 +1,4 @@
-import {bodyBands,sourceJoints,viewJoints,referenceFrame as f,type BodyTargets,type SourceBand,type JointName,type StudyView} from './bodyReference';
+import {bodyBands,sourceJoints,viewJoints,maleStudyCrops,type BodyTargets,type SourceBand,type JointName,type StudyView,type StudyJoints,type StudyProjection} from './bodyReference';
 export type BodyPart=keyof typeof bodyBands;
 type MutableBand=[number,number,number,number,number];
 function section(bands:readonly SourceBand[],y:number):MutableBand{
@@ -32,13 +32,14 @@ export function constrainBands(part:BodyPart,targets:BodyTargets):SourceBand[]{
  return bands;
 }
 export type MeshLandmarks=Record<JointName,readonly [number,number,number]>;
-export function projectLandmark(p:readonly number[],view:StudyView):[number,number]{
- const x=view==='front'?f.frontAxis+p[0]/f.scale:view==='back'?f.backAxis-p[0]/f.scale:f.sideAxis-p[2]/f.scale;
- return [x,f.ground-p[1]/f.scale];
+export function projectLandmark(p:readonly number[],view:StudyView,projection:StudyProjection=maleStudyCrops[view]):[number,number]{
+ const {axis,ground,scale}=projection;
+ const horizontal=view==='front'?p[0]:view==='back'?-p[0]:-p[2];
+ return [axis+horizontal/scale,ground-p[1]/scale];
 }
-export function measureReprojection(actual:MeshLandmarks){
+export function measureReprojection(actual:MeshLandmarks,joints:StudyJoints=viewJoints,projections:Record<StudyView,StudyProjection>=maleStudyCrops){
  return Object.fromEntries((['front','side','back'] as const).map(view=>{
-  const errors=Object.keys(sourceJoints).flatMap(key=>{const name=key as JointName,target=viewJoints[name][view];if(!target)return [];const p=projectLandmark(actual[name],view);return [{name,dx:p[0]-target[0],dy:p[1]-target[1],pixels:Math.hypot(p[0]-target[0],p[1]-target[1])}];});
+  const errors=Object.keys(sourceJoints).flatMap(key=>{const name=key as JointName,target=joints[name][view];if(!target)return [];const p=projectLandmark(actual[name],view,projections[view]);return [{name,dx:p[0]-target[0],dy:p[1]-target[1],pixels:Math.hypot(p[0]-target[0],p[1]-target[1])}];});
   return [view,{rms:Math.sqrt(errors.reduce((sum,e)=>sum+e.pixels**2,0)/errors.length),max:Math.max(...errors.map(e=>e.pixels)),errors}];
  })) as Record<StudyView,{rms:number;max:number;errors:{name:JointName;dx:number;dy:number;pixels:number}[]}>;
 }

@@ -1,90 +1,303 @@
 import * as T from 'three';
-import {detachLegacyPelvis} from '../assets/parts/pelvis';
-import {bodyPlan,createBodyBlockout,type BodyStage} from '../assets/procedural/bodyBlockout';
-import {landmarkNames,sourceJoints,viewJoints,type StudyView} from '../assets/procedural/bodyReference';
-import {addLandmarkMarkers,addViewTargets,addReferenceProjection,clearStudyGroup,addEditedVertices} from './structureReference';
+import { detachLegacyPelvis } from '../assets/parts/pelvis';
+import { bodyPlan, createBodyBlockout } from '../assets/procedural/bodyBlockout';
+import { landmarkNames, maleStudyCrops, referenceFrame, viewJoints, type JointName, type StudyCrop, type StudyView } from '../assets/procedural/bodyReference';
+import { createFemaleBodyBlockout, femalePartLabels } from '../assets/procedural/femaleBodyBlockout';
+import { femaleBodyPlan, femaleSheet, femaleStudyCrops, femaleStudyJoints } from '../assets/procedural/femaleBodyReference';
+import { addLandmarkMarkers, addViewTargets, addReferenceProjection, clearStudyGroup, addEditedVertices } from './structureReference';
+
+const rotations = { front: 0, side: -Math.PI / 2, back: Math.PI, quarter: -Math.PI / 4, 'rear-quarter': Math.PI * .75 };
+const viewNames = { front: '正面', side: '侧面', back: '背面', quarter: '前斜侧', 'rear-quarter': '后斜侧' };
+const orthographic = ['front', 'side', 'back'] as const;
+type View = keyof typeof rotations;
+type Angle = View | 'three' | 'four';
+
+function canonical(view: View): view is StudyView {
+  return view === 'front' || view === 'side' || view === 'back';
+}
 
 /** Independent static modelling studio. Does not alter the playable rig. */
-export function startStructureStudio(){
- const query=new URLSearchParams(location.search),capture=query.get('capture')==='1';
- document.querySelectorAll<HTMLElement>('#hud,#hint,#pie,#loader').forEach(e=>e.remove());
- document.body.classList.add('structure-studio');
- const scene=new T.Scene();scene.background=new T.Color(0xf2f1ec);
- const renderer=new T.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=T.SRGBColorSpace;document.body.append(renderer.domElement);
- scene.add(new T.HemisphereLight(0xffffff,0xc4c0b8,2.2));
- const key=new T.DirectionalLight(0xffffff,2.5);key.position.set(-3,5,6);scene.add(key);
- const fill=new T.DirectionalLight(0xffffff,.8);fill.position.set(4,2,-2);scene.add(fill);
- const camera=new T.OrthographicCamera(-1.2,1.2,1.2,-1.2,.1,20);camera.position.set(0,.90,5);camera.lookAt(0,.90,0);
- const models=new T.Group(),guides=new T.Group(),overlays=new T.Group(),markers=new T.Group();scene.add(models,guides,overlays,markers);
- let stage:BodyStage='blockout';
- let focus=query.get('focus')??'body';
- let showEdits=query.get('edits')==='1';
- let angle=query.get('angle')??'three',silhouette=false,wire=false,showGuides=true;
- let showPoints=query.get('points')==='1',overlay=false,referenceReady=false,referenceOpacity=.55,paired=false;let labelPositions:number[]=[];
- const ui=document.createElement('section');ui.id='structure-ui';
- ui.innerHTML=`<header><div><small>CHARACTER STUDY · 01</small><h1>先把结构做准</h1><p>旧臀块已移除，新分块等待确认。<a href="?view=pelvis">审阅独立臀块 ↗</a></p></div><a href="?view=character">查看游戏人物 ↗</a></header>
- <nav aria-label="建模阶段"><button data-stage="blockout">01 几何体块</button><button data-stage="planes" disabled title="完成简化体块对齐后再进入低面细化">02 低面结构</button></nav>
- <nav aria-label="检查视角"><button data-angle="three">三视同屏</button><button data-angle="front">正面</button><button data-angle="side">侧面</button><button data-angle="back">背面</button><button data-angle="quarter">前斜侧</button><button data-angle="rear-quarter">后斜侧</button></nav>
- <nav aria-label="局部放大"><button data-focus="body">全身</button><button data-focus="neck">颈胸放大</button><button data-focus="hips">臀腿放大</button></nav>
- <nav><button id="structure-silhouette">剪影</button><button id="structure-wire">线框</button><button id="structure-guides" class="active">比例线</button><button id="structure-points">关节定位点</button><button id="structure-edits">本轮改点</button><button id="structure-reference">参考图</button><button id="structure-paired" disabled>并排对照</button><button id="structure-overlay" title="先在参考图中选择当前简化体块三视图" disabled>简化图叠合</button></nav>
- <output id="structure-stats"></output>`;
- document.body.append(ui);
- const labels=document.createElement('div');labels.id='structure-labels';document.body.append(labels);
- const panel=document.createElement('aside');panel.id='structure-reference-panel';panel.hidden=true;
- panel.innerHTML='<p>选择几何体块简化图。图片只在当前浏览器读取。简化图叠合使用当前 1536 × 1024 几何体块图的固定坐标。</p><input type="file" accept="image/*" aria-label="选择建模参考图"><p id="reference-state"></p><label>叠合强度 <input type="range" min="0.1" max="1" step="0.05" value="0.55" aria-label="叠合强度"></label><img alt="本地建模参考图"><details><summary>定位点坐标</summary><p>绿点读取实际网格端面/截面；紫色十字为各角度独立简化图定点。RMS 只统计定点投影，不代表整个轮廓相似度。格式：编号 / 正面 x,y / 侧面 x / 背面 x,y（不可见则省略）。</p><ol>'+Object.entries(sourceJoints).map(([name,p])=>`<li>${landmarkNames[name as keyof typeof sourceJoints]}：${p[0]}, ${p[1]} / ${p[2]} / ${viewJoints[name as keyof typeof sourceJoints].back?.join(", ")??"—"}</li>`).join('')+'</ol></details>';document.body.append(panel);
- let referenceURL:string|undefined;
- const referenceImage=panel.querySelector('img')!;
- panel.querySelector<HTMLInputElement>('input[type=file]')!.onchange=e=>{const file=(e.target as HTMLInputElement).files?.[0];if(!file)return;if(referenceURL)URL.revokeObjectURL(referenceURL);referenceURL=URL.createObjectURL(file);referenceImage.src=referenceURL;};
- referenceImage.onload=()=>{referenceReady=referenceImage.naturalWidth===1536&&referenceImage.naturalHeight===1024;overlay=referenceReady&&!['quarter','rear-quarter'].includes(angle);if(!referenceReady)paired=false;ui.querySelector<HTMLButtonElement>('#structure-paired')!.disabled=!referenceReady;ui.querySelector<HTMLButtonElement>('#structure-overlay')!.disabled=!referenceReady;panel.querySelector('#reference-state')!.textContent=referenceReady?'已启用固定坐标叠合；请确认这是当前简化体块三视图。':'此尺寸仅作旁置参考；固定坐标叠合需要当前 1536 × 1024 几何体块图。';rebuild();};
- panel.querySelector<HTMLInputElement>('input[type=range]')!.oninput=e=>{referenceOpacity=Number((e.target as HTMLInputElement).value);rebuild();};
- const guideMaterial=new T.LineBasicMaterial({color:0xb7b7af,transparent:true,opacity:.55,depthTest:false});
- for(const y of [0,bodyPlan.ankle,bodyPlan.knee,bodyPlan.crotch,bodyPlan.waist,bodyPlan.shoulder,bodyPlan.chin,bodyPlan.height]){
-  const geometry=new T.BufferGeometry().setFromPoints([new T.Vector3(-1.12,y,-.22),new T.Vector3(1.12,y,-.22)]);
-  guides.add(new T.Line(geometry,guideMaterial));
- }
- function resize(){
-  const top=capture?0:Math.ceil(ui.getBoundingClientRect().bottom+18);
-  const height=capture?innerHeight:Math.max(200,innerHeight-top-50);
-  const aspect=innerWidth/height,baseSpan=focus==='body'?2.04:.62,minWidth=focus==='body'?2.25:1.55,span=angle==='three'?Math.max(baseSpan,(paired?4.8:minWidth)/aspect):Math.max(baseSpan,(paired?1.25:.65)/aspect);
-  const center=focus==='neck'?1.5:focus==='hips'?.95:.90;camera.position.set(0,center,5);camera.lookAt(0,center,0);
-  camera.left=-span*aspect/2;camera.right=span*aspect/2;camera.top=span/2;camera.bottom=-span/2;camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth,height);renderer.domElement.style.position='absolute';renderer.domElement.style.top=`${top}px`;
-  labels.style.width='100%';labels.querySelectorAll<HTMLElement>('span').forEach((e,i)=>{const x=labelPositions[i]??0;e.style.left=`${50+x/(span*aspect)*100}%`;});render();
- }
- function render(){renderer.render(scene,camera);}
- function disposeModels(){clearStudyGroup(models);}
- function rebuild(){
-  clearStudyGroup(overlays);clearStudyGroup(markers);disposeModels();const views=angle==='three'?['front','side','back']:[angle];let triangles=0;let fitText="";labelPositions=[];const labelTexts:string[]=[];
-  for(const [i,v] of views.entries()){
-   const m=createBodyBlockout(stage);detachLegacyPelvis(m);const origin=views.length===3?(i-1)*(paired?1.55:focus==='body'?.73:.52):0;const referenceOffset=origin-(paired?.36:0);m.position.x=origin+(paired?.36:0);m.rotation.y=v==='side'?-Math.PI/2:v==='back'?Math.PI:v==='quarter'?-Math.PI/4:v==='rear-quarter'?Math.PI*.75:0;const canonical=['front','side','back'].includes(v);
-   triangles=m.userData.triangles;fitText=(Object.entries(m.userData.fitReport) as [string,{rms:number}][]).map(([v,r])=>`${({front:"正",side:"侧",back:"背"} as Record<string,string>)[v]} ${r.rms.toFixed(2)}`).join(" / ");
-   m.traverse(o=>{if(o instanceof T.Mesh){const materials=Array.isArray(o.material)?o.material:[o.material];for(const material of materials){const mat=material as T.MeshStandardMaterial;mat.wireframe=wire;mat.transparent=overlay&&!paired;mat.opacity=overlay&&!paired?.60:1;}if(silhouette){for(const mat of materials)mat.dispose();o.material=new T.MeshBasicMaterial({color:0x303636,wireframe:wire,transparent:overlay&&!paired,opacity:overlay&&!paired?.60:1});}}});models.add(m);
-   if(canonical&&(overlay||paired)&&referenceReady)addReferenceProjection(overlays,referenceImage,v,referenceOffset,paired?1:referenceOpacity);
-   const viewLabel=({front:'正面',side:'侧面',back:'背面',quarter:'前斜侧','rear-quarter':'后斜侧'} as Record<string,string>)[v];if(paired){labelPositions.push(referenceOffset,m.position.x);labelTexts.push(`${viewLabel} · 简化图`,`${viewLabel} · 模型`);}else{labelPositions.push(m.position.x);labelTexts.push(viewLabel);}
-   if(showEdits){const editMarkers=new T.Group();editMarkers.position.copy(m.position);editMarkers.rotation.copy(m.rotation);addEditedVertices(editMarkers,m.userData.vertexEdits.report,canonical?v as StudyView:undefined,focus);markers.add(editMarkers);}
-   if(showPoints){const marker=new T.Group();marker.position.copy(m.position);marker.rotation.copy(m.rotation);addLandmarkMarkers(marker,m.userData.landmarks,(canonical?v:'front') as StudyView);markers.add(marker);if(canonical)addViewTargets(markers,m.userData.landmarks,v as StudyView,paired?referenceOffset:m.position.x,!paired);}
+export function startStructureStudio() {
+  const query = new URLSearchParams(location.search);
+  const capture = query.get('capture') === '1';
+  const female = query.get('body') === 'female';
+  const plan = female ? femaleBodyPlan : bodyPlan;
+  const sheet = female ? femaleSheet : referenceFrame;
+  const joints = female ? femaleStudyJoints : viewJoints;
+  const names = female ? { ...viewNames, quarter: '半侧' } : viewNames;
+  const crops: Partial<Record<View, StudyCrop>> = female ? femaleStudyCrops : maleStudyCrops;
+  const angles: Angle[] = [...(female ? ['four' as const] : []), 'three', ...orthographic, 'quarter', 'rear-quarter'];
+  const requestedAngle = query.get('angle') as Angle;
+  let angle = angles.includes(requestedAngle) ? requestedAngle : female && innerWidth > 650 ? 'four' : 'three';
+  let focus = query.get('focus') ?? 'body';
+  const requestedPart = query.get('part') ?? '';
+  let part = female && Object.hasOwn(femalePartLabels, requestedPart) ? requestedPart : '';
+  let partBounds: T.Box3 | undefined;
+  let silhouette = false, wire = false, showGuides = !capture;
+  let showEdits = !female && query.get('edits') === '1';
+  let showPoints = query.get('points') === '1';
+  let overlay = false, referenceReady = false, referenceOpacity = .55, paired = false;
+  let labelPositions: number[] = [];
+
+  document.querySelectorAll('#hud,#hint,#pie,#loader').forEach(element => element.remove());
+  document.body.classList.add('structure-studio');
+  const scene = new T.Scene();
+  scene.background = new T.Color(0xf2f1ec);
+  const renderer = new T.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.outputColorSpace = T.SRGBColorSpace;
+  document.body.append(renderer.domElement);
+  scene.add(new T.HemisphereLight(0xffffff, 0xc4c0b8, 2.2));
+  const key = new T.DirectionalLight(0xffffff, 2.5);
+  key.position.set(-3, 5, 6);
+  scene.add(key);
+  const fill = new T.DirectionalLight(0xffffff, .8);
+  fill.position.set(4, 2, -2);
+  scene.add(fill);
+  const camera = new T.OrthographicCamera(-1.2, 1.2, 1.2, -1.2, .1, 20);
+  const models = new T.Group(), guides = new T.Group(), overlays = new T.Group(), markers = new T.Group();
+  scene.add(models, guides, overlays, markers);
+
+  const ui = document.createElement('section');
+  ui.id = 'structure-ui';
+  ui.innerHTML = `<header><div><small>CHARACTER STUDY · 01</small><h1>${female ? '女性人体 · 低模临摹' : '先把结构做准'}</h1>
+    <p>${female ? '正侧背面对齐截面，半侧面复核体块。' : '旧臀块已移除，新分块等待确认。<a href="?view=pelvis">审阅独立臀块 ↗</a>'}</p></div><a href="?view=character">查看游戏人物 ↗</a></header>
+  <nav aria-label="建模对象"><a href="?view=structure" ${female ? '' : 'aria-current="page"'}>男性结构</a><a href="?view=structure&body=female" ${female ? 'aria-current="page"' : ''}>女性结构</a></nav>
+  <nav aria-label="建模阶段"><button class="active" data-stage="blockout">01 几何体块</button><button data-stage="planes" disabled title="完成简化体块对齐后再进入低面细化">02 低面结构</button></nav>
+  <nav aria-label="检查视角">${angles.map(value => `<button data-angle="${value}">${value === 'three' ? '三视同屏' : value === 'four' ? '四视同屏' : names[value]}</button>`).join('')}</nav>
+  <nav aria-label="局部放大"><button data-focus="body">全身</button><button data-focus="neck">颈胸放大</button><button data-focus="hips">臀腿放大</button>
+    ${female ? `<select id="structure-part" aria-label="单独查看分块"><option value="">查看分块</option>${Object.entries(femalePartLabels).map(([id, label]) => `<option value="${id}">${label}</option>`).join('')}</select>` : ''}</nav>
+  <nav aria-label="检查选项"><button id="structure-silhouette">剪影</button><button id="structure-wire">线框</button><button id="structure-guides" class="active">比例线</button>
+    <button id="structure-points">关节定位点</button>${female ? '' : '<button id="structure-edits">本轮改点</button>'}
+    <button id="structure-reference">参考图</button><button id="structure-paired" disabled>并排对照</button>
+    <button id="structure-overlay" title="先载入对应的参考图" disabled>简化图叠合</button></nav>
+  <output id="structure-stats"></output>`;
+  document.body.append(ui);
+  const labels = document.createElement('div');
+  labels.id = 'structure-labels';
+  document.body.append(labels);
+
+  const panel = document.createElement('aside');
+  panel.id = 'structure-reference-panel';
+  panel.hidden = true;
+  const dimensions = `${sheet.width} × ${sheet.height}`;
+  panel.innerHTML = `<button id="structure-close-reference">收起</button>
+    <p>选择${female ? '女性四视图' : '几何体块简化图'}（${dimensions}）。图片在当前浏览器读取。${female ? '半侧视图用于并排观察。' : ''}</p>
+    <input type="file" accept="image/*" aria-label="选择建模参考图"><p id="reference-state" aria-live="polite"></p>
+    <label>叠合强度 <input type="range" min="0.1" max="1" step="0.05" value="0.55" aria-label="叠合强度"></label><img alt="本地建模参考图">
+    <details><summary>定位点坐标</summary><p>绿点读取实际网格端面或截面，紫色十字为独立读点。RMS 统计定点投影误差。坐标顺序为正、侧、背。</p><ol>
+    ${Object.entries(joints).map(([name, points]) => `<li>${landmarkNames[name as JointName]} ${orthographic.map(view => points[view]?.join(', ') ?? '—').join(' / ')}</li>`).join('')}</ol></details>`;
+  document.body.append(panel);
+  const referenceImage = panel.querySelector('img')!;
+  const referenceState = panel.querySelector('#reference-state')!;
+  let referenceURL: string | undefined;
+
+  function displayedViews(): readonly View[] {
+    if (angle === 'three') return orthographic;
+    if (angle === 'four') return [...orthographic, 'quarter'];
+    return [angle];
   }
-  guides.visible=showGuides;
-  labels.innerHTML=labelTexts.map(label=>`<span>${label}</span>`).join('');
-  labels.style.width=views.length===3?'min(94vw, 900px)':'100%';
-  ui.querySelectorAll<HTMLButtonElement>('[data-focus]').forEach(b=>b.classList.toggle('active',b.dataset.focus===focus));
-  ui.querySelectorAll<HTMLButtonElement>('[data-stage]').forEach(b=>b.classList.toggle('active',b.dataset.stage===stage));
-  ui.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.classList.toggle('active',b.dataset.angle===angle));
-  const canCompare=referenceReady&&!['quarter','rear-quarter'].includes(angle);ui.querySelector<HTMLButtonElement>('#structure-overlay')!.disabled=!canCompare;ui.querySelector<HTMLButtonElement>('#structure-paired')!.disabled=!canCompare;
-  ui.querySelector('#structure-edits')!.classList.toggle('active',showEdits);
-  ui.querySelector('#structure-points')!.classList.toggle('active',showPoints);ui.querySelector('#structure-overlay')!.classList.toggle('active',overlay);ui.querySelector('#structure-paired')!.classList.toggle('active',paired);
-  ui.querySelector('output')!.textContent=`${triangles.toLocaleString()} 三角面 / 人物 · 旧臀块已移除 / 新块未安装 · 正交投影 · ${(bodyPlan.height/(bodyPlan.height-bodyPlan.chin)).toFixed(1)} 头身 · 关节中心 RMS：${fitText} px（不代表轮廓）`;
-  const url=new URL(location.href);url.searchParams.set('focus',focus);url.searchParams.set('stage',stage);url.searchParams.set('angle',angle);history.replaceState(null,'',url);
-  resize();
- }
- ui.querySelectorAll<HTMLButtonElement>('[data-stage]').forEach(b=>b.onclick=()=>{stage=b.dataset.stage as BodyStage;rebuild();});
- ui.querySelectorAll<HTMLButtonElement>('[data-focus]').forEach(b=>b.onclick=()=>{focus=b.dataset.focus!;ui.querySelectorAll<HTMLButtonElement>('[data-focus]').forEach(x=>x.classList.toggle('active',x===b));rebuild();});
- ui.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(b=>b.onclick=()=>{angle=b.dataset.angle!;if(['quarter','rear-quarter'].includes(angle)){paired=false;overlay=false;}rebuild();});
- function toggle(id:string,get:()=>boolean,set:(v:boolean)=>void){ui.querySelector<HTMLButtonElement>(id)!.onclick=e=>{set(!get());(e.target as HTMLElement).classList.toggle('active',get());rebuild();};}
- toggle('#structure-silhouette',()=>silhouette,v=>{silhouette=v;});toggle('#structure-wire',()=>wire,v=>{wire=v;});toggle('#structure-guides',()=>showGuides,v=>{showGuides=v;});
- toggle('#structure-edits',()=>showEdits,v=>{showEdits=v;});
- toggle('#structure-paired',()=>paired,v=>{paired=v;});toggle('#structure-points',()=>showPoints,v=>{showPoints=v;});toggle('#structure-overlay',()=>overlay,v=>{overlay=v;});
- ui.querySelector<HTMLButtonElement>('#structure-reference')!.onclick=()=>{panel.hidden=!panel.hidden;};
- if(capture){ui.hidden=true;labels.hidden=true;guides.visible=false;showGuides=false;}
- window.addEventListener('resize',resize);rebuild();
+  function canOverlay() {
+    return referenceReady && displayedViews().some(canonical);
+  }
+  function canPair() {
+    return referenceReady && displayedViews().every(view => crops[view]);
+  }
+  panel.querySelector<HTMLInputElement>('input[type=file]')!.onchange = event => {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (referenceURL) URL.revokeObjectURL(referenceURL);
+    referenceURL = URL.createObjectURL(file);
+    referenceReady = overlay = paired = false;
+    referenceImage.src = referenceURL;
+  };
+  referenceImage.onload = () => {
+    referenceReady = referenceImage.naturalWidth === sheet.width && referenceImage.naturalHeight === sheet.height;
+    overlay = canOverlay();
+    paired = canPair() && !overlay;
+    referenceState.textContent = referenceReady
+      ? female ? '已按各视图头顶与地面校准。正侧背支持叠合，半侧支持并排。' : '已启用固定坐标叠合。'
+      : `此图可作为旁置参考。固定坐标对齐需要原始 ${dimensions} 图版。`;
+    rebuild();
+  };
+  referenceImage.onerror = () => {
+    referenceState.textContent = '无法读取这张参考图。';
+    rebuild();
+  };
+  panel.querySelector<HTMLInputElement>('input[type=range]')!.oninput = event => {
+    referenceOpacity = Number((event.target as HTMLInputElement).value);
+    rebuild();
+  };
+  panel.querySelector<HTMLButtonElement>('#structure-close-reference')!.onclick = () => { panel.hidden = true; };
+
+  const guideMaterial = new T.LineBasicMaterial({ color: 0xb7b7af, transparent: true, opacity: .55, depthTest: false });
+  const guideWidth = female ? 1.47 : 1.12;
+  for (const y of [0, plan.ankle, plan.knee, plan.crotch, plan.waist, plan.shoulder, plan.chin, plan.height]) {
+    const geometry = new T.BufferGeometry().setFromPoints([new T.Vector3(-guideWidth, y, -.22), new T.Vector3(guideWidth, y, -.22)]);
+    guides.add(new T.Line(geometry, guideMaterial));
+  }
+
+  function spacing() {
+    return paired ? 1.55 : focus === 'body' && !part ? .73 : .53;
+  }
+  function resize() {
+    const top = capture ? 0 : Math.ceil(ui.getBoundingClientRect().bottom + 18);
+    const height = capture ? innerHeight : Math.max(180, innerHeight - top - 65);
+    const aspect = innerWidth / height;
+    const count = displayedViews().length;
+    const baseSpan = partBounds ? Math.max(.16, (partBounds.max.y - partBounds.min.y) * 1.38)
+      : focus === 'body' ? 2.04 : .62;
+    const minWidth = count > 1 ? (count - 1) * spacing() + (paired ? 1.55 : .80) : paired ? 1.55 : .65;
+    const span = Math.max(baseSpan, minWidth / aspect);
+    const center = partBounds ? (partBounds.min.y + partBounds.max.y) / 2
+      : focus === 'neck' ? 1.50 : focus === 'hips' ? .95 : plan.height / 2;
+    camera.position.set(0, center, 5);
+    camera.lookAt(0, center, 0);
+    camera.left = -span * aspect / 2;
+    camera.right = span * aspect / 2;
+    camera.top = span / 2;
+    camera.bottom = -span / 2;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, height);
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.top = `${top}px`;
+    labels.style.width = '100%';
+    labels.querySelectorAll<HTMLElement>('span').forEach((element, i) => {
+      element.style.left = `${50 + labelPositions[i] / (span * aspect) * 100}%`;
+    });
+    renderer.render(scene, camera);
+  }
+
+  function rebuild() {
+    clearStudyGroup(overlays);
+    clearStudyGroup(markers);
+    clearStudyGroup(models);
+    const views = displayedViews();
+    const labelTexts: string[] = [];
+    labelPositions = [];
+    partBounds = undefined;
+    let triangles = 0, fitText = '';
+    for (const [i, view] of views.entries()) {
+      const model = female ? createFemaleBodyBlockout() : createBodyBlockout('blockout');
+      if (!female) detachLegacyPelvis(model);
+      const isolated = part ? model.getObjectByName(part) as T.Mesh : undefined;
+      if (isolated) partBounds = new T.Box3().setFromObject(isolated);
+      const origin = (i - (views.length - 1) / 2) * spacing();
+      const yaw = rotations[view];
+      const center = partBounds?.getCenter(new T.Vector3());
+      const shift = center && !paired ? -(center.x * Math.cos(yaw) + center.z * Math.sin(yaw)) : 0;
+      const referenceOffset = origin - (paired ? .36 : 0) + shift;
+      model.position.x = origin + (paired ? .36 : 0) + shift;
+      // The reference half-side is seen from slightly above. Keep this tilt
+      // in that preview so the orthographic fit uses the unrotated heights.
+      const pitch = female && view === 'quarter' ? .24 : 0;
+      model.rotation.set(pitch, yaw, 0);
+      model.position.y = (1 - Math.cos(pitch)) * (center?.y ?? plan.height / 2);
+      const crop = crops[view];
+      const blend = overlay && canonical(view);
+      triangles = isolated ? isolated.geometry.index!.count / 3 : model.userData.triangles;
+      fitText = orthographic.map((key, index) => `${'正侧背'[index]} ${model.userData.fitReport[key].rms.toFixed(2)}`).join(' / ');
+      model.traverse(object => {
+        if (!(object instanceof T.Mesh)) return;
+        object.visible = !isolated || object === isolated;
+        const materials = (Array.isArray(object.material) ? object.material : [object.material]) as T.MeshStandardMaterial[];
+        for (const material of materials) {
+          material.wireframe = wire;
+          material.transparent = blend;
+          material.opacity = blend ? .60 : 1;
+        }
+        if (silhouette) {
+          for (const material of materials) material.dispose();
+          object.material = new T.MeshBasicMaterial({ color: 0x303636, wireframe: wire, transparent: blend, opacity: blend ? .60 : 1 });
+        }
+      });
+      models.add(model);
+      if (crop && (blend || paired)) {
+        addReferenceProjection(overlays, referenceImage, referenceOffset, paired ? 1 : referenceOpacity, crop);
+      }
+      const label = names[view];
+      if (paired) {
+        labelPositions.push(origin - .36, origin + .36);
+        labelTexts.push(`${label} · 参考`, `${label} · 模型`);
+      } else {
+        labelPositions.push(origin);
+        labelTexts.push(label);
+      }
+      if (showEdits || showPoints) {
+        const marker = new T.Group();
+        marker.position.copy(model.position);
+        marker.rotation.copy(model.rotation);
+        if (showEdits) addEditedVertices(marker, model.userData.vertexEdits.report, canonical(view) ? view : undefined, focus);
+        if (showPoints) {
+          addLandmarkMarkers(marker, model.userData.landmarks, canonical(view) ? view : 'front', joints);
+          if (canonical(view) && crop) addViewTargets(markers, model.userData.landmarks, view,
+            paired ? referenceOffset : model.position.x, !paired, joints, crop);
+        }
+        markers.add(marker);
+      }
+    }
+    guides.visible = showGuides;
+    labels.innerHTML = labelTexts.map(label => `<span>${label}</span>`).join('');
+    ui.querySelectorAll<HTMLButtonElement>('[data-focus]').forEach(button => {
+      button.classList.toggle('active', !part && button.dataset.focus === focus);
+    });
+    ui.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(button => {
+      button.classList.toggle('active', button.dataset.angle === angle);
+    });
+    const partSelect = ui.querySelector<HTMLSelectElement>('#structure-part');
+    if (partSelect) partSelect.value = part;
+    ui.querySelector<HTMLButtonElement>('#structure-overlay')!.disabled = !canOverlay();
+    ui.querySelector<HTMLButtonElement>('#structure-paired')!.disabled = !canPair();
+    for (const [id, value] of [['edits', showEdits], ['points', showPoints], ['overlay', overlay], ['paired', paired]] as const) {
+      ui.querySelector('#structure-' + id)?.classList.toggle('active', value);
+    }
+    const stats = female
+      ? part ? femalePartLabels[part] : `${Object.keys(femalePartLabels).length} 个独立体块`
+      : '旧臀块已移除 / 新块未安装';
+    const fit = part ? '' : ` · ${(plan.height / (plan.height - plan.chin)).toFixed(1)} 头身 · 定位点 RMS ${fitText} px`;
+    ui.querySelector('output')!.textContent = `${triangles.toLocaleString()} 三角面 · ${stats} · 正交投影${fit}`;
+    const url = new URL(location.href);
+    url.searchParams.set('focus', focus);
+    url.searchParams.set('stage', 'blockout');
+    url.searchParams.set('angle', angle);
+    if (part) url.searchParams.set('part', part);
+    else url.searchParams.delete('part');
+    history.replaceState(null, '', url);
+    resize();
+  }
+
+  ui.querySelectorAll<HTMLButtonElement>('[data-focus]').forEach(button => {
+    button.onclick = () => { focus = button.dataset.focus!; part = ''; rebuild(); };
+  });
+  const partSelect = ui.querySelector<HTMLSelectElement>('#structure-part');
+  if (partSelect) partSelect.onchange = () => { part = partSelect.value; focus = 'body'; rebuild(); };
+  ui.querySelectorAll<HTMLButtonElement>('[data-angle]').forEach(button => {
+    button.onclick = () => {
+      angle = button.dataset.angle as Angle;
+      if (!canOverlay() && overlay) {
+        overlay = false;
+        paired = canPair();
+      }
+      if (!canPair()) paired = false;
+      rebuild();
+    };
+  });
+  function toggle(id: string, get: () => boolean, set: (value: boolean) => void) {
+    const button = ui.querySelector<HTMLButtonElement>('#structure-' + id);
+    if (button) button.onclick = () => { set(!get()); button.classList.toggle('active', get()); rebuild(); };
+  }
+  toggle('silhouette', () => silhouette, value => { silhouette = value; });
+  toggle('wire', () => wire, value => { wire = value; });
+  toggle('guides', () => showGuides, value => { showGuides = value; });
+  toggle('edits', () => showEdits, value => { showEdits = value; });
+  toggle('points', () => showPoints, value => { showPoints = value; });
+  toggle('paired', () => paired, value => { paired = value; if (value) overlay = false; });
+  toggle('overlay', () => overlay, value => { overlay = value; if (value) paired = false; });
+  ui.querySelector<HTMLButtonElement>('#structure-reference')!.onclick = () => { panel.hidden = !panel.hidden; };
+  if (capture) {
+    ui.hidden = true;
+    labels.hidden = true;
+  }
+  window.addEventListener('resize', resize);
+  rebuild();
 }

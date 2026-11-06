@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {referenceFrame,sourceJoints,viewJoints,type StudyView,type JointName} from '../assets/procedural/bodyReference';
+import {sourceJoints,viewJoints,maleStudyCrops,type StudyCrop,type StudyJoints,type StudyView,type JointName} from '../assets/procedural/bodyReference';
 import type {MeshLandmarks} from '../assets/procedural/bodyConstraints';
 
 export function clearStudyGroup(group:T.Group){
@@ -8,20 +8,19 @@ export function clearStudyGroup(group:T.Group){
  }});group.clear();
 }
 /** Display only: the original file is read locally and never sent to a server. */
-export function addReferenceProjection(group:T.Group,image:HTMLImageElement,view:string,offset:number,opacity:number){
- const f=referenceFrame,axis=view==='side'?f.sideAxis:view==='back'?f.backAxis:f.frontAxis;
- const width=view==='side'?f.sideCrop:f.frontCrop,left=axis-width/2,top=f.cropTop,height=f.cropHeight;
+export function addReferenceProjection(group:T.Group,image:HTMLImageElement,offset:number,opacity:number,crop:StudyCrop){
+ const {axis,ground,scale,left,top,width,height}=crop;
  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
  canvas.getContext('2d')!.drawImage(image,left,top,width,height,0,0,width,height);
  const texture=new T.CanvasTexture(canvas);texture.colorSpace=T.SRGBColorSpace;
- const plane=new T.Mesh(new T.PlaneGeometry(width*f.scale,height*f.scale),new T.MeshBasicMaterial({map:texture,transparent:true,opacity,depthWrite:false}));
- plane.position.set(offset+(left+width/2-axis)*f.scale,(f.ground-top-height/2)*f.scale,-.5);group.add(plane);
+ const plane=new T.Mesh(new T.PlaneGeometry(width*scale,height*scale),new T.MeshBasicMaterial({map:texture,transparent:true,opacity,depthWrite:false}));
+ plane.position.set(offset+(left+width/2-axis)*scale,(ground-top-height/2)*scale,-.5);group.add(plane);
 }
-export function addLandmarkMarkers(parent:T.Group,actual:MeshLandmarks,view:StudyView){
+export function addLandmarkMarkers(parent:T.Group,actual:MeshLandmarks,view:StudyView,joints:StudyJoints=viewJoints){
  const material=new T.MeshBasicMaterial({color:0x008969,depthTest:false});
  const points=Object.entries(sourceJoints);
  for(const [index,[name]] of points.entries()){
-  if(!viewJoints[name as JointName][view])continue;
+  if(!joints[name as JointName][view])continue;
   const position=new T.Vector3(...actual[name as JointName]);
   const dot=new T.Mesh(new T.SphereGeometry(.007,8,6),material.clone());dot.position.copy(position);dot.renderOrder=4;parent.add(dot);
   const canvas=document.createElement('canvas');canvas.width=64;canvas.height=48;
@@ -30,16 +29,16 @@ export function addLandmarkMarkers(parent:T.Group,actual:MeshLandmarks,view:Stud
  }
  material.dispose();
  const links=[['crown','chin'],['chin','neck'],['neck','rightShoulder'],['neck','leftShoulder'],['rightShoulder','rightElbow'],['rightElbow','rightWrist'],['leftShoulder','leftElbow'],['leftElbow','leftWrist'],['rightHip','leftHip'],['rightHip','rightKnee'],['rightKnee','rightAnkle'],['leftHip','leftKnee'],['leftKnee','leftAnkle']] as const;
- const vertices=links.filter(([a,b])=>viewJoints[a][view]&&viewJoints[b][view]).flatMap(([a,b])=>[new T.Vector3(...actual[a]),new T.Vector3(...actual[b])]);
+ const vertices=links.filter(([a,b])=>joints[a][view]&&joints[b][view]).flatMap(([a,b])=>[new T.Vector3(...actual[a]),new T.Vector3(...actual[b])]);
  const lines=new T.LineSegments(new T.BufferGeometry().setFromPoints(vertices),new T.LineBasicMaterial({color:0x008969,transparent:true,opacity:.45,depthTest:false}));lines.renderOrder=3;parent.add(lines);
 }
 
 /** Independent original-image targets; unlike mesh markers these stay fixed. */
-export function addViewTargets(parent:T.Group,actual:MeshLandmarks,view:StudyView,offset:number,drawError=true){
- const f=referenceFrame,axis=view==='front'?f.frontAxis:view==='side'?f.sideAxis:f.backAxis,vertices:T.Vector3[]=[];
- for(const name of Object.keys(viewJoints) as JointName[]){
-  const target=viewJoints[name][view];if(!target)continue;
-  const x=offset+(target[0]-axis)*f.scale,y=(f.ground-target[1])*f.scale,r=.010;
+export function addViewTargets(parent:T.Group,actual:MeshLandmarks,view:StudyView,offset:number,drawError=true,joints:StudyJoints=viewJoints,crop=maleStudyCrops[view]){
+ const {axis,ground,scale}=crop,vertices:T.Vector3[]=[];
+ for(const name of Object.keys(joints) as JointName[]){
+  const target=joints[name][view];if(!target)continue;
+  const x=offset+(target[0]-axis)*scale,y=(ground-target[1])*scale,r=.010;
   vertices.push(new T.Vector3(x-r,y,.35),new T.Vector3(x+r,y,.35),new T.Vector3(x,y-r,.35),new T.Vector3(x,y+r,.35));
   const p=actual[name],px=offset+(view==='front'?p[0]:view==='side'?-p[2]:-p[0]);
   if(drawError)vertices.push(new T.Vector3(px,p[1],.35),new T.Vector3(x,y,.35));

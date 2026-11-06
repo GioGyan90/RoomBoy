@@ -76,6 +76,10 @@
 
 @media(max-width:650px){#structure-labels{bottom:80px}}
 
+#structure-ui nav a,#structure-ui select,#structure-close-reference{border:1px solid #d4d8d0;background:#f8f9f4;border-radius:5px;color:#66716a;padding:7px 11px;cursor:pointer;font-size:11px}
+#structure-ui nav a[aria-current="page"]{background:#344b40;color:#fff;border-color:#344b40}
+#structure-close-reference{float:right;margin:0 0 8px 12px}
+
 #room-controls{position:fixed;right:18px;top:67px;z-index:30;display:flex;gap:4px;padding:5px;
   border:1px solid #ffffff30;border-radius:12px;background:#141b22d9;backdrop-filter:blur(12px)}
 #room-controls[hidden]{display:none}

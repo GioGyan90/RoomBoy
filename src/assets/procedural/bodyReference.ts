@@ -42,6 +42,18 @@ export type JointName=keyof typeof sourceJoints;
 export type BodyTargets=Record<JointName,SourcePoint>;
 export type StudyView='front'|'side'|'back';
 export type ImagePoint=readonly [x:number,y:number];
+export type StudyJoints=Record<JointName,Partial<Record<StudyView,ImagePoint>>>;
+export type StudyProjection={axis:number;ground:number;scale:number};
+export type StudyCrop=StudyProjection&{left:number;top:number;width:number;height:number};
+export const maleStudyCrops:Record<StudyView,StudyCrop>={
+ front:makeCrop(referenceFrame.frontAxis,referenceFrame.frontCrop),
+ side:makeCrop(referenceFrame.sideAxis,referenceFrame.sideCrop),
+ back:makeCrop(referenceFrame.backAxis,referenceFrame.frontCrop),
+};
+function makeCrop(axis:number,width:number):StudyCrop{
+ const {ground,scale,cropTop:top,cropHeight:height}=referenceFrame;
+ return {axis,ground,scale,left:axis-width/2,top,width,height};
+}
 const backJoints:Partial<Record<JointName,ImagePoint>>={crown:[1151,59],neck:[1151,205],rightShoulder:[1253,255],leftShoulder:[1049,255],rightElbow:[1268,365],leftElbow:[1034,365],rightWrist:[1286,493],leftWrist:[1017,493],rightHip:[1195,453],leftHip:[1107,453],rightKnee:[1216,685],leftKnee:[1085,685],rightAnkle:[1229,880],leftAnkle:[1072,880]};
 export const viewJoints={} as Record<JointName,{front:ImagePoint;side:ImagePoint;back?:ImagePoint}>;
 for(const name of Object.keys(sourceJoints) as JointName[]){const [x,y,sx]=sourceJoints[name];viewJoints[name]={front:[x,y],side:[sx,name==='chin'?174:y],back:backJoints[name]};}

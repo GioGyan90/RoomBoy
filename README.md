@@ -83,6 +83,10 @@ node --import tsx --experimental-loader ../3D_AItool/experiments/prompt2rig/test
 
 [打开体块与低面三视图](https://giogyan90.github.io/RoomBoy/?view=structure) · [建模顺序与比例基准](docs/STRUCTURE_STUDY.md)。游戏人物沿用研究截面和关节位置，使用可变形的身体与贴身服装表面。头部保留素模供轮廓检查。
 
+[女性低模临摹](https://giogyan90.github.io/RoomBoy/?view=structure&body=female)有 19 个独立闭合体块、2,072 个三角面。正、侧、背三视图共用一套对称网格，半侧用于检查胸肩、骨盆与四肢的折面。头顶和地面按各视图归一化，肘腕、膝踝和髋腿分界使用共用截面。
+
+可从「查看分块」单独检查骨盆等部件。用「参考图」选择原始 604 × 512 四视图，即可叠合正侧背或并排观察半侧。侧面被手臂挡住的区域按相邻轮廓估算。
+
 点位校准版支持“定位点”与“原图叠合”，在参考图面板中选择原始设定图即可检查。[坐标与校准记录](docs/POINT_CALIBRATION.md)。
 
 最新一轮已让定点驱动实际网格端面，加入独立背面点位、并排对照及误差检查。[实际网格对齐记录](docs/MESH_ALIGNMENT.md)。
