@@ -103,4 +103,4 @@ node --import tsx --experimental-loader ../3D_AItool/experiments/prompt2rig/test
 
 ## 当前分块重建：臀部待审阅
 
-[独立臀部分块](https://giogyan90.github.io/RoomBoy/?view=pelvis)：当前为36顶点/68面镜像外轮廓笼架，所有点在轮廓边界；支持编号与本地参考并排。侧面已按可见边界拟合，橙点标记遮挡处推定。全身检查页已移除旧臀块，新块尚未安装，等待用户确认。[分块审阅记录](docs/PELVIS_PART_REVIEW.md)。
+[独立臀部分块](https://giogyan90.github.io/RoomBoy/?view=pelvis)为待审阅的 36 顶点、68 面镜像笼架，可查看顶点编号与本地参考。侧面按可见边界拟合，橙点标出遮挡处的推定位置。男性全身检查页显示原有骨盆。[分块审阅记录](docs/PELVIS_PART_REVIEW.md)。

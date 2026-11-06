@@ -1,5 +1,4 @@
 import * as T from 'three';
-import { detachLegacyPelvis } from '../assets/parts/pelvis';
 import { bodyPlan, createBodyBlockout } from '../assets/procedural/bodyBlockout';
 import { landmarkNames, maleStudyCrops, referenceFrame, viewJoints, type JointName, type StudyCrop, type StudyView } from '../assets/procedural/bodyReference';
 import { createFemaleBodyBlockout, femalePartLabels } from '../assets/procedural/femaleBodyBlockout';
@@ -61,7 +60,7 @@ export function startStructureStudio() {
   const ui = document.createElement('section');
   ui.id = 'structure-ui';
   ui.innerHTML = `<header><div><small>CHARACTER STUDY · 01</small><h1>${female ? '女性人体 · 低模临摹' : '先把结构做准'}</h1>
-    <p>${female ? '正侧背面对齐截面，半侧面复核体块。' : '旧臀块已移除，新分块等待确认。<a href="?view=pelvis">审阅独立臀块 ↗</a>'}</p></div><a href="?view=character">查看游戏人物 ↗</a></header>
+    <p>${female ? '正侧背面对齐截面，半侧面复核体块。' : '可检查全身结构与髋腿衔接。<a href="?view=pelvis">审阅独立臀块 ↗</a>'}</p></div><a href="?view=character">查看游戏人物 ↗</a></header>
   <nav aria-label="建模对象"><a href="?view=structure" ${female ? '' : 'aria-current="page"'}>男性结构</a><a href="?view=structure&body=female" ${female ? 'aria-current="page"' : ''}>女性结构</a></nav>
   <nav aria-label="建模阶段"><button class="active" data-stage="blockout">01 几何体块</button><button data-stage="planes" disabled title="完成简化体块对齐后再进入低面细化">02 低面结构</button></nav>
   <nav aria-label="检查视角">${angles.map(value => `<button data-angle="${value}">${value === 'three' ? '三视同屏' : value === 'four' ? '四视同屏' : names[value]}</button>`).join('')}</nav>
@@ -177,10 +176,10 @@ export function startStructureStudio() {
     const labelTexts: string[] = [];
     labelPositions = [];
     partBounds = undefined;
-    let triangles = 0, fitText = '';
+    let triangles = 0, partCount = 0, fitText = '';
     for (const [i, view] of views.entries()) {
       const model = female ? createFemaleBodyBlockout() : createBodyBlockout('blockout');
-      if (!female) detachLegacyPelvis(model);
+      partCount = model.children.length;
       const isolated = part ? model.getObjectByName(part) as T.Mesh : undefined;
       if (isolated) partBounds = new T.Box3().setFromObject(isolated);
       const origin = (i - (views.length - 1) / 2) * spacing();
@@ -252,9 +251,7 @@ export function startStructureStudio() {
     for (const [id, value] of [['edits', showEdits], ['points', showPoints], ['overlay', overlay], ['paired', paired]] as const) {
       ui.querySelector('#structure-' + id)?.classList.toggle('active', value);
     }
-    const stats = female
-      ? part ? femalePartLabels[part] : `${Object.keys(femalePartLabels).length} 个独立体块`
-      : '旧臀块已移除 / 新块未安装';
+    const stats = part ? femalePartLabels[part] : `${partCount} 个独立体块`;
     const fit = part ? '' : ` · ${(plan.height / (plan.height - plan.chin)).toFixed(1)} 头身 · 定位点 RMS ${fitText} px`;
     ui.querySelector('output')!.textContent = `${triangles.toLocaleString()} 三角面 · ${stats} · 正交投影${fit}`;
     const url = new URL(location.href);

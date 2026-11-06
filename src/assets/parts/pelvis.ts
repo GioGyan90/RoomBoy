@@ -17,10 +17,3 @@ export function createPelvisPart(){
  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setIndex(indices);geometry.computeVertexNormals();
  const mesh=new T.Mesh(geometry,new T.MeshStandardMaterial({color:0xa79db7,roughness:1,flatShading:true}));mesh.name='pelvis-review-part';mesh.userData.review=pelvisReviewState;mesh.userData.vertexIds=pelvisPoints.map(p=>p.id);mesh.userData.mirrorIndices=pelvisPoints.map((_,i)=>mirror(i));return mesh;
 }
-/** Remove the old region from the assembly review. Never install the candidate. */
-export function detachLegacyPelvis(root:T.Group){
- const old=root.getObjectByName('pelvis') as T.Mesh|undefined;if(!old)return;
- root.userData.triangles-=old.geometry.index!.count/3;old.removeFromParent();old.geometry.dispose();for(const m of Array.isArray(old.material)?old.material:[old.material])m.dispose();
- if(root.userData.vertexEdits)root.userData.vertexEdits.report=root.userData.vertexEdits.report.filter((r:{id:string})=>r.id.startsWith('N'));
- root.userData.pelvisReview=pelvisReviewState;
-}
