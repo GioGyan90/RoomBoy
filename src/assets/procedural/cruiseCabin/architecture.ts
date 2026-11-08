@@ -50,6 +50,14 @@ export function architecture(root:T.Group){
  return createNavigation([
   obstacle("rear",-5.8,5.8,-4.05,-3.75),obstacle("left",-5.9,-5.7,-3.9,3.9),
   obstacle("right",5.7,5.9,-3.9,3.9),obstacle("bath-back",-5.8,-2.5,.59,.74),
-  obstacle("bath-divider",-2.57,-2.43,.65,2.35),obstacle("bath-jamb",-2.57,-2.43,3.53,3.9)
+  obstacle("bath-divider",-2.57,-2.43,.65,2.35),obstacle("bath-jamb",-2.57,-2.43,3.53,3.9),
+  obstacle("king-bed",-2.4,.3,-3.4,-.71),
+  obstacle("wardrobe",-5.47,-3.9,-3.7,-2.9),
+  obstacle("minibar",.58,2.12,-3.56,-2.88),
+  obstacle("lounge-sofa",2.7,4.94,.09,1.0),
+  obstacle("coffee-table",3.0,4.1,1.3,2.4),
+  obstacle("bathtub",-5.55,-4.05,1.68,3.48),
+  obstacle("vanity",-3.52,-2.65,.91,1.6),
+  obstacle("toilet",-3.3,-2.7,2.82,3.42)
  ],{minX:-5.65,maxX:5.65,minZ:-3.72,maxZ:3.72});
 }
