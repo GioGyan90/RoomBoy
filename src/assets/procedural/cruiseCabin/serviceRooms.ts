@@ -56,10 +56,15 @@ export function serviceRooms(root:T.Group){
   cylinder(g,'vanity-light-globe',.11,.14,[x,1.65,.92],palette.ivory);
  }
  for(const y of [.25,.35])block(g,'vanity-folded-towel',[.49,.065,.30],[-3.09,y,1.25],palette.ivory);
- // Contoured contemporary toilet and elevated ceramic back.
- const bowl=new T.Mesh(new T.SphereGeometry(1,24,14),palette.ivory);
- bowl.name='toilet-bowl';bowl.position.set(-3.0,.30,3.08);bowl.scale.set(.28,.28,.35);bowl.castShadow=true;g.add(bowl);
- const seat=new T.Mesh(new T.SphereGeometry(1,24,12),palette.ivory);
- seat.name='toilet-seat';seat.position.set(-3.0,.57,3.08);seat.scale.set(.29,.05,.35);g.add(seat);
- block(g,'toilet-cistern',[.50,.39,.22],[-3.0,.70,3.41],palette.ivory);
+ // Unified modern toilet: pedestal, shallow oval basin, open seat ring and connected tank.
+ const pedestal=new T.Mesh(new T.CylinderGeometry(.205,.17,.45,20),palette.ivory);
+ pedestal.name='toilet-pedestal';pedestal.position.set(-3,.255,3.07);pedestal.castShadow=true;g.add(pedestal);
+ const bowl=new T.Mesh(new T.SphereGeometry(1,28,18),palette.ivory);
+ bowl.name='toilet-bowl';bowl.position.set(-3,.45,3.08);bowl.scale.set(.28,.15,.36);bowl.castShadow=true;g.add(bowl);
+ const seat=new T.Mesh(ellipseRing(.285,.355,.18,.26,.034),palette.ivory);
+ seat.name='toilet-seat';seat.position.set(-3,.585,3.08);g.add(seat);
+ const inner=new T.Mesh(new T.CircleGeometry(1,32),new T.MeshStandardMaterial({color:0xc9d0cb,roughness:.75}));
+ inner.name='toilet-inner';inner.rotation.x=-Math.PI/2;inner.scale.set(.175,.245,1);inner.position.set(-3,.593,3.08);g.add(inner);
+ block(g,'toilet-cistern-support',[.42,.45,.18],[-3,.42,3.41],palette.ivory);
+ block(g,'toilet-cistern',[.48,.33,.19],[-3,.77,3.47],palette.ivory);
 }
