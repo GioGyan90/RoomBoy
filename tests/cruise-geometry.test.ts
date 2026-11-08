@@ -93,7 +93,7 @@ test('room-facing service bar clears wall, bed, wardrobe and balcony doors',()=>
  const root=new T.Group();architecture(root);furniture(root);minibar(root);root.updateMatrixWorld(true);
  const bar=root.getObjectByName('minibar-cabinet')!;
  const mirror=root.getObjectByName('minibar-back-mirror')!;
- const other=['left-bulkhead','king-bed-frame','full-height-wardrobe','rear-wood-panel'];
+ const other=['left-bulkhead-bedroom','king-bed-frame','full-height-wardrobe','rear-wood-panel'];
  for(const item of other){
   const mesh=root.getObjectByName(item)!;
   assert.ok(!new T.Box3().setFromObject(bar).intersectsBox(new T.Box3().setFromObject(mesh)),'bar overlaps '+item);
@@ -138,4 +138,14 @@ test('bedside lamps and flower vase have supporting surfaces',()=>{
  const top=new T.Box3().setFromObject(table).max.y;
  const bottom=new T.Box3().setFromObject(vase).min.y;
  assert.ok(Math.abs(top-bottom)<.025,'vase floats above or sinks into the table');
+});
+
+test('bathroom cutaway preserves view of the tub without removing bedroom exterior wall',()=>{
+ const root=new T.Group();architecture(root);
+ const bedroom=root.getObjectByName('left-bulkhead-bedroom') as T.Mesh;
+ const cutaway=root.getObjectByName('left-bulkhead-bath-cutaway') as T.Mesh;
+ assert.ok(bedroom&&cutaway);
+ const high=new T.Box3().setFromObject(bedroom),low=new T.Box3().setFromObject(cutaway);
+ assert.ok(high.max.y>3&&low.max.y<.8,'cutaway wall should not obscure bathroom');
+ assert.ok(Math.abs(high.max.z-low.min.z)<.02,'exterior wall segments must join without gaps');
 });
