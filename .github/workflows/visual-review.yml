@@ -1,0 +1,42 @@
+name: Cruise cabin visual review
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'scripts/capture-cruise.mjs'
+      - '.github/workflows/visual-review.yml'
+      - 'package*.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Capture five cabin views
+        env:
+          CI: 'true'
+        run: node scripts/capture-cruise.mjs
+      - name: Upload temporary screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cruise-cabin-review
+          path: artifacts/cruise-review/
+          retention-days: 3
+          if-no-files-found: warn
