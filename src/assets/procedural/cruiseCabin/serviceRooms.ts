@@ -65,8 +65,8 @@ export function serviceRooms(root:T.Group){
  seat.name='toilet-seat';seat.position.set(-3,.585,3.08);g.add(seat);
  const inner=new T.Mesh(new T.CircleGeometry(1,32),new T.MeshStandardMaterial({color:0xc9d0cb,roughness:.75}));
  inner.name='toilet-inner';inner.rotation.x=-Math.PI/2;inner.scale.set(.175,.245,1);inner.position.set(-3,.593,3.08);g.add(inner);
- const tankSupport=new T.Mesh(new T.CylinderGeometry(.16,.19,.45,20),palette.ivory);
- tankSupport.name='toilet-cistern-support';tankSupport.position.set(-3,.43,3.41);tankSupport.scale.z=.62;g.add(tankSupport);
- const tank=new T.Mesh(new T.SphereGeometry(1,24,14),palette.ivory);
- tank.name='toilet-cistern';tank.position.set(-3,.76,3.47);tank.scale.set(.25,.19,.15);g.add(tank);
+ // Contemporary low-profile tank joined to the bowl instead of a floating round finial.
+ block(g,'toilet-cistern-support',[.39,.34,.22],[-3,.47,3.32],palette.ivory);
+ block(g,'toilet-cistern',[.49,.29,.25],[-3,.70,3.40],palette.ivory);
+ block(g,'toilet-tank-lid',[.51,.036,.27],[-3,.86,3.40],palette.ivory);
 }
