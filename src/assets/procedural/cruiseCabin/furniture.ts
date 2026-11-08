@@ -33,7 +33,8 @@ export function furniture(root:T.Group){
   block(g,"nightstand-marble-top",[.61,.055,.68],[x,.74,-3.06],palette.marble);
   block(g,"nightstand-drawer",[.44,.22,.02],[x,.48,-2.736],palette.cream);
   block(g,"drawer-pull",[.17,.026,.04],[x,.48,-2.705],gold);
-  cylinder(g,"brass-lamp-base",.085,.12,[x,.85,-3.06],gold);
+  cylinder(g,"brass-lamp-base",.085,.12,[x,.81,-3.06],gold);
+  cylinder(g,"brass-lamp-stem",.028,.23,[x,.93,-3.06],gold);
   cylinder(g,"warm-lampshade",.18,.27,[x,1.04,-3.06],linen);
  }
  // Left wall wardrobe; the independent minibar is built by minibar.ts.
@@ -59,7 +60,7 @@ export function furniture(root:T.Group){
  cylinder(g,"cocktail-table-gold-rim",.60,.025,[3.53,.52,1.94],gold);
  cylinder(g,"cocktail-table-pedestal",.095,.48,[3.53,.29,1.94],gold);
  cylinder(g,"cocktail-table-foot",.34,.04,[3.53,.06,1.94],gold);
- cylinder(g,"table-flower-vase",.10,.25,[3.39,.75,1.83],palette.cream);
+ cylinder(g,"table-flower-vase",.10,.25,[3.39,.735,1.83],palette.cream);
  for(let i=0;i<5;i++)cylinder(g,"flower-stem",.014,.28,[3.33+i*.038,.99,1.83],palette.gold);
  // Wall art, stepped trim, and inset decorative panels.
  // The rear wall uses one coordinated pilaster system; avoid overlapping repeated slats.
