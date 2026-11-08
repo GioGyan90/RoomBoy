@@ -2,14 +2,14 @@ import * as T from 'three';
 import {block,cylinder,palette} from './architecture';
 
 /**
- * The minibar is a wall-mounted service nook, independent of the bed and balcony.
- * Local +Z is the cabinet's opening; rotation turns it to face the main room.
+ * The minibar is a narrow service niche beside the wardrobe in the reference composition.
+ * Local +Z faces the bedroom; the station is scaled to clear nearby cabinetry.
  */
 export function minibar(root:T.Group){
  const station=new T.Group();
  station.name='cruise-service-bar';
- station.position.set(-5.16,0,-1.02);
- station.rotation.y=Math.PI/2;
+ station.position.set(-3.58,0,-3.25);
+ station.scale.set(.43,1,.88);
  root.add(station);
  block(station,'minibar-cabinet',[1.45,.91,.61],[0,.48,0],palette.wood);
  block(station,'minibar-black-marble',[1.53,.07,.68],[0,.97,0],palette.marble);
