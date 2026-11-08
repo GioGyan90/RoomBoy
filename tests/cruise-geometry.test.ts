@@ -74,7 +74,7 @@ test('balcony door aperture is clear of the rear bulkhead',()=>{
  assert.ok(wallRight.min.x>glassBox.max.x,'solid wall blocks the right edge of the balcony glass');
  assert.ok(wallLeft.max.x<wallRight.min.x,'balcony is fully closed off');
 });
-test('wall-facing service bar clears wall, bed, wardrobe and balcony doors',()=>{
+test('room-facing service bar clears wall, bed, wardrobe and balcony doors',()=>{
  const root=new T.Group();architecture(root);furniture(root);minibar(root);root.updateMatrixWorld(true);
  const bar=root.getObjectByName('minibar-cabinet')!;
  const mirror=root.getObjectByName('minibar-back-mirror')!;
@@ -84,7 +84,7 @@ test('wall-facing service bar clears wall, bed, wardrobe and balcony doors',()=>
   assert.ok(!new T.Box3().setFromObject(bar).intersectsBox(new T.Box3().setFromObject(mesh)),'bar overlaps '+item);
   assert.ok(!new T.Box3().setFromObject(mirror).intersectsBox(new T.Box3().setFromObject(mesh)),'bar mirror overlaps '+item);
  }
- assert.ok(Math.abs(bar.getWorldDirection(new T.Vector3()).x)>.99,'service bar must face into the room');
+ assert.ok(bar.getWorldDirection(new T.Vector3()).z>.99,'service bar must face the bedroom along +Z');
 });
 
 test('unrelated primary furniture modules have no three-dimensional intersections',()=>{
