@@ -24,16 +24,20 @@ export function architecture(root:T.Group){
  // Brass marble seams, narrow enough to avoid z-fighting with the floor.
  for(let i=0;i<10;i++)block(g,"marble-floor-gold-grout",[.012,.003,7.68],[-5.4+i*1.2,.018,0],palette.gold);
  for(let i=0;i<7;i++)block(g,"marble-floor-cross-grout",[11.35,.003,.012],[0,.019,-3.5+i*1.16],palette.gold);
- block(g,"rear-bulkhead",[11.7,p.height,.18],[0,p.height/2,p.back],palette.cream);
- for(let i=0;i<11;i++)block(g,"rear-panel-walnut-pilaster",[.08,2.56,.095],[-5.42+i*1.07,1.48,p.back+.12],palette.wood);
- for(const y of [.31,2.83])block(g,"rear-brass-rail",[11.42,.036,.10],[0,y,p.back+.14],palette.gold);
+ // Split the rear bulkhead around the balcony opening: no opaque wall behind the glass.
+ block(g,"rear-bulkhead-left",[7.70,p.height,.18],[-1.96,p.height/2,p.back],palette.cream);
+ block(g,"rear-bulkhead-right",[.18,p.height,.18],[5.70,p.height/2,p.back],palette.cream);
+ block(g,"balcony-door-header",[3.87,.36,.18],[3.48,p.height-.18,p.back],palette.cream);
+ block(g,"balcony-door-sill",[3.87,.20,.18],[3.48,.10,p.back],palette.wood);
+ for(let i=0;i<7;i++)block(g,"rear-panel-walnut-pilaster",[.08,2.56,.095],[-5.42+i*1.07,1.48,p.back+.12],palette.wood);
+ for(const y of [.31,2.83])block(g,"rear-brass-rail",[7.55,.036,.10],[-1.95,y,p.back+.14],palette.gold);
  block(g,"left-bulkhead",[.18,p.height,7.8],[p.left,p.height/2,0],palette.cream);
  block(g,"right-hull",[.18,p.height,7.8],[p.right,p.height/2,0],palette.cream);
  // Layered ship side plating with rounded longitudinal ribs.
  for(const y of [.38,2.82])block(g,"ship-side-brass-stripe",[.038,.048,7.72],[p.right+.112,y,0],palette.gold);
  for(let i=0;i<9;i++)block(g,"ship-hull-rib",[.065,2.65,.08],[p.right+.125,1.48,-3.44+i*.87],palette.cream);
  block(g,"front-cutaway",[11.7,.32,.18],[0,.16,p.front],palette.cream);
- for(const y of [.18,2.82])block(g,"gold-trim",[11.5,.047,.07],[0,y,p.back+.14],palette.gold);
+ for(const y of [.18,2.82])block(g,"gold-trim",[7.56,.047,.07],[-1.95,y,p.back+.14],palette.gold);
  for(let i=0;i<3;i++){
   const z=-2.3+i*2.2;
   cylinder(g,"porthole-brass-rim",.46,.065,[p.right+.105,1.82,z],palette.gold,"x");
