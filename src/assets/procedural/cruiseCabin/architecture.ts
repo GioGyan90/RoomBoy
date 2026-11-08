@@ -29,7 +29,7 @@ export function architecture(root:T.Group){
  block(g,"rear-bulkhead-right",[.35,p.height,.18],[5.625,p.height/2,p.back],palette.cream);
  block(g,"balcony-door-header",[3.90,.36,.18],[3.50,p.height-.18,p.back],palette.cream);
  block(g,"balcony-door-sill",[3.90,.20,.18],[3.50,.10,p.back],palette.wood);
- for(let i=0;i<7;i++)block(g,"rear-panel-walnut-pilaster",[.08,2.56,.095],[-5.42+i*1.07,1.48,p.back+.12],palette.wood);
+ // Structural rhythm is provided by the dedicated luxury wall panels; no duplicate slats.
  for(const y of [.31,2.83])block(g,"rear-brass-rail",[7.22,.036,.10],[-2.12,y,p.back+.14],palette.gold);
  block(g,"left-bulkhead",[.18,p.height,7.8],[p.left,p.height/2,0],palette.cream);
  block(g,"right-hull",[.18,p.height,7.8],[p.right,p.height/2,0],palette.cream);
