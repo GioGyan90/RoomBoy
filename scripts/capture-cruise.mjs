@@ -7,7 +7,7 @@ await mkdir(output,{recursive:true});
 const server=spawn('npm',['run','preview','--','--port','4173','--strictPort'],{stdio:'pipe',env:process.env});
 let log='';server.stdout.on('data',d=>{log+=String(d)});server.stderr.on('data',d=>{log+=String(d)});
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
-const base='http://127.0.0.1:4173/RoomBoy/';
+const base='http://127.0.0.1:4173/';
 let browser;
 const issues=[];
 try{
@@ -23,7 +23,7 @@ try{
   await page.waitForTimeout(1700);
   const canvas=page.locator('canvas').first();
   if(!await canvas.isVisible())throw Error('No visible WebGL canvas at '+station);
-  const pixels=await canvas.evaluate(c=>{const gl=c.getContext('webgl2')||c.getContext('webgl');return {width:c.width,height:c.height,webgl:!!gl}});
+  const pixels=await canvas.evaluate(c=>({width:c.width,height:c.height}));
   await page.screenshot({path:resolve(output,station+'.png'),animations:'disabled'});
   console.log('Captured',station,pixels);
  }
