@@ -25,10 +25,10 @@ export function luxuryDetails(root:T.Group){
   cylinder(g,'sconce-pin',.026,.11,[x,1.49,-3.49],palette.gold);
  }
  // Bedrunner embroidery and parallel stitching; slight offsets prevent z fighting.
- for(const z of [-1.14,-.78]){
+ for(const z of [-.08,.42]){
   block(g,'runner-gold-stitch',[2.50,.008,.013],[-1.05,.94,z],palette.gold);
  }
- for(let i=0;i<7;i++)block(g,'quilt-stitched-line',[2.44,.004,.006],[-1.05,.885,-1.97+i*.11],pearl);
+ for(let i=0;i<11;i++)block(g,'quilt-stitched-line',[2.44,.004,.006],[-1.05,.885,-2.25+i*.18],pearl);
  // No floating gold studs: the reference bed uses smooth white pillows.
  // Wardrobe recessed kickplate, cornice and decorative door pulls.
  block(g,'wardrobe-brass-kickplate',[1.61,.055,.72],[-4.69,.075,-3.30],palette.gold);
