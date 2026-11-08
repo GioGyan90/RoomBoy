@@ -2,7 +2,7 @@ import * as T from 'three';
 /** Thin, selective contour lines instead of outlining every decorative seam. */
 export function applyCruiseInk(root:T.Group){
  const ink=new T.LineBasicMaterial({color:0x30232c,transparent:true,opacity:.76,depthWrite:false});
- const key=/king-bed-frame|pillowtop-mattress|quilt-ivory|headboard-wood-frame|walnut-nightstand|full-height-wardrobe|sofa-seat-frame|sofa-backrest|sofa-arm|sofa-seat-cushion|cocktail-table-marble|cocktail-table-pedestal|toilet-bowl|toilet-cistern|tub-side-wall|tub-end-wall|vanity-cabinet|minibar-cabinet|ship-hull-foundation|bath-divider|bath-rear-wall/;
+ const key=/king-bed-frame|pillowtop-mattress|quilt-ivory|headboard-wood-frame|walnut-nightstand|full-height-wardrobe|sofa-seat-frame|sofa-curve-back-panel|sofa-arm|sofa-seat-cushion|cocktail-table-marble|cocktail-table-pedestal|toilet-bowl|toilet-cistern|tub-side-wall|tub-end-wall|vanity-cabinet|minibar-cabinet|ship-hull-foundation|bath-divider|bath-rear-wall/;
  const targets:T.Mesh[]=[];
  root.traverse(o=>{if(o instanceof T.Mesh&&key.test(o.name))targets.push(o);});
  for(const mesh of targets){
