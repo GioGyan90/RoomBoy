@@ -163,3 +163,15 @@ test('toilet is grounded, has an open seat, and the cistern is physically suppor
  assert.ok(support.intersectsBox(bowl),'tank support must connect to toilet body');
  assert.ok(get('toilet-seat').geometry instanceof T.ExtrudeGeometry,'toilet seat should be an open elliptical ring');
 });
+
+test('cruise has an unobstructed bathroom cutaway and a single curved sofa shell',()=>{
+ const root=new T.Group();architecture(root);furniture(root);root.updateMatrixWorld(true);
+ const divider=root.getObjectByName('bath-divider') as T.Mesh;
+ assert.ok(divider,'bathroom divider missing');
+ const bounds=new T.Box3().setFromObject(divider);
+ assert.ok(bounds.max.y<=1.25,'high divider blocks the bed and bathroom in isometric view');
+ const sofa=root.getObjectByName('sofa-curved-backrest') as T.Mesh;
+ assert.ok(sofa&&sofa.geometry instanceof T.ExtrudeGeometry,'continuous sofa back required');
+ let obsolete=0;root.traverse(o=>{if(o.name==='sofa-curve-back-panel')obsolete++});
+ assert.equal(obsolete,0,'segmented sofa backs must not return');
+});
