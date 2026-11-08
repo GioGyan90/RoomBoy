@@ -1,3 +1,4 @@
+import { createCruiseCabin } from "../assets/procedural/cruiseCabin";
 import { createHotelSuite } from "../assets/procedural/hotelSuite";
 import { hotelLayout } from "../assets/procedural/hotelSuite/plan";
 import { createGardenLoft } from "../assets/procedural/gardenLoft";
@@ -54,6 +55,13 @@ export const rooms = {
     camera: { theta: -.398, phi: 1.062, target: [-.80, 1.49, .34], gameRadius: 13.64, roomRadius: 12.8, orthographic: true },
     frameScale: (aspect: number) => Math.max(1, 1.49 / aspect),
     create: createHotelSuite,
+  },
+  cruise: {
+    label: "船舱卧室",
+    layout: hotelLayout,
+    camera: { theta: -.398, phi: 1.062, target: [-.80, 1.49, .34], gameRadius: 13.64, roomRadius: 12.8, orthographic: true },
+    frameScale: (aspect: number) => Math.max(1, 1.49 / aspect),
+    create: createCruiseCabin,
   },
 } as const;
 
