@@ -6,6 +6,15 @@ import {addLighting} from '../core/lighting';
 import {rooms,type RoomId,type RoomLayout} from '../game/rooms';
 export function createReview(scene:T.Scene,room:T.Group,character:Character,controller:ReturnType<typeof createCameraController>,actions:Actions,roomBackground:T.Color,roomTools:HTMLElement,roomId:RoomId){
  const profile=rooms[roomId];
+ // Review-only camera stations. Never insert camera meshes into the playable scene.
+ const reviewStations=[
+  {id:'overview',label:'全景',theta:-.398,phi:1.062,zoom:1},
+  {id:'bed',label:'卧室',theta:-.24,phi:1.13,zoom:.78},
+  {id:'bath',label:'卫浴',theta:-.72,phi:.94,zoom:.82},
+  {id:'ocean',label:'海景',theta:.24,phi:1.04,zoom:.84},
+  {id:'top',label:'俯视',theta:-.35,phi:.25,zoom:1.12},
+ ] as const;
+ let reviewStation=new URLSearchParams(location.search).get('station')??'overview';
  const query=new URLSearchParams(location.search);const requestedView=query.get('view')??'game';
  let view=['room','character','face'].includes(requestedView)?requestedView:'game';let angle=query.get('angle')??'front';
  const ui=document.createElement('div');ui.id='review-controls';ui.innerHTML='<button data-view="game">游玩</button><button data-view="room">房间</button><button data-view="character">人物</button><button data-view="face">脸部</button><button id="compare-toggle">概念图对照</button>';
@@ -19,6 +28,12 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   location.assign(url);
  });
  roomTools.prepend(selector);
+ if(roomId==='cruise'){
+  const toolbar=document.createElement('div');toolbar.id='cruise-camera-review';toolbar.style.cssText='display:flex;flex-wrap:wrap;gap:5px;padding:6px;background:#29212bcc;border-radius:8px;';
+  const label=document.createElement('span');label.textContent='检查机位';label.style.cssText='color:#fff;font-size:12px;align-self:center';toolbar.append(label);
+  for(const station of reviewStations){const button=document.createElement('button');button.textContent=station.label;button.dataset.station=station.id;button.style.cssText='padding:4px 7px;font-size:12px;cursor:pointer';button.addEventListener('click',()=>{reviewStation=station.id;apply('room');});toolbar.append(button);}
+  const shot=document.createElement('button');shot.textContent='保存截图';shot.style.cssText='padding:4px 7px;font-size:12px;cursor:pointer';shot.addEventListener('click',()=>{const canvas=document.querySelector('canvas');if(!canvas)return;canvas.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='cruise-'+reviewStation+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);},'image/png');});toolbar.append(shot);roomTools.append(toolbar);
+ }
  const angles=document.createElement('div');angles.id='character-angles';angles.innerHTML='<button data-angle="front">正面</button><button data-angle="side">侧面</button><button data-angle="back">背面</button>';document.body.append(angles);
  const panel=document.createElement('aside');panel.id='reference-panel';panel.hidden=true;
  const image=document.createElement('img');image.alt='用户提供的原始概念图，仅用于对照';panel.append(image);
@@ -39,9 +54,10 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   controller.usePerspective(portrait);
   const framing=profile.camera;
   character.charRoot.position.set(portrait?0:spawn.x,portrait?0:spawn.y??0,portrait?0:spawn.z);character.charRoot.rotation.y=portrait?0:spawn.rot;
+  const station=roomId==='cruise'&&view==='room'?reviewStations.find(s=>s.id===reviewStation):undefined;
   const state=portrait
     ? {theta:angle==='side'?Math.PI/2:angle==='back'?Math.PI:0,phi:close?1.46:1.52,radius:close?.49:2.72,target:new T.Vector3(0,close?1.65:.91,0)}
-    : {theta:framing.theta,phi:framing.phi,radius:(view==='room'?framing.roomRadius:framing.gameRadius)*profile.frameScale(innerWidth/innerHeight),target:new T.Vector3(...framing.target)};
+    : {theta:station?.theta??framing.theta,phi:station?.phi??framing.phi,radius:(view==='room'?framing.roomRadius:framing.gameRadius)*profile.frameScale(innerWidth/innerHeight)*(station?.zoom??1),target:new T.Vector3(...framing.target)};
   for(const obj of [controller.camGoal,controller.camState]){obj.theta=state.theta;obj.phi=state.phi;obj.radius=state.radius;obj.target.copy(state.target);}
   angles.hidden=!portrait||query.get('capture')==='1';
   roomTools.hidden=portrait||query.get('capture')==='1';
