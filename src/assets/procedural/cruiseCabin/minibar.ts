@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {block,cylinder,palette} from './architecture';
+const mirrorGlass=new T.MeshStandardMaterial({color:0xa3a5a4,metalness:.7,roughness:.18});
 
 /**
  * The minibar is a narrow service niche beside the wardrobe in the reference composition.
@@ -21,7 +22,7 @@ export function minibar(root:T.Group){
   block(station,'minibar-gold-handle',[.16,.022,.035],[x,.54,.354],palette.gold);
  }
  // The mirror belongs behind the bottles, on the wall-facing side of the unit.
- block(station,'minibar-back-mirror',[1.42,.66,.025],[0,1.52,-.49],palette.glass);
+ block(station,'minibar-back-mirror',[1.42,.66,.025],[0,1.52,-.49],mirrorGlass);
  block(station,'minibar-shelf',[1.43,.038,.35],[0,1.28,-.25],palette.gold);
  const decanterXs=[-.37,0,.37];
  for(const x of decanterXs){
