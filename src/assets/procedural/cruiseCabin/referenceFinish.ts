@@ -19,15 +19,16 @@ export function referenceFinish(root:T.Group){
  stroke(g,'headboard-warm-halo',outline,halo,.057,true);
  stroke(g,'headboard-gold-light',outline,led,.020,true);
  // Visible lower bed perimeter lights, above the floor.
- block(g,'floating-bed-gold-footrail',[2.75,.04,.036],[-1.05,.16,-.65],palette.gold);
- block(g,'floating-bed-amber-footlight',[2.66,.016,.018],[-1.05,.11,-.63],led);
+ block(g,'floating-bed-gold-footrail',[2.75,.04,.036],[-1.05,.16,.67],palette.gold);
+ block(g,'floating-bed-amber-footlight',[2.66,.016,.018],[-1.05,.11,.69],led);
  // Reference carpet's restrained Greek-key corner geometry, not a global grid.
- const border=[[-2.74,-.20],[.63,-.20],[-2.74,-3.12],[.63,-3.12]];
+ const border=[[-2.74,.81],[.63,.81],[-2.74,-3.27],[.63,-3.27]];
  for(const [x,z] of border){
   block(g,'rug-gold-corner-a',[.35,.005,.017],[x+(x<0?.15:-.15),.063,z],palette.gold);
   block(g,'rug-gold-corner-b',[.017,.005,.30],[x,.063,z+(z<-1?.15:-.15)],palette.gold);
  }
- // Avoid duplicated floating-looking zig-zag brass marks on bare floor.\n // Coffee table bouquet, with each flower tied to the vase's actual position.
+ // Avoid duplicated floating-looking zig-zag brass marks on bare floor.
+ // Coffee table bouquet, with each flower tied to the vase's actual position.
  const flower=new T.MeshStandardMaterial({color:0xffefc6,roughness:.91});
  for(let i=0;i<6;i++){
   const angle=i*Math.PI*2/6;
