@@ -13,14 +13,14 @@ function soft(parent:T.Group,name:string,size:[number,number,number],at:[number,
 export function furniture(root:T.Group){
  const g=new T.Group();g.name="cruise-furniture";root.add(g);
  // Black marble with cream and burgundy rugs; layered luxury bed and pleated upholstered headboard.
- block(g,"bed-rug",[3.78,.024,3.34],[-1.05,.022,-1.67],palette.onyx);
- block(g,"bed-rug-border",[3.61,.027,3.17],[-1.05,.038,-1.67],gold);
- block(g,"bed-rug-inner",[3.54,.031,3.10],[-1.05,.041,-1.67],palette.onyx);
- block(g,"king-bed-frame",[2.82,.36,2.7],[-1.05,.31,-2.03],palette.wood);
- block(g,"bed-brass-base",[2.86,.045,2.73],[-1.05,.17,-2.03],gold);
- soft(g,"pillowtop-mattress",[2.61,.26,2.55],[-1.05,.65,-2.03],linen);
- soft(g,"quilt-ivory",[2.58,.12,1.66],[-1.05,.82,-1.43],linen);
- soft(g,"quilt-burgundy-runner",[2.62,.045,.60],[-1.05,.91,-1.03],velvet);
+ block(g,"bed-rug",[3.78,.024,4.50],[-1.05,.022,-1.22],palette.onyx);
+ block(g,"bed-rug-border",[3.61,.027,4.34],[-1.05,.038,-1.22],gold);
+ block(g,"bed-rug-inner",[3.54,.031,4.26],[-1.05,.041,-1.22],palette.onyx);
+ block(g,"king-bed-frame",[2.82,.36,4.02],[-1.05,.31,-1.37],palette.wood);
+ block(g,"bed-brass-base",[2.86,.045,4.05],[-1.05,.17,-1.37],gold);
+ soft(g,"pillowtop-mattress",[2.61,.26,3.85],[-1.05,.65,-1.37],linen);
+ soft(g,"quilt-ivory",[2.58,.12,2.85],[-1.05,.82,-1.03],linen);
+ soft(g,"quilt-burgundy-runner",[2.62,.045,.80],[-1.05,.91,.18],velvet);
  block(g,"headboard-wood-frame",[3.42,1.70,.20],[-1.05,1.45,-3.57],palette.wood);
  block(g,"headboard-brass-cap",[3.44,.045,.22],[-1.05,2.32,-3.57],gold);
  for(let i=0;i<8;i++)soft(g,"headboard-vertical-tuft",[.35,1.47,.11],[-2.39+i*.383,1.48,-3.37],velvet,.065);
