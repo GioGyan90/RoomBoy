@@ -19,12 +19,13 @@ try{
  page.on('pageerror',e=>issues.push('pageerror: '+e.message));
  page.on('console',m=>{if(m.type()==='error')issues.push('console: '+m.text())});
  for(const station of ['overview','bed','bath','ocean','top','table','toilet','side']){
-  await page.goto(base+'?room=cruise&view=room&station='+station,{waitUntil:'networkidle',timeout:60000});
+  await page.goto(base+'?room=cruise&view=room&capture=1&station='+station,{waitUntil:'networkidle',timeout:60000});
   await page.waitForTimeout(1700);
   const canvas=page.locator('canvas').first();
   if(!await canvas.isVisible())throw Error('No visible WebGL canvas at '+station);
   const pixels=await canvas.evaluate(c=>({width:c.width,height:c.height}));
-  await page.screenshot({path:resolve(output,station+'.png'),animations:'disabled'});
+  const shot=await page.screenshot({path:resolve(output,station+'.png'),animations:'disabled'});
+  if(shot.length<15000)throw Error('Screenshot appears blank: '+station+' ('+shot.length+' bytes)');
   console.log('Captured',station,pixels);
  }
  await writeFile(resolve(output,'report.json'),JSON.stringify({issues,stations:8},null,2));
