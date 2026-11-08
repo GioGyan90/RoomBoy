@@ -38,7 +38,8 @@ export function architecture(root:T.Group){
  // Cutaway for the bathroom: the full-height exterior sidewall blocked the tub in isometric view.
  block(g,"left-bulkhead-bedroom",[.18,p.height,4.55],[p.left,p.height/2,-1.625],palette.shell);
  block(g,"left-bulkhead-bath-cutaway",[.18,.62,3.25],[p.left,.31,2.275],palette.shell);
- block(g,"left-bath-sill",[.23,.07,3.25],[p.left,.65,2.275],palette.gold);
+ block(g,"left-bath-sill",[.23,.07,3.25],[p.left,.65,2.275],palette.shell);
+ block(g,"left-bath-gold-hairline",[.022,.012,3.20],[p.left+.12,.689,2.275],palette.gold);
  // Actual side openings, not solid wall panels painted blue.
  block(g,"right-hull-aft",[.18,p.height,1.05],[p.right,p.height/2,-3.375],palette.shell);
  block(g,"right-hull-fore",[.18,p.height,2.75],[p.right,p.height/2,2.525],palette.shell);
