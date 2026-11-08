@@ -4,7 +4,7 @@
 
 基于 `reference/roomboydeepseek.html` 拆分的 Three.js 房间小游戏。使用 Vite + TypeScript，游戏运行时不依赖 CDN。
 
-默认进入 Room v4。右上角「选择房间」可切换到[蓝灰公寓](https://giogyan90.github.io/RoomBoy/?room=apartment)、[米绿 Loft](https://giogyan90.github.io/RoomBoy/?room=loft)或[枣红酒店套房](https://giogyan90.github.io/RoomBoy/?room=hotel)。这些房间支持 Haru 行走、坐下和小睡。米绿 Loft 的左侧楼梯通往夹层卧室，底层设有书桌、厨房、客厅、浴室和窗边运动区。可直接打开[公寓剖面](https://giogyan90.github.io/RoomBoy/?room=apartment&view=room)、[Loft 剖面](https://giogyan90.github.io/RoomBoy/?room=loft&view=room)或[酒店剖面](https://giogyan90.github.io/RoomBoy/?room=hotel&view=room)。
+默认进入 Room v4。新增[船舱卧室](https://giogyan90.github.io/RoomBoy/?room=cruise)，采用酒店套房的交互基础与独立程序化船体、舷窗、甲板装饰；此房间仍在细化中。右上角「选择房间」可切换到[蓝灰公寓](https://giogyan90.github.io/RoomBoy/?room=apartment)、[米绿 Loft](https://giogyan90.github.io/RoomBoy/?room=loft)或[枣红酒店套房](https://giogyan90.github.io/RoomBoy/?room=hotel)。这些房间支持 Haru 行走、坐下和小睡。米绿 Loft 的左侧楼梯通往夹层卧室，底层设有书桌、厨房、客厅、浴室和窗边运动区。可直接打开[公寓剖面](https://giogyan90.github.io/RoomBoy/?room=apartment&view=room)、[Loft 剖面](https://giogyan90.github.io/RoomBoy/?room=loft&view=room)或[酒店剖面](https://giogyan90.github.io/RoomBoy/?room=hotel&view=room)。
 
 ## 本地运行（Windows / macOS / Linux）
 
