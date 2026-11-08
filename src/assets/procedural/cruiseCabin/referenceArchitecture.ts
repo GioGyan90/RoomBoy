@@ -71,11 +71,11 @@ export function referenceArchitecture(root:T.Group){
  block(g,'suite-entry-door-knob',[.07,.055,.15],[-5.535,1.13,-1.89],palette.gold);
  cylinder(g,'suite-entry-peephole',.023,.025,[-5.531,1.80,-2.23],palette.gold,'x');
  // An inset TV on the rear wall: dark glass with a cinematic ocean-blue display.
- block(g,'wall-tv-brass-frame',[.84,1.05,.06],[1.065,1.79,-3.723],palette.gold);
- block(g,'wall-tv-screen',[.78,.98,.065],[1.065,1.79,-3.683],marine);
- block(g,'wall-tv-sea',[.70,.45,.008],[1.065,1.59,-3.641],sea);
- block(g,'wall-tv-sky',[.70,.43,.009],[1.065,2.04,-3.638],sky);
- block(g,'wall-tv-horizon',[.70,.015,.012],[1.065,1.81,-3.627],pale);
+ block(g,'wall-tv-brass-frame',[1.48,1.02,.06],[2.49,1.75,-3.715],palette.gold);
+ block(g,'wall-tv-screen',[1.39,.94,.065],[2.49,1.75,-3.678],marine);
+ block(g,'wall-tv-sea',[1.30,.44,.008],[2.49,1.55,-3.636],sea);
+ block(g,'wall-tv-sky',[1.30,.40,.009],[2.49,1.98,-3.634],sky);
+ block(g,'wall-tv-horizon',[1.30,.014,.012],[2.49,1.76,-3.622],pale);
  // Tall cream drapes and tiebacks, restrained rather than competing with the glazing.
  for(const z of [-2.82,1.42]){
   block(g,'ocean-curtain',[.13,2.40,.25],[5.40,1.55,z],palette.cream);
