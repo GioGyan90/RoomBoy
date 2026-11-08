@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
+import sharp from 'sharp';
 import { resolve } from 'node:path';
 const output=resolve('artifacts/cruise-review');
 await mkdir(output,{recursive:true});
@@ -40,34 +41,18 @@ try{
  }
  // Compact annotated contact sheet is published on a separate QA branch,
  // allowing review of actual WebGL frames rather than trusting code-only checks.
- const frames=await Promise.all(stations.map(async name=>({
-  name,src:'data:image/png;base64,'+(await readFile(resolve(output,name+'.png'))).toString('base64')
- })));
- const mosaic=await page.evaluate(async frames=>{
-  const w=480,h=300,columns=3;
-  const canvas=document.createElement('canvas');
-  canvas.width=w*columns;canvas.height=h*Math.ceil(frames.length/columns);
-  const ctx=canvas.getContext('2d');
-  if(!ctx)throw new Error('contact sheet 2D canvas unavailable');
-  for(let i=0;i<frames.length;i++){
-   const {name,src}=frames[i];
-   const img=await new Promise((resolve,reject)=>{
-    const node=new Image();
-    node.onload=()=>resolve(node);
-    node.onerror=reject;
-    node.src=src;
-   });
-   const col=i%columns,row=Math.floor(i/columns);
-   ctx.drawImage(img,col*w,row*h,w,h);
-   ctx.fillStyle='rgba(20,14,20,.82)';
-   ctx.fillRect(col*w,row*h,w,28);
-   ctx.font='bold 17px sans-serif';
-   ctx.fillStyle='#fff';
-   ctx.fillText(name,col*w+12,row*h+20);
-  }
-  return canvas.toDataURL('image/jpeg',.79).split(',')[1];
- },frames);
- await writeFile(resolve(output,'contact-sheet.jpg'),Buffer.from(mosaic,'base64'));
-  await writeFile(resolve(output,'report.json'),JSON.stringify({issues,stations:stations.length,contactSheet:'contact-sheet.jpg',commit:process.env.GITHUB_SHA??null},null,2));
+ const tileW=480,tileH=300,cols=3;
+ const layers=[];
+ for(let i=0;i<stations.length;i++){
+  const file=resolve(output,stations[i]+'.png');
+  const input=await sharp(file).resize(tileW,tileH,{fit:'fill'}).jpeg({quality:73}).toBuffer();
+  const left=(i%cols)*tileW,top=Math.floor(i/cols)*tileH;
+  layers.push({input,left,top});
+  const labelSvg=Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="480" height="32"><rect width="480" height="32" fill="#211a28" fill-opacity=".90"/><text x="12" y="22" font-family="sans-serif" font-size="18" fill="#fff">'+stations[i]+'</text></svg>');
+  layers.push({input:labelSvg,left,top});
+ }
+ await sharp({create:{width:tileW*cols,height:tileH*Math.ceil(stations.length/cols),channels:3,background:'#211a28'}})
+  .composite(layers).jpeg({quality:82}).toFile(resolve(output,'contact-sheet.jpg'));
+ await writeFile(resolve(output,'report.json'),JSON.stringify({issues,stations:stations.length,contactSheet:'contact-sheet.jpg',commit:process.env.GITHUB_SHA??null},null,2));
  if(issues.length)throw Error('Browser console errors: '+issues.join('; '));
 }finally{await browser?.close();server.kill('SIGTERM')}
