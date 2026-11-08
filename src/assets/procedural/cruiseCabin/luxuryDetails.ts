@@ -29,10 +29,7 @@ export function luxuryDetails(root:T.Group){
   block(g,'runner-gold-stitch',[2.50,.008,.013],[-1.05,.94,z],palette.gold);
  }
  for(let i=0;i<7;i++)block(g,'quilt-stitched-line',[2.44,.004,.006],[-1.05,.885,-1.97+i*.11],pearl);
- // Cushions: contrast welt piping and gold button tufts.
- for(const x of [-1.69,-.41]){
-  for(const dx of [-.23,.23])sphere(g,'cushion-button',.026,x+dx,1.035,-2.53,palette.gold);
- }
+ // No floating gold studs: the reference bed uses smooth white pillows.
  // Wardrobe recessed kickplate, cornice and decorative door pulls.
  block(g,'wardrobe-brass-kickplate',[1.61,.055,.72],[-4.69,.075,-3.30],palette.gold);
  block(g,'wardrobe-brass-crown',[1.63,.055,.73],[-4.69,2.47,-3.30],palette.gold);
