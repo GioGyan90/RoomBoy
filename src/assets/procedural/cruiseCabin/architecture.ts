@@ -14,8 +14,8 @@ export const palette = {
 export function block(parent:T.Group,name:string,size:[number,number,number],at:[number,number,number],mat:T.Material){
  const m=new T.Mesh(new T.BoxGeometry(...size),mat);m.name=name;m.position.set(...at);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
 }
-export function cylinder(parent:T.Group,name:string,r:number,depth:number,at:[number,number,number],mat:T.Material,axis:"x"|"z"="z"){
- const m=new T.Mesh(new T.CylinderGeometry(r,r,depth,32),mat);m.name=name;m.position.set(...at);m.rotation[axis==="x"?"z":"x"]=Math.PI/2;m.castShadow=true;parent.add(m);return m;
+export function cylinder(parent:T.Group,name:string,r:number,depth:number,at:[number,number,number],mat:T.Material,axis:"x"|"y"|"z"="y"){
+ const m=new T.Mesh(new T.CylinderGeometry(r,r,depth,32),mat);m.name=name;m.position.set(...at);if(axis==="x")m.rotation.z=Math.PI/2;else if(axis==="z")m.rotation.x=Math.PI/2;m.castShadow=true;parent.add(m);return m;
 }
 export function architecture(root:T.Group){
  const p=cabin, g=new T.Group();g.name="ship-architecture";root.add(g);
