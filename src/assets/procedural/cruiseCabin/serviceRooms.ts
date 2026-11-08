@@ -4,8 +4,8 @@ export function serviceRooms(root:T.Group){
  const g=new T.Group();g.name="cruise-marble-bathroom";root.add(g);
  block(g,"bath-marble-floor",[3.15,.035,3.02],[-4.17,.025,2.27],palette.marble);
  for(let i=0;i<5;i++)block(g,"bath-floor-brass-inlay",[.012,.006,2.93],[-5.46+i*.64,.047,2.27],palette.gold);
- block(g,"bath-back-marble-panel",[3.08,1.96,.035],[-4.16,1.20,.74],palette.marble);
- for(const x of [-5.64,-2.69])block(g,"bath-panel-brass-edge",[.035,1.97,.046],[x,1.20,.77],palette.gold);
+ block(g,"bath-back-marble-panel",[3.08,1.96,.035],[-4.16,1.20,.805],palette.marble);
+ for(const x of [-5.64,-2.69])block(g,"bath-panel-brass-edge",[.035,1.97,.046],[x,1.20,.838],palette.gold);
  // Bath is a shallow open basin, with a visible interior.
  block(g,"tub-plinth",[1.38,.26,1.75],[-4.8,.24,2.57],palette.gold);
  // Open ceramic basin: separate bottom and four raised walls.
@@ -20,12 +20,12 @@ export function serviceRooms(root:T.Group){
  block(g,"vanity-cabinet",[.72,.76,.59],[-3.09,.47,1.24],palette.wood);
  block(g,"vanity-marble",[.82,.07,.66],[-3.09,.88,1.24],palette.marble);
  cylinder(g,"washbasin",.24,.045,[-3.09,.94,1.24],palette.cream);
- block(g,"mirror",[.76,.9,.035],[-3.09,1.76,.77],palette.glass);
- block(g,"mirror-gold-top",[.81,.035,.045],[-3.09,2.22,.77],palette.gold);
- for(const x of [-3.51,-2.67])block(g,"mirror-brass-frame",[.035,.92,.055],[x,1.76,.77],palette.gold);
+ block(g,"mirror",[.76,.9,.035],[-3.09,1.76,.87],palette.glass);
+ block(g,"mirror-gold-top",[.81,.035,.045],[-3.09,2.22,.87],palette.gold);
+ for(const x of [-3.51,-2.67])block(g,"mirror-brass-frame",[.035,.92,.055],[x,1.76,.90],palette.gold);
  for(const x of [-3.56,-2.62]){
-  cylinder(g,"vanity-wall-light",.07,.21,[x,1.83,.82],palette.gold);
-  cylinder(g,"vanity-light-globe",.11,.14,[x,1.65,.82],palette.cream);
+  cylinder(g,"vanity-wall-light",.07,.21,[x,1.83,.92],palette.gold);
+  cylinder(g,"vanity-light-globe",.11,.14,[x,1.65,.92],palette.cream);
  }
  cylinder(g,"toilet-bowl",.24,.36,[-3.0,.37,3.1],palette.cream);
  cylinder(g,"toilet-seat",.26,.055,[-3.0,.59,3.1],palette.cream);
