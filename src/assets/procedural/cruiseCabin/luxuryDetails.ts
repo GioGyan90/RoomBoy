@@ -16,8 +16,8 @@ export function luxuryDetails(root:T.Group){
   block(g,'pilaster-cap',[.19,.055,.16],[x,2.93,-3.68],palette.gold);
  }
  // Continuous cornice only over the solid left portion of the rear wall.
- block(g,'rear-crown-wood',[7.46,.14,.24],[-1.96,3.01,-3.66],palette.wood);
- block(g,'rear-crown-gold',[7.48,.035,.26],[-1.96,2.91,-3.65],palette.gold);
+ block(g,'rear-crown-wood',[7.35,.14,.24],[-2.125,3.01,-3.66],palette.wood);
+ block(g,'rear-crown-gold',[7.36,.035,.26],[-2.125,2.91,-3.65],palette.gold);
  // Backlit, layered bedside wall sconces and pendant rods.
  for(const x of [-2.68,.58]){
   block(g,'sconce-wall-plate',[.22,.39,.055],[x,1.67,-3.59],palette.gold);
