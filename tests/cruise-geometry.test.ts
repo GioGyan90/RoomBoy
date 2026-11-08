@@ -39,3 +39,23 @@ test('bathroom bathtub is open and has a visible recessed water surface',()=>{
  assert.ok(water&&rim);
  assert.ok(water.position.y<rim.position.y,'water must be below tub rim');
 });
+
+test('both bedside cabinets and their marble tops clear bed frame and headboard',()=>{
+ const root=new T.Group();furniture(root);root.updateMatrixWorld(true);
+ const meshes:T.Mesh[]=[];root.traverse(o=>{if(o instanceof T.Mesh)meshes.push(o)});
+ const beds=meshes.filter(m=>['king-bed-frame','headboard-wood-frame'].includes(m.name));
+ const stands=meshes.filter(m=>['walnut-nightstand','nightstand-marble-top'].includes(m.name));
+ assert.equal(stands.length,4);
+ for(const stand of stands)for(const bed of beds){
+  const a=new T.Box3().setFromObject(stand),b=new T.Box3().setFromObject(bed);
+  assert.ok(!a.intersectsBox(b),stand.name+' overlaps '+bed.name+' at '+stand.position.x);
+ }
+});
+test('minibar and nightstands do not intersect',()=>{
+ const root=new T.Group();furniture(root);root.updateMatrixWorld(true);
+ const meshes:T.Mesh[]=[];root.traverse(o=>{if(o instanceof T.Mesh)meshes.push(o)});
+ const minibar=meshes.find(m=>m.name==='minibar-cabinet')!;
+ for(const stand of meshes.filter(m=>m.name==='walnut-nightstand'||m.name==='nightstand-marble-top')){
+  assert.ok(!new T.Box3().setFromObject(minibar).intersectsBox(new T.Box3().setFromObject(stand)),stand.name+' intersects minibar');
+ }
+});
