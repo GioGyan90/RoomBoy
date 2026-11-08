@@ -54,11 +54,11 @@ export function architecture(root:T.Group){
  // The giant side windows are assembled in referenceArchitecture.ts.
  // Bath enclosure has an open doorway facing the bedroom.
  block(g,"bath-rear-wall",[3.32,2.38,.13],[-4.16,1.19,.66],palette.marble);
- block(g,"bath-divider",[.13,1.94,1.72],[-2.5,.97,1.49],palette.shell);
- block(g,"bath-door-jamb",[.13,2.38,.36],[-2.5,1.19,3.72],palette.shell);
+ block(g,"bath-divider",[.13,1.16,1.72],[-2.5,.58,1.49],palette.shell);
+ block(g,"bath-door-jamb",[.13,1.16,.36],[-2.5,.58,3.72],palette.shell);
  // A lintel completes the service room doorframe without closing the walking aperture.
- block(g,"bath-door-lintel",[.15,.16,1.19],[-2.5,2.30,2.945],palette.wood);
- block(g,"bath-door-lintel-brass",[.035,.034,1.19],[-2.414,2.20,2.945],palette.gold);
+ block(g,"bath-door-lintel",[.15,.09,1.19],[-2.5,1.16,2.945],palette.wood);
+ block(g,"bath-door-lintel-brass",[.035,.026,1.19],[-2.414,1.105,2.945],palette.gold);
  block(g,"bath-front-cutaway",[3.32,.27,.13],[-4.16,.135,p.front],palette.cream);
  // Starboard-side ocean window, side balcony and curved hull are authored separately.
  return createNavigation([
