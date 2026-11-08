@@ -8,11 +8,11 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
  const profile=rooms[roomId];
  // Review-only camera stations. Never insert camera meshes into the playable scene.
  const reviewStations=[
-  {id:'overview',label:'全景',theta:-.398,phi:1.062,zoom:1},
-  {id:'bed',label:'卧室',theta:-.24,phi:1.13,zoom:.78},
-  {id:'bath',label:'卫浴',theta:-.72,phi:.94,zoom:.82},
-  {id:'ocean',label:'海景',theta:.24,phi:1.04,zoom:.84},
-  {id:'top',label:'俯视',theta:-.35,phi:.25,zoom:1.12},
+  {id:'overview',label:'全景',theta:-.398,phi:1.062,zoom:1,target:[0,1.3,0]},
+  {id:'bed',label:'卧室',theta:-.24,phi:1.13,zoom:.68,target:[-1.05,1.2,-1.95]},
+  {id:'bath',label:'卫浴',theta:-.72,phi:.94,zoom:.55,target:[-4.15,1.05,2.25]},
+  {id:'ocean',label:'海景',theta:.24,phi:1.04,zoom:.68,target:[3.45,1.3,-3.55]},
+  {id:'top',label:'俯视',theta:-.35,phi:.25,zoom:1.05,target:[0,0,0]},
  ] as const;
  let reviewStation=new URLSearchParams(location.search).get('station')??'overview';
  const query=new URLSearchParams(location.search);const requestedView=query.get('view')??'game';
@@ -57,7 +57,7 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   const station=roomId==='cruise'&&view==='room'?reviewStations.find(s=>s.id===reviewStation):undefined;
   const state=portrait
     ? {theta:angle==='side'?Math.PI/2:angle==='back'?Math.PI:0,phi:close?1.46:1.52,radius:close?.49:2.72,target:new T.Vector3(0,close?1.65:.91,0)}
-    : {theta:station?.theta??framing.theta,phi:station?.phi??framing.phi,radius:(view==='room'?framing.roomRadius:framing.gameRadius)*profile.frameScale(innerWidth/innerHeight)*(station?.zoom??1),target:new T.Vector3(...framing.target)};
+    : {theta:station?.theta??framing.theta,phi:station?.phi??framing.phi,radius:(view==='room'?framing.roomRadius:framing.gameRadius)*profile.frameScale(innerWidth/innerHeight)*(station?.zoom??1),target:new T.Vector3(...(station?.target??framing.target))};
   for(const obj of [controller.camGoal,controller.camState]){obj.theta=state.theta;obj.phi=state.phi;obj.radius=state.radius;obj.target.copy(state.target);}
   angles.hidden=!portrait||query.get('capture')==='1';
   roomTools.hidden=portrait||query.get('capture')==='1';
