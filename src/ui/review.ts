@@ -16,6 +16,10 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   {id:'table',label:'茶几低角度',theta:.32,phi:1.35,zoom:.37,target:[3.53,.48,1.94]},
   {id:'toilet',label:'马桶低角度',theta:-.85,phi:1.33,zoom:.28,target:[-3,.48,3.1]},
   {id:'side',label:'侧面检查',theta:1.0,phi:1.19,zoom:.88,target:[0,1.1,0]},
+  {id:'bed-left',label:'左床头柜',theta:-.32,phi:1.15,zoom:.32,target:[-2.87,.67,-3.06]},
+  {id:'bed-right',label:'右床头柜',theta:.32,phi:1.15,zoom:.32,target:[.77,.67,-3.06]},
+  {id:'service-bar',label:'独立酒柜',theta:.85,phi:1.18,zoom:.43,target:[-5.16,1.05,-1.02]},
+  {id:'balcony-door',label:'阳台门洞',theta:.20,phi:1.18,zoom:.56,target:[3.5,1.38,-3.80]},
  ] as const;
  let reviewStation=new URLSearchParams(location.search).get('station')??'overview';
  const query=new URLSearchParams(location.search);const requestedView=query.get('view')??'game';
