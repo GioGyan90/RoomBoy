@@ -10,6 +10,9 @@ export const palette = {
   marble:new T.MeshStandardMaterial({color:0x302b32,roughness:.38}),
   glass:new T.MeshStandardMaterial({color:0x7ac7db,roughness:.14,metalness:.13,transparent:true,opacity:.65}),
   sea:new T.MeshBasicMaterial({color:0x1686ba}),
+  shell:new T.MeshStandardMaterial({color:0xf3d8dc,roughness:.53,metalness:.08}),
+  ivory:new T.MeshStandardMaterial({color:0xfff0df,roughness:.81}),
+  onyx:new T.MeshStandardMaterial({color:0x211d22,roughness:.33}),
 };
 export function block(parent:T.Group,name:string,size:[number,number,number],at:[number,number,number],mat:T.Material){
  const m=new T.Mesh(new T.BoxGeometry(...size),mat);m.name=name;m.position.set(...at);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
@@ -19,11 +22,11 @@ export function cylinder(parent:T.Group,name:string,r:number,depth:number,at:[nu
 }
 export function architecture(root:T.Group){
  const p=cabin, g=new T.Group();g.name="ship-architecture";root.add(g);
- block(g,"ship-hull-foundation",[11.9,.36,8.1],[0,-.2,0],palette.wood);
+ block(g,"ship-hull-foundation",[11.9,.36,8.1],[0,-.2,0],palette.shell);
  block(g,"cabin-floor",[11.55,.06,7.8],[0,-.015,0],palette.marble).userData.walkable=true;
  // Brass marble seams, narrow enough to avoid z-fighting with the floor.
- for(let i=0;i<10;i++)block(g,"marble-floor-gold-grout",[.012,.003,7.68],[-5.4+i*1.2,.018,0],palette.gold);
- for(let i=0;i<7;i++)block(g,"marble-floor-cross-grout",[11.35,.003,.012],[0,.019,-3.5+i*1.16],palette.gold);
+ for(const x of [-5.52,5.52])block(g,"marble-floor-gold-border",[.018,.004,7.63],[x,.019,0],palette.gold);
+ for(const z of [-3.66,3.66])block(g,"marble-floor-gold-border",[11.06,.004,.018],[0,.019,z],palette.gold);
  // Split the rear bulkhead around the balcony opening: no opaque wall behind the glass.
  block(g,"rear-bulkhead-left",[7.35,p.height,.18],[-2.125,p.height/2,p.back],palette.cream);
  block(g,"rear-bulkhead-right",[.35,p.height,.18],[5.625,p.height/2,p.back],palette.cream);
@@ -32,19 +35,18 @@ export function architecture(root:T.Group){
  // Structural rhythm is provided by the dedicated luxury wall panels; no duplicate slats.
  for(const y of [.31,2.83])block(g,"rear-brass-rail",[7.22,.036,.10],[-2.12,y,p.back+.14],palette.gold);
  block(g,"left-bulkhead",[.18,p.height,7.8],[p.left,p.height/2,0],palette.cream);
- block(g,"right-hull",[.18,p.height,7.8],[p.right,p.height/2,0],palette.cream);
- // Layered ship side plating with rounded longitudinal ribs.
- for(const y of [.38,2.82])block(g,"ship-side-brass-stripe",[.038,.048,7.72],[p.right+.112,y,0],palette.gold);
- for(let i=0;i<9;i++)block(g,"ship-hull-rib",[.065,2.65,.08],[p.right+.125,1.48,-3.44+i*.87],palette.cream);
- block(g,"front-cutaway",[11.7,.32,.18],[0,.16,p.front],palette.cream);
+ // Actual side openings, not solid wall panels painted blue.
+ block(g,"right-hull-aft",[.18,p.height,1.05],[p.right,p.height/2,-3.375],palette.shell);
+ block(g,"right-hull-fore",[.18,p.height,2.75],[p.right,p.height/2,2.525],palette.shell);
+ block(g,"right-window-sill",[.18,.55,2.60],[p.right,.275,-1.55],palette.shell);
+ block(g,"right-window-lintel",[.18,.47,2.60],[p.right,2.915,-1.55],palette.shell);
+ block(g,"right-balcony-sill",[.18,.15,1.40],[p.right,.075,.45],palette.shell);
+ block(g,"right-balcony-lintel",[.18,.22,1.40],[p.right,3.04,.45],palette.shell);
+ for(const z of [-2.85,-.25,1.15])block(g,"right-window-post",[.19,p.height,.10],[p.right,p.height/2,z],palette.shell);
+ for(const y of [.35,2.84])block(g,"hull-longitudinal-brass",[.027,.048,7.69],[p.right+.104,y,0],palette.gold);
+ block(g,"front-cutaway",[11.7,.32,.18],[0,.16,p.front],palette.shell);
  for(const y of [.18,2.82])block(g,"gold-trim",[7.22,.047,.07],[-2.12,y,p.back+.14],palette.gold);
- for(let i=0;i<3;i++){
-  const z=-2.3+i*2.2;
-  cylinder(g,"porthole-brass-rim",.46,.065,[p.right+.105,1.82,z],palette.gold,"x");
-  cylinder(g,"porthole-ocean",.365,.071,[p.right+.15,1.82,z],palette.sea,"x");
-  for(let j=0;j<8;j++){const a=j*Math.PI/4;cylinder(g,"porthole-rivet",.022,.02,[p.right+.16,1.82+Math.cos(a)*.416,z+Math.sin(a)*.416],palette.gold,"x");}
- }
- for(let i=0;i<15;i++)cylinder(g,"hull-rivet",.023,.012,[p.right+.11,.35,p.back+.22+i*.51],palette.gold,"x");
+ // The giant side windows are assembled in referenceArchitecture.ts.
  // Bath enclosure has an open doorway facing the bedroom.
  block(g,"bath-rear-wall",[3.32,2.38,.13],[-4.16,1.19,.66],palette.cream);
  block(g,"bath-divider",[.13,2.38,1.72],[-2.5,1.19,1.49],palette.cream);
