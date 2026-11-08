@@ -43,12 +43,12 @@ export function furniture(root:T.Group){
   block(g,"wardrobe-inset",[.59,2.08,.039],[x,1.26,-2.947],palette.wood);
   block(g,"wardrobe-gold-pull",[.024,.42,.05],[x+(x< -4.7?.22:-.22),1.19,-2.912],gold);
  }
- block(g,"minibar-cabinet",[1.45,.91,.61],[1.35,.48,-3.22],palette.wood);
- block(g,"minibar-black-marble",[1.53,.07,.68],[1.35,.97,-3.22],palette.marble);
+ block(g,"minibar-cabinet",[1.45,.91,.61],[1.90,.48,-3.22],palette.wood);
+ block(g,"minibar-black-marble",[1.53,.07,.68],[1.90,.97,-3.22],palette.marble);
  for(let i=0;i<3;i++){
-  block(g,"minibar-drawer",[.39,.45,.027],[.88+i*.46,.48,-2.89],palette.wood);
-  block(g,"minibar-gold-handle",[.16,.022,.035],[.88+i*.46,.54,-2.86],gold);
-  cylinder(g,"crystal-glass",.077,.18,[.96+i*.32,1.11,-3.18],palette.glass);
+  block(g,"minibar-drawer",[.39,.45,.027],[1.43+i*.46,.48,-2.89],palette.wood);
+  block(g,"minibar-gold-handle",[.16,.022,.035],[1.43+i*.46,.54,-2.86],gold);
+  cylinder(g,"crystal-glass",.077,.18,[1.51+i*.32,1.11,-3.18],palette.glass);
  }
  // Sofa: a real upholstered seat with distinct back, arms, cushions and piping.
  block(g,"lounge-carpet",[3.02,.025,2.65],[3.72,.025,1.18],palette.burgundy);
