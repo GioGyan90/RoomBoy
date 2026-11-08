@@ -27,15 +27,7 @@ export function referenceFinish(root:T.Group){
   block(g,'rug-gold-corner-a',[.35,.005,.017],[x+(x<0?.15:-.15),.063,z],palette.gold);
   block(g,'rug-gold-corner-b',[.017,.005,.30],[x,.063,z+(z<-1?.15:-.15)],palette.gold);
  }
- // Fine, isolated metallic marble veins on the floor and rear walnut panels.
- for(let i=0;i<8;i++){
-  const x=1.10+i*.48;
-  const pts=[new T.Vector3(x,.028,2.88),new T.Vector3(x+.16,.028,2.54),
-  new T.Vector3(x-.03,.028,2.22),new T.Vector3(x+.22,.028,1.90)];
-  const l=new T.Line(new T.BufferGeometry().setFromPoints(pts),vein);
-  l.name='marble-floor-gold-vein';g.add(l);
- }
- // Coffee table bouquet, with each flower tied to the vase's actual position.
+ // Avoid duplicated floating-looking zig-zag brass marks on bare floor.\n // Coffee table bouquet, with each flower tied to the vase's actual position.
  const flower=new T.MeshStandardMaterial({color:0xffefc6,roughness:.91});
  for(let i=0;i<6;i++){
   const angle=i*Math.PI*2/6;
@@ -45,7 +37,7 @@ export function referenceFinish(root:T.Group){
  const center=new T.Mesh(new T.SphereGeometry(.085,12,8),palette.gold);
  center.name='bouquet-center';center.position.set(3.39,1.17,1.83);g.add(center);
  // The vanity mirror and display television have subtle warm accent strips.
- block(g,'tv-underlit-trim',[.82,.022,.03],[1.065,1.22,-3.63],led);
+ block(g,'tv-underlit-trim',[1.44,.022,.03],[2.49,1.205,-3.62],led);
  for(const x of [-3.51,-2.67])block(g,'mirror-warm-side-strip',[.017,.93,.018],[x,1.76,.927],led);
  // Low-intensity highlights break up the dark marble without washing out its color.
  const tableLight=new T.PointLight(0xffd3a5,.35,3.3,2);
