@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 const output=resolve('artifacts/cruise-review');
 await mkdir(output,{recursive:true});
-const server=spawn('npm',['run','preview','--','--port','4173','--strictPort'],{stdio:'pipe',env:process.env});
+const server=spawn('npm',['run','preview','--','--port','4173','--strictPort'],{stdio:'pipe',env:process.env,detached:true});
 let log='';server.stdout.on('data',d=>{log+=String(d)});server.stderr.on('data',d=>{log+=String(d)});
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 const base='http://127.0.0.1:4173/';
@@ -40,4 +40,10 @@ try{
  }
  await writeFile(resolve(output,'report.json'),JSON.stringify({issues,stations:stations.length,commit:process.env.GITHUB_SHA??null},null,2));
  if(issues.length)throw Error('Browser console errors: '+issues.join('; '));
-}finally{await browser?.close();server.kill('SIGTERM')}
+}finally{
+ await browser?.close();
+ // npm spawns a shell + Vite child; killing npm alone leaves the pipe open forever.
+ // On the Ubuntu runner, terminate the whole detached process group.
+ try{if(server.pid)process.kill(-server.pid,'SIGTERM')}catch{}
+ server.stdout.destroy();server.stderr.destroy();
+}
