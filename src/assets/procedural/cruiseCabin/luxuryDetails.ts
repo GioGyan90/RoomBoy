@@ -56,7 +56,8 @@ export function luxuryDetails(root:T.Group){
  for(const x of [2.79,4.79]){
   for(const z of [.21,.78])cylinder(g,'sofa-brass-foot',.055,.13,[x,.115,z],palette.gold);
  }
- for(const z of [.12,.94])block(g,'sofa-seat-piping',[2.17,.018,.019],[3.79,.545,z],palette.gold);
+ // Piping follows the cushion front edge rather than cutting across its top.
+ block(g,'sofa-front-piping',[2.17,.018,.019],[3.79,.57,.955],palette.gold);
  // Marble bathroom: mirror edging, towel rails and rolled towels.
  block(g,'vanity-lower-brass-edge',[.78,.035,.63],[-3.09,.12,1.24],palette.gold);
  for(const y of [1.52,1.68]){
@@ -66,8 +67,9 @@ export function luxuryDetails(root:T.Group){
   block(g,'folded-towel',[.38,.07,.22],[-5.29,y,1.08],pearl);
  }
  // Toilet flush hardware and sculpted ceramic seat rim.
- cylinder(g,'flush-button',.065,.025,[-3,1.06,3.48],palette.gold);
- cylinder(g,'toilet-seat-trim',.267,.018,[-3,.626,3.1],palette.gold);
+ cylinder(g,'flush-button',.065,.025,[-3,1.058,3.48],palette.gold);
+ // Avoid a solid gold disk covering the ceramic seat: use four small decorative rivets.
+ for(const x of [-3.19,-2.81])for(const z of [2.98,3.22])sphere(g,'toilet-seat-rivet',.018,x,.629,z,palette.gold);
  // Bath tap bridge and a separate spout.
  block(g,'bath-faucet-spout',[.31,.042,.06],[-4.32,1.29,1.95],palette.gold);
  sphere(g,'bath-tap-knob',.065,-4.10,1.32,1.95,palette.gold);
