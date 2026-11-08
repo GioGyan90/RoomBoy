@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {block,cylinder,palette} from './architecture';
 const mirrorGlass=new T.MeshStandardMaterial({color:0xb5b2a9,metalness:.72,roughness:.19});
+const bathWater=new T.MeshStandardMaterial({color:0xc8e3e9,roughness:.17,metalness:.06,transparent:true,opacity:.30});
 
 function ellipseRing(outerX:number,outerZ:number,innerX:number,innerZ:number,depth:number){
  const s=new T.Shape();
@@ -25,13 +26,13 @@ export function serviceRooms(root:T.Group){
  vein(g,'bath-gold-marble-vein',[[-5.45,1.58],[-5.10,1.38],[-4.78,1.60],[-4.48,1.40],[-4.08,1.85]],.826);
  vein(g,'bath-gold-marble-vein',[[-5.52,2.06],[-5.11,1.93],[-4.84,2.16],[-4.61,2.07]],.828);
  // Freestanding rounded soaking tub with genuinely open interior.
- block(g,'tub-plinth',[1.46,.24,1.88],[-4.8,.22,2.57],palette.marble);
- const tub=new T.Mesh(ellipseRing(.70,.87,.54,.68,.43),palette.ivory);
+ block(g,'tub-plinth',[1.46,.24,2.20],[-4.8,.22,2.57],palette.ivory);
+ const tub=new T.Mesh(ellipseRing(.70,1.02,.54,.81,.43),palette.ivory);
  tub.name='tub-body';tub.position.set(-4.8,.35,2.57);tub.castShadow=true;g.add(tub);
- const rim=new T.Mesh(ellipseRing(.72,.89,.54,.68,.035),palette.ivory);
+ const rim=new T.Mesh(ellipseRing(.72,1.04,.54,.81,.035),palette.ivory);
  rim.name='tub-rim';rim.position.set(-4.8,.774,2.57);rim.castShadow=true;g.add(rim);
- const water=new T.Mesh(new T.CircleGeometry(1,48),palette.glass);
- water.name='tub-water';water.rotation.x=-Math.PI/2;water.scale.set(.52,.66,1);water.position.set(-4.8,.63,2.57);g.add(water);
+ const water=new T.Mesh(new T.CircleGeometry(1,48),bathWater);
+ water.name='tub-water';water.rotation.x=-Math.PI/2;water.scale.set(.51,.79,1);water.position.set(-4.8,.63,2.57);g.add(water);
  // Wall-mounted rain shower, gold riser, lever and spout.
  cylinder(g,'bath-tap',.045,.65,[-5.28,1.19,1.60],palette.gold);
  block(g,'shower-gold-riser',[.042,1.31,.048],[-5.28,1.88,1.43],palette.gold);
