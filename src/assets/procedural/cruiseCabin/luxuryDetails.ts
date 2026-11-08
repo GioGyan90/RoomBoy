@@ -41,10 +41,10 @@ export function luxuryDetails(root:T.Group){
   block(g,'wardrobe-panel-crossbar',[.59,.018,.02],[x,.56,-2.916],palette.gold);
  }
  // Cocktail table: concentric metallic edge and a compact decorative tray.
- cylinder(g,'table-tray',.22,.013,[3.75,.635,1.91],palette.gold);
- cylinder(g,'table-tray-inset',.19,.015,[3.75,.645,1.91],dark);
- sphere(g,'tray-pearl',.058,3.72,.71,1.91,pearl);
- sphere(g,'tray-pearl',.042,3.83,.70,1.86,wine);
+ cylinder(g,'table-tray',.22,.013,[3.75,.62,1.91],palette.gold);
+ cylinder(g,'table-tray-inset',.19,.015,[3.75,.63,1.91],dark);
+ sphere(g,'tray-pearl',.058,3.72,.68,1.91,pearl);
+ sphere(g,'tray-pearl',.042,3.83,.67,1.86,wine);
  // Sofa piping and feet are visible from low-angle inspection cameras.
  for(const x of [2.79,4.79]){
   for(const z of [.21,.78])cylinder(g,'sofa-brass-foot',.055,.13,[x,.115,z],palette.gold);
