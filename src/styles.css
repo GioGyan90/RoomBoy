@@ -87,3 +87,9 @@
 #room-controls button[aria-pressed="true"]{background:#e1e7ec;color:#17212a}
 @media(max-width:650px){#room-controls{top:18px;right:10px}}
 #room-controls select{font:inherit;font-size:12px;color:#dce7f5;background:#222c39;border:1px solid #ffffff29;border-radius:7px;padding:5px 7px;cursor:pointer}
+
+/* Mobile camera control: always above the WebGL canvas and independent of raycasting. */
+#camera-joystick{display:none;position:fixed;left:18px;bottom:110px;width:112px;height:112px;z-index:45;border:1px solid #ffffff85;border-radius:50%;background:#152535a8;touch-action:none;user-select:none;-webkit-user-select:none;overscroll-behavior:contain;align-items:center;justify-content:center}
+#camera-joystick .camera-joystick-knob{width:44px;height:44px;border-radius:50%;background:#d9e9f4c9;border:2px solid #fff9;box-shadow:0 3px 12px #0007;pointer-events:none;will-change:transform}
+#camera-joystick span{position:absolute;top:116px;white-space:nowrap;font-size:11px;color:white;text-shadow:0 1px 4px #000;pointer-events:none}
+@media(pointer:coarse){#camera-joystick{display:flex}}
