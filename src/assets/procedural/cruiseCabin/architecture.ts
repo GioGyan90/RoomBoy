@@ -29,9 +29,10 @@ export function architecture(root:T.Group){
  for(const z of [-3.66,3.66])block(g,"marble-floor-gold-border",[11.06,.004,.018],[0,.019,z],palette.gold);
  // Split the rear bulkhead around the balcony opening: no opaque wall behind the glass.
  block(g,"rear-bulkhead-left",[7.35,p.height,.18],[-2.125,p.height/2,p.back],palette.cream);
- block(g,"rear-bulkhead-right",[.35,p.height,.18],[5.625,p.height/2,p.back],palette.cream);
- block(g,"balcony-door-header",[3.90,.36,.18],[3.50,p.height-.18,p.back],palette.cream);
- block(g,"balcony-door-sill",[3.90,.20,.18],[3.50,.10,p.back],palette.wood);
+ // The reference has a solid walnut rear bulkhead; sea access is on the starboard curve.
+ block(g,"rear-bulkhead-right",[4.24,p.height,.18],[3.675,p.height/2,p.back],palette.cream);
+ block(g,"rear-wood-panel",[3.92,2.51,.057],[3.67,1.48,p.back+.12],palette.wood);
+ for(const x of [1.78,3.36,5.28])block(g,"rear-panel-gold-reveal",[.035,2.48,.061],[x,1.49,p.back+.155],palette.gold);
  // Structural rhythm is provided by the dedicated luxury wall panels; no duplicate slats.
  for(const y of [.31,2.83])block(g,"rear-brass-rail",[7.22,.036,.10],[-2.12,y,p.back+.14],palette.gold);
  block(g,"left-bulkhead",[.18,p.height,7.8],[p.left,p.height/2,0],palette.cream);
@@ -55,20 +56,7 @@ export function architecture(root:T.Group){
  block(g,"bath-door-lintel",[.15,.16,1.19],[-2.5,2.30,2.945],palette.wood);
  block(g,"bath-door-lintel-brass",[.035,.034,1.19],[-2.414,2.20,2.945],palette.gold);
  block(g,"bath-front-cutaway",[3.32,.27,.13],[-4.16,.135,p.front],palette.cream);
- // Ocean-side balcony, visually beyond the rear window.
- block(g,"balcony-deck",[3.75,.14,.72],[3.45,-.1,p.back-.48],palette.wood);
- for(const x of [1.65,3.45,5.25])block(g,"balcony-post",[.04,.85,.04],[x,.4,p.back-.82],palette.gold);
- for(const y of [.44,.81])block(g,"balcony-rail",[3.65,.035,.035],[3.45,y,p.back-.82],palette.gold);
- block(g,"balcony-glass",[3.54,.58,.025],[3.45,.48,p.back-.82],palette.glass);
- // Ocean backdrop beyond the balcony, not a walkable plane.
- block(g,"sea-horizon",[9,.018,4],[3.1,-.34,p.back-3.05],palette.sea);
- for(let i=0;i<13;i++)block(g,"sea-wave-highlight",[.35+i%4*.19,.007,.022],[.05+i*.49,-.324,p.back-1.35-(i%4)*.65],palette.glass);
- // Rear glass balcony doors and brass mullions.
- block(g,"ocean-window",[3.75,2.34,.045],[3.45,1.55,p.back+.14],palette.glass);
- for(const x of [1.56,3.45,5.34])block(g,"window-mullion",[.065,2.43,.075],[x,1.55,p.back+.18],palette.gold);
- for(const y of [.34,2.76])block(g,"window-rail",[3.82,.065,.08],[3.45,y,p.back+.18],palette.gold);
- block(g,"balcony-door-handle",[.035,.29,.12],[3.53,1.29,p.back+.27],palette.gold);
- for(const x of [1.45,5.40])block(g,"burgundy-window-curtain",[.37,2.47,.16],[x,1.54,p.back+.34],palette.cream);
+ // Starboard-side ocean window, side balcony and curved hull are authored separately.
  return createNavigation([
   obstacle("rear",-5.8,5.8,-4.05,-3.75),obstacle("left",-5.9,-5.7,-3.9,3.9),
   obstacle("right",5.7,5.9,-3.9,3.9),obstacle("bath-back",-5.8,-2.5,.59,.74),
