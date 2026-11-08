@@ -49,7 +49,7 @@ export function luxuryDetails(root:T.Group){
  for(const x of [2.79,4.79]){
   for(const z of [.21,.78])cylinder(g,'sofa-brass-foot',.055,.13,[x,.115,z],palette.gold);
  }
- block(g,'sofa-gold-back-cap',[2.25,.024,.052],[3.79,1.19,.09],palette.gold);
+ // Curved lounge segments replace the former straight gold rail.
  // Piping follows the cushion front edge rather than cutting across its top.
  block(g,'sofa-front-piping',[2.17,.018,.019],[3.79,.57,.955],palette.gold);
  // Marble bathroom: mirror edging, towel rails and rolled towels.
