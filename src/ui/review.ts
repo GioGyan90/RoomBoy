@@ -43,6 +43,26 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
  const referenceKey=()=>['character','face'].includes(view)?'character':'room';
  function displayReference(){const src=references.get(referenceKey());if(src){image.src=src;image.hidden=false;}else{image.removeAttribute('src');image.hidden=true;}}
  picker.addEventListener('change',()=>{const file=picker.files?.[0];if(!file)return;const key=referenceKey(),old=references.get(key);if(old)URL.revokeObjectURL(old);references.set(key,URL.createObjectURL(file));displayReference();});
+ // Dedicated mobile camera joystick: works independently of canvas pointer events.
+ if(roomId==='cruise'){
+  const joystick=document.createElement('div');
+  joystick.id='camera-joystick';
+  joystick.innerHTML='<div class="camera-joystick-knob"></div><span>旋转视角</span>';
+  joystick.setAttribute('aria-label','拖动调整船舱视角');
+  document.body.append(joystick);
+  const knob=joystick.querySelector<HTMLElement>('.camera-joystick-knob')!;
+  let pointer:number|null=null,originX=0,originY=0;
+  const move=(x:number,y:number)=>{
+   const dx=Math.max(-43,Math.min(43,x-originX)),dy=Math.max(-43,Math.min(43,y-originY));
+   knob.style.transform='translate('+dx+'px,'+dy+'px)';
+   controller.camGoal.theta-=dx*.00085;
+   controller.camGoal.phi=T.MathUtils.clamp(controller.camGoal.phi-dy*.00085,.24,1.65);
+  };
+  joystick.addEventListener('pointerdown',e=>{e.preventDefault();pointer=e.pointerId;originX=e.clientX;originY=e.clientY;joystick.setPointerCapture(e.pointerId);});
+  joystick.addEventListener('pointermove',e=>{if(pointer===e.pointerId){e.preventDefault();move(e.clientX,e.clientY);}});
+  const stop=(e:PointerEvent)=>{if(pointer!==e.pointerId)return;pointer=null;knob.style.transform='translate(0,0)';};
+  joystick.addEventListener('pointerup',stop);joystick.addEventListener('pointercancel',stop);
+ }
  const studio=new T.Group();scene.add(studio);addLighting(studio);
  const floor=new T.Mesh(new T.PlaneGeometry(200,200),new T.MeshStandardMaterial({color:0xa9afaf,roughness:1}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;studio.add(floor);
  function apply(next:string){
