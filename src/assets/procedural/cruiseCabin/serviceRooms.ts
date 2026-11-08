@@ -8,9 +8,12 @@ export function serviceRooms(root:T.Group){
  for(const x of [-5.64,-2.69])block(g,"bath-panel-brass-edge",[.035,1.97,.046],[x,1.20,.77],palette.gold);
  // Bath is a shallow open basin, with a visible interior.
  block(g,"tub-plinth",[1.38,.26,1.75],[-4.8,.24,2.57],palette.gold);
- block(g,"tub-shell",[1.31,.48,1.66],[-4.8,.54,2.57],palette.cream);
- block(g,"tub-water",[1.11,.025,1.42],[-4.8,.796,2.57],palette.glass);
- for(const x of [-5.30,-4.30])block(g,"tub-inner-shadow",[.035,.09,1.43],[x,.77,2.57],palette.marble);
+ // Open ceramic basin: separate bottom and four raised walls.
+ block(g,"tub-bottom",[1.29,.10,1.64],[-4.8,.36,2.57],palette.cream);
+ for(const x of [-5.405,-4.195])block(g,"tub-side-wall",[.09,.39,1.64],[x,.585,2.57],palette.cream);
+ for(const z of [1.795,3.345])block(g,"tub-end-wall",[1.29,.39,.09],[-4.8,.585,z],palette.cream);
+ block(g,"tub-water",[1.11,.025,1.42],[-4.8,.64,2.57],palette.glass);
+ for(const x of [-5.30,-4.30])block(g,"tub-inner-shadow",[.035,.09,1.43],[x,.67,2.57],palette.marble);
  for(const x of [-5.44,-4.16])block(g,"tub-rim",[.07,.07,1.75],[x,.79,2.57],palette.gold);
  for(const z of [1.71,3.43])block(g,"tub-rim",[1.38,.07,.07],[-4.8,.79,z],palette.gold);
  cylinder(g,"bath-tap",.045,.5,[-4.15,1.04,1.95],palette.gold);
