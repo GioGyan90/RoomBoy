@@ -62,8 +62,8 @@ export function furniture(root:T.Group){
  cylinder(g,"table-flower-vase",.10,.25,[3.39,.75,1.83],palette.cream);
  for(let i=0;i<5;i++)cylinder(g,"flower-stem",.014,.28,[3.33+i*.038,.99,1.83],palette.gold);
  // Wall art, stepped trim, and inset decorative panels.
- for(let i=0;i<7;i++)block(g,"walnut-wall-slat",[.055,2.46,.09],[-3.50+i*.79,1.54,-3.72],palette.wood);
- block(g,"bed-wall-art-frame",[1.42,.77,.08],[-1.05,2.63,-3.72],gold);
- block(g,"bed-wall-art",[1.30,.65,.085],[-1.05,2.63,-3.66],palette.burgundy);
- for(const x of [-1.40,-1.05,-.70])block(g,"art-gold-ray",[.025,.48,.09],[x,2.63,-3.60],gold);
+ // The rear wall uses one coordinated pilaster system; avoid overlapping repeated slats.
+ block(g,"bed-wall-art-frame",[1.42,.77,.08],[-1.05,2.45,-3.78],gold);
+ block(g,"bed-wall-art",[1.30,.65,.085],[-1.05,2.45,-3.735],palette.burgundy);
+ for(const x of [-1.40,-1.05,-.70])block(g,"art-gold-ray",[.025,.48,.09],[x,2.45,-3.685],gold);
 }
