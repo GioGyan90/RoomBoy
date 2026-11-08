@@ -56,8 +56,8 @@ export function serviceRooms(root:T.Group){
  for(const y of [.25,.35])block(g,'vanity-folded-towel',[.49,.065,.30],[-3.09,y,1.25],palette.ivory);
  // Contoured contemporary toilet and elevated ceramic back.
  const bowl=new T.Mesh(new T.SphereGeometry(1,24,14),palette.ivory);
- bowl.name='toilet-bowl';bowl.position.set(-3.0,.39,3.08);bowl.scale.set(.27,.28,.36);bowl.castShadow=true;g.add(bowl);
+ bowl.name='toilet-bowl';bowl.position.set(-3.0,.30,3.08);bowl.scale.set(.28,.28,.35);bowl.castShadow=true;g.add(bowl);
  const seat=new T.Mesh(new T.SphereGeometry(1,24,12),palette.ivory);
- seat.name='toilet-seat';seat.position.set(-3.0,.63,3.08);seat.scale.set(.29,.055,.36);g.add(seat);
- block(g,'toilet-cistern',[.53,.61,.22],[-3.0,.74,3.48],palette.ivory);
+ seat.name='toilet-seat';seat.position.set(-3.0,.57,3.08);seat.scale.set(.29,.05,.35);g.add(seat);
+ block(g,'toilet-cistern',[.50,.39,.22],[-3.0,.70,3.41],palette.ivory);
 }
