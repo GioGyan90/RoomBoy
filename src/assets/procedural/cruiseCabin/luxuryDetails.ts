@@ -62,9 +62,9 @@ export function luxuryDetails(root:T.Group){
   block(g,'folded-towel',[.38,.07,.22],[-5.29,y,1.08],pearl);
  }
  // Toilet flush hardware and sculpted ceramic seat rim.
- cylinder(g,'flush-button',.065,.025,[-3,1.058,3.48],palette.gold);
+ cylinder(g,'flush-button',.065,.025,[-3,.905,3.41],palette.gold);
  // Avoid a solid gold disk covering the ceramic seat: use four small decorative rivets.
- for(const x of [-3.19,-2.81])for(const z of [2.98,3.22])sphere(g,'toilet-seat-rivet',.018,x,.699,z,palette.gold);
+ for(const x of [-3.19,-2.81])for(const z of [2.98,3.22])sphere(g,'toilet-seat-rivet',.018,x,.634,z,palette.gold);
  // Bath tap bridge and a separate spout.
  block(g,'bath-faucet-spout',[.31,.042,.06],[-4.32,1.29,1.95],palette.gold);
  sphere(g,'bath-tap-knob',.065,-4.10,1.32,1.95,palette.gold);
