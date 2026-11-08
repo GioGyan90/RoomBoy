@@ -32,6 +32,11 @@ export function bindControls(
   const ndc = new THREE.Vector2();
   let drag: { button: number; x: number; y: number; moved: number } | null = null;
   let lastHover = -Infinity;
+  // One-finger orbit and two-finger pan/zoom on touchscreens.
+  dom.style.touchAction = 'none';
+  const touches = new Map<number, {x:number;y:number}>();
+  let pinchDistance = 0;
+  const distance = () => {const [a,b]=[...touches.values()];return a&&b?Math.hypot(a.x-b.x,a.y-b.y):0;};
 
   function orbit(dx: number, dy: number) {
     camGoal.theta -= dx * .0055;
@@ -74,10 +79,25 @@ export function bindControls(
   dom.addEventListener('contextmenu', event => event.preventDefault());
   dom.addEventListener('pointerdown', event => {
     dom.setPointerCapture(event.pointerId);
+    if(event.pointerType==='touch'){
+      touches.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      if(touches.size===2){pinchDistance=distance();drag=null;}
+      else if(touches.size>2)drag=null;
+      else drag={button:2,x:event.clientX,y:event.clientY,moved:0};
+      return;
+    }
     drag = { button: event.button, x: event.clientX, y: event.clientY, moved: 0 };
     if (event.button === 2 || event.button === 1) event.preventDefault();
   });
   dom.addEventListener('pointermove', event => {
+    if(event.pointerType==='touch'){
+      const previous=touches.get(event.pointerId);if(!previous)return;
+      const dx=event.clientX-previous.x,dy=event.clientY-previous.y;
+      touches.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      if(touches.size===1){orbit(dx,dy);if(drag)drag.moved+=Math.abs(dx)+Math.abs(dy);}
+      else if(touches.size===2){pan(dx/2,dy/2);const next=distance();if(pinchDistance>0&&next>0)camGoal.radius=clamp(camGoal.radius*pinchDistance/next,2,16*room.frameScale(innerWidth/innerHeight));pinchDistance=next;}
+      return;
+    }
     if (drag) {
       const dx = event.clientX - drag.x;
       const dy = event.clientY - drag.y;
@@ -95,6 +115,7 @@ export function bindControls(
     dom.style.cursor = target && target.kind !== 'floor' ? 'pointer' : 'default';
   });
   dom.addEventListener('pointerup', event => {
+    if(event.pointerType==='touch'){touches.delete(event.pointerId);pinchDistance=distance();drag=null;return;}
     const clicked = drag && drag.moved < 7 && drag.button === 0;
     drag = null;
     if (!clicked) return;
@@ -109,7 +130,7 @@ export function bindControls(
     if (target?.kind === 'seat') actions.sitAt(target.seat);
     if (target?.kind === 'floor') actions.walkTo(target.position);
   });
-  dom.addEventListener('pointercancel', () => { drag = null; });
+  dom.addEventListener('pointercancel', event => { touches.delete(event.pointerId); pinchDistance=distance(); drag = null; });
   dom.addEventListener('wheel', event => {
     event.preventDefault();
     camGoal.radius = clamp(camGoal.radius * Math.exp(event.deltaY * .0011), 2, 16 * room.frameScale(innerWidth / innerHeight));
