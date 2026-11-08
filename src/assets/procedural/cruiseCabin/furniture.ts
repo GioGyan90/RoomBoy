@@ -26,7 +26,6 @@ export function furniture(root:T.Group){
  for(let i=0;i<8;i++)soft(g,"headboard-vertical-tuft",[.35,1.47,.11],[-2.39+i*.383,1.48,-3.37],velvet,.065);
  for(const x of [-1.69,-.41]){
   soft(g,"sleeping-pillow",[1.05,.16,.57],[x,.87,-2.88],linen);
-  soft(g,"accent-pillow",[.63,.16,.35],[x,.94,-2.54],palette.onyx);
  }
  // Keep the two nightstands clear of both the bed frame and headboard.
  for(const x of [-2.87,.77]){
