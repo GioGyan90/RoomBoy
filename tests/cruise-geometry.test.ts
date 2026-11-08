@@ -149,3 +149,17 @@ test('bathroom cutaway preserves view of the tub without removing bedroom exteri
  assert.ok(high.max.y>3&&low.max.y<.8,'cutaway wall should not obscure bathroom');
  assert.ok(Math.abs(high.max.z-low.min.z)<.02,'exterior wall segments must join without gaps');
 });
+
+test('toilet is grounded, has an open seat, and the cistern is physically supported',()=>{
+ const root=new T.Group();serviceRooms(root);root.updateMatrixWorld(true);
+ const get=(name:string)=>{const m=root.getObjectByName(name) as T.Mesh;assert.ok(m,name+' missing');return m};
+ const box=(name:string)=>new T.Box3().setFromObject(get(name));
+ const pedestal=box('toilet-pedestal'),bowl=box('toilet-bowl'),seat=box('toilet-seat');
+ const support=box('toilet-cistern-support'),tank=box('toilet-cistern');
+ assert.ok(pedestal.min.y<.06,'pedestal must reach the bathroom floor');
+ assert.ok(pedestal.intersectsBox(bowl),'pedestal must support the bowl');
+ assert.ok(seat.min.y<=bowl.max.y+.015,'seat must rest on the basin rim');
+ assert.ok(support.intersectsBox(tank),'cistern support must connect to tank');
+ assert.ok(support.intersectsBox(bowl),'tank support must connect to toilet body');
+ assert.ok(get('toilet-seat').geometry instanceof T.ExtrudeGeometry,'toilet seat should be an open elliptical ring');
+});
