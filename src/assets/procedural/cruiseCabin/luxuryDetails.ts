@@ -68,4 +68,5 @@ export function luxuryDetails(root:T.Group){
  // Bath tap bridge and a separate spout.
  block(g,'bath-faucet-spout',[.31,.042,.06],[-4.32,1.29,1.95],palette.gold);
  sphere(g,'bath-tap-knob',.065,-4.10,1.32,1.95,palette.gold);
- // Keep the central walking route free of decorative target disks.\n}\n
+ // Keep the central walking route free of decorative target disks.
+}
