@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import {cylinder, palette, architecture} from '../src/assets/procedural/cruiseCabin/architecture';
 import {minibar} from '../src/assets/procedural/cruiseCabin/minibar';
+import {referenceArchitecture} from '../src/assets/procedural/cruiseCabin/referenceArchitecture';
 import {furniture} from '../src/assets/procedural/cruiseCabin/furniture';
 import {serviceRooms} from '../src/assets/procedural/cruiseCabin/serviceRooms';
 
@@ -62,23 +63,37 @@ test('minibar and nightstands do not intersect',()=>{
  }
 });
 
-test('balcony door aperture is clear of the rear bulkhead',()=>{
- const root=new T.Group();architecture(root);root.updateMatrixWorld(true);
+test('large side windows fit inside real hull openings without a wall behind their glass',()=>{
+ const root=new T.Group();architecture(root);referenceArchitecture(root);root.updateMatrixWorld(true);
+ const frame=root.getObjectByName('side-window-brass-frame')!;
+ const sea=root.getObjectByName('side-window-sea')!;
+ const sill=root.getObjectByName('right-window-sill')!;
+ const lintel=root.getObjectByName('right-window-lintel')!;
+ const balcony=root.getObjectByName('side-balcony-sea')!;
+ const balconySill=root.getObjectByName('right-balcony-sill')!;
+ const balconyLintel=root.getObjectByName('right-balcony-lintel')!;
+ const box=(o:T.Object3D)=>new T.Box3().setFromObject(o);
+ assert.ok(box(sea).min.y>box(sill).max.y+.1,'side glazing sinks into hull sill');
+ assert.ok(box(sea).max.y<box(lintel).min.y-.05,'side glazing reaches hull header');
+ assert.ok(box(balcony).min.y>box(balconySill).max.y,'balcony glazing intersects threshold');
+ assert.ok(box(balcony).max.y<box(balconyLintel).min.y,'balcony glazing intersects header');
+ assert.ok(box(frame).min.z<-.5&&box(frame).max.z<0,'main side window is misplaced');
+ assert.ok(!root.getObjectByName('right-hull'),'full solid hull must not cover windows');
+});
+test('concept layout closes the rear wall and keeps ocean access on the side',()=>{
+ const root=new T.Group();architecture(root);
  const left=root.getObjectByName('rear-bulkhead-left')!;
  const right=root.getObjectByName('rear-bulkhead-right')!;
- const glass=root.getObjectByName('ocean-window')!;
- const wallLeft=new T.Box3().setFromObject(left);
- const wallRight=new T.Box3().setFromObject(right);
- const glassBox=new T.Box3().setFromObject(glass);
- assert.ok(wallLeft.max.x<glassBox.min.x,'solid wall blocks the left edge of the balcony glass');
- assert.ok(wallRight.min.x>glassBox.max.x,'solid wall blocks the right edge of the balcony glass');
- assert.ok(wallLeft.max.x<wallRight.min.x,'balcony is fully closed off');
+ const l=new T.Box3().setFromObject(left);
+ const r=new T.Box3().setFromObject(right);
+ assert.ok(Math.abs(l.max.x-r.min.x)<.015,'rear wall should be continuous');
+ assert.ok(!root.getObjectByName('ocean-window'),'obsolete rear ocean window must not remain');
 });
 test('room-facing service bar clears wall, bed, wardrobe and balcony doors',()=>{
  const root=new T.Group();architecture(root);furniture(root);minibar(root);root.updateMatrixWorld(true);
  const bar=root.getObjectByName('minibar-cabinet')!;
  const mirror=root.getObjectByName('minibar-back-mirror')!;
- const other=['left-bulkhead','king-bed-frame','full-height-wardrobe','ocean-window'];
+ const other=['left-bulkhead','king-bed-frame','full-height-wardrobe','rear-wood-panel'];
  for(const item of other){
   const mesh=root.getObjectByName(item)!;
   assert.ok(!new T.Box3().setFromObject(bar).intersectsBox(new T.Box3().setFromObject(mesh)),'bar overlaps '+item);
