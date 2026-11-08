@@ -10,7 +10,7 @@ function sphere(g:T.Group,name:string,r:number,x:number,y:number,z:number,mat:T.
 export function luxuryDetails(root:T.Group){
  const g=new T.Group();g.name='cruise-luxury-details';root.add(g);
  // Architectural layered walnut and gold: repeating pilasters are deliberately spaced.
- for(const x of [-5.53,-3.83,-2.02,-.05,1.05]){
+ for(const x of [-5.53,-3.83,1.05]){
   block(g,'walnut-pilaster',[.11,2.72,.11],[x,1.55,-3.71],palette.wood);
   block(g,'pilaster-brass-inlay',[.025,2.52,.025],[x+.075,1.54,-3.645],palette.gold);
   block(g,'pilaster-cap',[.19,.055,.16],[x,2.93,-3.68],palette.gold);
@@ -28,7 +28,7 @@ export function luxuryDetails(root:T.Group){
  for(const z of [-1.14,-.78]){
   block(g,'runner-gold-stitch',[2.50,.008,.013],[-1.05,.94,z],palette.gold);
  }
- for(let i=0;i<9;i++)block(g,'quilt-stitched-line',[2.44,.004,.006],[-1.05,.895,-1.92+i*.12],pearl);
+ for(let i=0;i<7;i++)block(g,'quilt-stitched-line',[2.44,.004,.006],[-1.05,.891,-1.97+i*.11],pearl);
  // Cushions: contrast welt piping and gold button tufts.
  for(const x of [-1.69,-.41]){
   for(const dx of [-.23,.23])sphere(g,'cushion-button',.026,x+dx,1.035,-2.53,palette.gold);
@@ -59,11 +59,11 @@ export function luxuryDetails(root:T.Group){
  for(const z of [.12,.94])block(g,'sofa-seat-piping',[2.17,.018,.019],[3.79,.545,z],palette.gold);
  // Marble bathroom: mirror edging, towel rails and rolled towels.
  block(g,'vanity-lower-brass-edge',[.78,.035,.63],[-3.09,.12,1.24],palette.gold);
- for(const z of [1.93,2.27]){
-  block(g,'bath-towel-rail',[.52,.035,.04],[-5.43,1.40,z],palette.gold);
+ for(const y of [1.52,1.68]){
+  block(g,'bath-towel-rail',[.52,.035,.04],[-5.43,y,1.04],palette.gold);
  }
- for(const y of [1.26,1.35]){
-  block(g,'folded-towel',[.38,.07,.22],[-5.30,y,2.16],pearl);
+ for(const y of [1.38,1.47]){
+  block(g,'folded-towel',[.38,.07,.22],[-5.29,y,1.08],pearl);
  }
  // Toilet flush hardware and sculpted ceramic seat rim.
  cylinder(g,'flush-button',.065,.025,[-3,1.06,3.48],palette.gold);
