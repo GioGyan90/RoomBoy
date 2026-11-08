@@ -68,8 +68,4 @@ export function luxuryDetails(root:T.Group){
  // Bath tap bridge and a separate spout.
  block(g,'bath-faucet-spout',[.31,.042,.06],[-4.32,1.29,1.95],palette.gold);
  sphere(g,'bath-tap-knob',.065,-4.10,1.32,1.95,palette.gold);
- // Brass framed art deco floor medallion.
- cylinder(g,'floor-medallion',.34,.012,[.66,.035,2.58],palette.gold);
- cylinder(g,'floor-medallion-center',.27,.014,[.66,.046,2.58],dark);
- cylinder(g,'floor-medallion-pearl',.13,.015,[.66,.057,2.58],pearl);
-}
+ // Keep the central walking route free of decorative target disks.\n}\n
