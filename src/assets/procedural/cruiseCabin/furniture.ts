@@ -28,13 +28,13 @@ export function furniture(root:T.Group){
   soft(g,"sleeping-pillow",[1.05,.16,.57],[x,.87,-2.88],linen);
   soft(g,"accent-pillow",[.63,.16,.35],[x,.94,-2.54],velvet);
  }
- for(const x of [-2.63,.53]){
-  block(g,"walnut-nightstand",[.55,.66,.62],[x,.38,-3.17],palette.wood);
-  block(g,"nightstand-marble-top",[.61,.055,.68],[x,.74,-3.17],palette.marble);
-  block(g,"nightstand-drawer",[.44,.22,.02],[x,.48,-2.846],palette.cream);
-  block(g,"drawer-pull",[.17,.026,.04],[x,.48,-2.815],gold);
-  cylinder(g,"brass-lamp-base",.085,.12,[x,.85,-3.17],gold);
-  cylinder(g,"warm-lampshade",.18,.27,[x,1.04,-3.17],linen);
+ // Keep the two nightstands clear of both the bed frame and headboard.\n for(const x of [-2.87,.77]){
+  block(g,"walnut-nightstand",[.55,.66,.62],[x,.38,-3.06],palette.wood);
+  block(g,"nightstand-marble-top",[.61,.055,.68],[x,.74,-3.06],palette.marble);
+  block(g,"nightstand-drawer",[.44,.22,.02],[x,.48,-2.736],palette.cream);
+  block(g,"drawer-pull",[.17,.026,.04],[x,.48,-2.705],gold);
+  cylinder(g,"brass-lamp-base",.085,.12,[x,.85,-3.06],gold);
+  cylinder(g,"warm-lampshade",.18,.27,[x,1.04,-3.06],linen);
  }
  // Left wall built-ins: wardrobe and hotel minibar, with individual doors and brass handles.
  block(g,"full-height-wardrobe",[1.55,2.43,.65],[-4.69,1.24,-3.32],palette.wood);
