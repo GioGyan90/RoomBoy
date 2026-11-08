@@ -64,7 +64,7 @@ export function architecture(root:T.Group){
   obstacle("rear",-5.8,5.8,-4.05,-3.75),obstacle("left",-5.9,-5.7,-3.9,3.9),
   obstacle("right",5.7,5.9,-3.9,3.9),obstacle("bath-back",-5.8,-2.5,.59,.74),
   obstacle("bath-divider",-2.57,-2.43,.65,2.35),obstacle("bath-jamb",-2.57,-2.43,3.53,3.9),
-  obstacle("king-bed",-2.4,.3,-3.4,-.71),
+  obstacle("king-bed",-2.4,.3,-3.4,.70),
   obstacle("wardrobe",-5.47,-3.9,-3.7,-2.9),
   obstacle("minibar",-5.50,-4.80,-1.80,-.24),
   obstacle("lounge-sofa",2.7,4.94,.09,1.0),
