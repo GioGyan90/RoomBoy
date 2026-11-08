@@ -49,14 +49,20 @@ export function furniture(root:T.Group){
  block(g,"carpet-gold-inlay",[2.87,.027,2.5],[3.72,.028,1.18],gold);
  block(g,"carpet-center",[2.77,.03,2.4],[3.72,.03,1.18],palette.onyx);
  soft(g,"sofa-seat-frame",[2.26,.31,.91],[3.79,.37,.50],palette.ivory,.16);
- // Seven overlapping upholstered panels create the curved yacht settee back seen in the concept.
- for(let i=-3;i<=3;i++){
-  const x=3.79+i*.307;
-  const edge=Math.abs(i)/3;
-  const z=.12+.25*edge*edge;
-  const panel=soft(g,"sofa-curve-back-panel",[.36,.76,.27],[x,.78,z],palette.ivory,.11);
-  panel.rotation.y=-i*.075;
- }
+ // One continuous sculpted yacht settee: gently curved back instead of seven blocky overlaps.
+ const curveShape=new T.Shape();
+ curveShape.moveTo(-1.12,.01);
+ curveShape.quadraticCurveTo(-.70,.31,0,.28);
+ curveShape.quadraticCurveTo(.70,.31,1.12,.01);
+ curveShape.lineTo(1.12,-.23);
+ curveShape.quadraticCurveTo(.65,.055,0,.04);
+ curveShape.quadraticCurveTo(-.65,.055,-1.12,-.23);
+ curveShape.closePath();
+ const curvedBackGeometry=new T.ExtrudeGeometry(curveShape,{depth:.72,steps:1,bevelEnabled:true,bevelThickness:.018,bevelSize:.015,bevelSegments:2,curveSegments:12});
+ curvedBackGeometry.rotateX(-Math.PI/2);
+ const curvedBack=new T.Mesh(curvedBackGeometry,palette.ivory);
+ curvedBack.name='sofa-curved-backrest';
+ curvedBack.position.set(3.79,.42,.16);curvedBack.castShadow=true;g.add(curvedBack);
  for(const x of [2.77,4.81])soft(g,"sofa-arm",[.28,.63,.91],[x,.61,.50],palette.ivory,.12);
  for(const x of [3.24,4.33]){
   soft(g,"sofa-seat-cushion",[1.02,.16,.72],[x,.61,.57],palette.ivory);
