@@ -28,7 +28,7 @@ jobs:
         run: |
           npm install --no-save --package-lock=false playwright
           npx playwright install --with-deps chromium
-      - name: Capture eight cabin views
+      - name: Capture 12 cabin views
         env:
           CI: 'true'
         run: node scripts/capture-cruise.mjs
