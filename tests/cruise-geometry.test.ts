@@ -21,3 +21,21 @@ test('cruise table, toilet and washbasin have upright geometry',()=>{
   assert.ok(Math.abs(obj.rotation.x)<1e-8 && Math.abs(obj.rotation.z)<1e-8,name+' tilted');
  }
 });
+
+test('bathroom cladding, mirror and sconces face into the bathroom',()=>{
+ const root=new T.Group();serviceRooms(root);
+ const wall=root.getObjectByName('bath-back-marble-panel') as T.Mesh;
+ const mirror=root.getObjectByName('mirror') as T.Mesh;
+ const light=root.getObjectByName('vanity-wall-light') as T.Mesh;
+ assert.ok(wall.position.z>.74,'marble panel must sit in front of bath partition');
+ assert.ok(mirror.position.z>wall.position.z+.03,'mirror must not be buried in wall');
+ assert.ok(light.position.z>mirror.position.z,'wall light must face room');
+});
+test('bathroom bathtub is open and has a visible recessed water surface',()=>{
+ const root=new T.Group();serviceRooms(root);
+ assert.equal(root.getObjectByName('tub-shell'),undefined,'solid bathtub must not return');
+ const water=root.getObjectByName('tub-water') as T.Mesh;
+ const rim=root.getObjectByName('tub-rim') as T.Mesh;
+ assert.ok(water&&rim);
+ assert.ok(water.position.y<rim.position.y,'water must be below tub rim');
+});
