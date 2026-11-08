@@ -5,10 +5,12 @@ import {serviceRooms} from "./serviceRooms";
 import {applyCruiseInk} from "./ink";
 import {luxuryDetails} from "./luxuryDetails";
 import {minibar} from "./minibar";
+import {referenceArchitecture} from "./referenceArchitecture";
 import type {RoomEffects,RoomToggle} from "../roomV4/effects";
 export function createCruiseCabin(){
  const root=new T.Group();root.name="cruise-cabin";
  const navigation=architecture(root);
+ referenceArchitecture(root);
  furniture(root);serviceRooms(root);minibar(root);
  luxuryDetails(root);
  applyCruiseInk(root);
