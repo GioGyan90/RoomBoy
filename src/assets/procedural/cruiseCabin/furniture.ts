@@ -28,7 +28,8 @@ export function furniture(root:T.Group){
   soft(g,"sleeping-pillow",[1.05,.16,.57],[x,.87,-2.88],linen);
   soft(g,"accent-pillow",[.63,.16,.35],[x,.94,-2.54],velvet);
  }
- // Keep the two nightstands clear of both the bed frame and headboard.\n for(const x of [-2.87,.77]){
+ // Keep the two nightstands clear of both the bed frame and headboard.
+ for(const x of [-2.87,.77]){
   block(g,"walnut-nightstand",[.55,.66,.62],[x,.38,-3.06],palette.wood);
   block(g,"nightstand-marble-top",[.61,.055,.68],[x,.74,-3.06],palette.marble);
   block(g,"nightstand-drawer",[.44,.22,.02],[x,.48,-2.736],palette.cream);
