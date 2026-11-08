@@ -19,9 +19,18 @@ try{
  page.on('pageerror',e=>issues.push('pageerror: '+e.message));
  page.on('console',m=>{if(m.type()==='error')issues.push('console: '+m.text())});
  const stations=['overview','bed','bath','ocean','top','table','toilet','side','bed-left','bed-right','service-bar','balcony-door'];
+ // Boot WebGL once. Repeated full-page reloads made SwiftShader capture flaky and slow.
+ await page.goto(base+'?room=cruise&view=room&capture=1&station=overview',{waitUntil:'networkidle',timeout:60000});
+ await page.waitForTimeout(1000);
  for(const station of stations){
-  await page.goto(base+'?room=cruise&view=room&capture=1&station='+station,{waitUntil:'networkidle',timeout:60000});
-  await page.waitForTimeout(1700);
+  const selected=await page.evaluate(name=>{
+   const button=document.querySelector('#cruise-camera-review [data-station="'+name+'"]');
+   if(!button)return false;
+   button.click();
+   return true;
+  },station);
+  if(!selected)throw Error('Inspection camera missing: '+station);
+  await page.waitForTimeout(800);
   const canvas=page.locator('canvas').first();
   if(!await canvas.isVisible())throw Error('No visible WebGL canvas at '+station);
   const pixels=await canvas.evaluate(c=>({width:c.width,height:c.height}));
