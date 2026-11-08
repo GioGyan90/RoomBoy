@@ -19,7 +19,7 @@ export function luxuryDetails(root:T.Group){
  block(g,'rear-crown-wood',[7.35,.14,.24],[-2.125,3.01,-3.66],palette.wood);
  block(g,'rear-crown-gold',[7.36,.035,.26],[-2.125,2.91,-3.65],palette.gold);
  // Backlit, layered bedside wall sconces and pendant rods.
- for(const x of [-2.68,.58]){
+ for(const x of [-3.20,1.06]){
   block(g,'sconce-wall-plate',[.22,.39,.055],[x,1.67,-3.59],palette.gold);
   block(g,'sconce-diffuser',[.15,.27,.07],[x,1.67,-3.53],light);
   cylinder(g,'sconce-pin',.026,.11,[x,1.49,-3.49],palette.gold);
@@ -28,7 +28,7 @@ export function luxuryDetails(root:T.Group){
  for(const z of [-1.14,-.78]){
   block(g,'runner-gold-stitch',[2.50,.008,.013],[-1.05,.94,z],palette.gold);
  }
- for(let i=0;i<7;i++)block(g,'quilt-stitched-line',[2.44,.004,.006],[-1.05,.891,-1.97+i*.11],pearl);
+ for(let i=0;i<7;i++)block(g,'quilt-stitched-line',[2.44,.004,.006],[-1.05,.885,-1.97+i*.11],pearl);
  // Cushions: contrast welt piping and gold button tufts.
  for(const x of [-1.69,-.41]){
   for(const dx of [-.23,.23])sphere(g,'cushion-button',.026,x+dx,1.035,-2.53,palette.gold);
@@ -49,12 +49,14 @@ export function luxuryDetails(root:T.Group){
  for(const x of [2.79,4.79]){
   for(const z of [.21,.78])cylinder(g,'sofa-brass-foot',.055,.13,[x,.115,z],palette.gold);
  }
+ block(g,'sofa-gold-back-cap',[2.25,.024,.052],[3.79,1.19,.09],palette.gold);
  // Piping follows the cushion front edge rather than cutting across its top.
  block(g,'sofa-front-piping',[2.17,.018,.019],[3.79,.57,.955],palette.gold);
  // Marble bathroom: mirror edging, towel rails and rolled towels.
- block(g,'vanity-lower-brass-edge',[.78,.035,.63],[-3.09,.12,1.24],palette.gold);
+ block(g,'vanity-lower-brass-edge',[.72,.035,.59],[-3.09,.295,1.24],palette.gold);
  for(const y of [1.52,1.68]){
   block(g,'bath-towel-rail',[.52,.035,.04],[-5.43,y,1.04],palette.gold);
+  for(const x of [-5.64,-5.22])block(g,'bath-towel-bracket',[.035,.05,.22],[x,y,.94],palette.gold);
  }
  for(const y of [1.38,1.47]){
   block(g,'folded-towel',[.38,.07,.22],[-5.29,y,1.08],pearl);
@@ -62,7 +64,7 @@ export function luxuryDetails(root:T.Group){
  // Toilet flush hardware and sculpted ceramic seat rim.
  cylinder(g,'flush-button',.065,.025,[-3,1.058,3.48],palette.gold);
  // Avoid a solid gold disk covering the ceramic seat: use four small decorative rivets.
- for(const x of [-3.19,-2.81])for(const z of [2.98,3.22])sphere(g,'toilet-seat-rivet',.018,x,.629,z,palette.gold);
+ for(const x of [-3.19,-2.81])for(const z of [2.98,3.22])sphere(g,'toilet-seat-rivet',.018,x,.699,z,palette.gold);
  // Bath tap bridge and a separate spout.
  block(g,'bath-faucet-spout',[.31,.042,.06],[-4.32,1.29,1.95],palette.gold);
  sphere(g,'bath-tap-knob',.065,-4.10,1.32,1.95,palette.gold);
