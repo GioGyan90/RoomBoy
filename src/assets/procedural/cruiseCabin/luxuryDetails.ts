@@ -40,13 +40,6 @@ export function luxuryDetails(root:T.Group){
   block(g,'wardrobe-panel-crossbar',[.59,.018,.02],[x,1.86,-2.916],palette.gold);
   block(g,'wardrobe-panel-crossbar',[.59,.018,.02],[x,.56,-2.916],palette.gold);
  }
- // Mini bar: brass bottle shelf and a few glass decanters.
- block(g,'minibar-back-mirror',[1.42,.65,.025],[1.90,1.51,-3.71],palette.glass);
- block(g,'minibar-shelf',[1.43,.038,.35],[1.90,1.28,-3.48],palette.gold);
- for(const x of [1.54,1.91,2.28]){
-  cylinder(g,'decanter-body',.085,.26,[x,1.47,-3.47],palette.glass);
-  cylinder(g,'decanter-neck',.036,.10,[x,1.65,-3.47],palette.gold);
- }
  // Cocktail table: concentric metallic edge and a compact decorative tray.
  cylinder(g,'table-tray',.22,.013,[3.75,.635,1.91],palette.gold);
  cylinder(g,'table-tray-inset',.19,.015,[3.75,.645,1.91],dark);
