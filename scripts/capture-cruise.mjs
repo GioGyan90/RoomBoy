@@ -18,7 +18,7 @@ try{
  const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
  page.on('pageerror',e=>issues.push('pageerror: '+e.message));
  page.on('console',m=>{if(m.type()==='error')issues.push('console: '+m.text())});
- for(const station of ['overview','bed','bath','ocean','top','table','toilet','side']){
+ for(const station of ['overview','bed','bath','ocean','top','table','toilet','side','bed-left','bed-right','service-bar','balcony-door']){
   await page.goto(base+'?room=cruise&view=room&capture=1&station='+station,{waitUntil:'networkidle',timeout:60000});
   await page.waitForTimeout(1700);
   const canvas=page.locator('canvas').first();
@@ -28,6 +28,6 @@ try{
   if(shot.length<15000)throw Error('Screenshot appears blank: '+station+' ('+shot.length+' bytes)');
   console.log('Captured',station,pixels);
  }
- await writeFile(resolve(output,'report.json'),JSON.stringify({issues,stations:8},null,2));
+ await writeFile(resolve(output,'report.json'),JSON.stringify({issues,stations:12},null,2));
  if(issues.length)throw Error('Browser console errors: '+issues.join('; '));
 }finally{await browser?.close();server.kill('SIGTERM')}
