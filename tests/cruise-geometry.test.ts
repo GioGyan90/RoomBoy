@@ -86,3 +86,41 @@ test('wall-facing service bar clears wall, bed, wardrobe and balcony doors',()=>
  }
  assert.ok(Math.abs(bar.getWorldDirection(new T.Vector3()).x)>.99,'service bar must face into the room');
 });
+
+test('unrelated primary furniture modules have no three-dimensional intersections',()=>{
+ const root=new T.Group();architecture(root);furniture(root);serviceRooms(root);minibar(root);
+ root.updateMatrixWorld(true);
+ const groups:[string,string][]=[
+  ['king-bed-frame','minibar-cabinet'],
+  ['minibar-cabinet','full-height-wardrobe'],
+  ['minibar-cabinet','bath-rear-wall'],
+  ['sofa-seat-frame','cocktail-table-marble'],
+  ['sofa-seat-frame','cocktail-table-pedestal'],
+  ['cocktail-table-foot','sofa-seat-frame'],
+  ['vanity-cabinet','toilet-bowl'],
+  ['vanity-cabinet','tub-plinth'],
+  ['tub-plinth','toilet-bowl'],
+ ];
+ for(const [first,second] of groups){
+  const a=root.getObjectByName(first),b=root.getObjectByName(second);
+  assert.ok(a&&b,'missing '+first+' or '+second);
+  assert.ok(!new T.Box3().setFromObject(a).intersectsBox(new T.Box3().setFromObject(b)),first+' intersects '+second);
+ }
+});
+test('bedside lamps and flower vase have supporting surfaces',()=>{
+ const root=new T.Group();furniture(root);root.updateMatrixWorld(true);
+ const objects:T.Mesh[]=[];root.traverse(o=>{if(o instanceof T.Mesh)objects.push(o)});
+ const tops=objects.filter(o=>o.name==='nightstand-marble-top');
+ const bases=objects.filter(o=>o.name==='brass-lamp-base');
+ assert.equal(tops.length,2);assert.equal(bases.length,2);
+ for(let i=0;i<2;i++){
+  const top=new T.Box3().setFromObject(tops[i]);
+  const base=new T.Box3().setFromObject(bases[i]);
+  assert.ok(base.min.y<=top.max.y+.015&&base.max.y>top.max.y,'lamp base is floating above nightstand');
+ }
+ const table=root.getObjectByName('cocktail-table-marble')!;
+ const vase=root.getObjectByName('table-flower-vase')!;
+ const top=new T.Box3().setFromObject(table).max.y;
+ const bottom=new T.Box3().setFromObject(vase).min.y;
+ assert.ok(Math.abs(top-bottom)<.025,'vase floats above or sinks into the table');
+});
