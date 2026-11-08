@@ -59,7 +59,7 @@ export function luxuryDetails(root:T.Group){
   block(g,'folded-towel',[.38,.07,.22],[-5.29,y,1.08],pearl);
  }
  // Toilet flush hardware and sculpted ceramic seat rim.
- cylinder(g,'flush-button',.055,.025,[-3,.948,3.47],palette.gold);
+ cylinder(g,'flush-button',.055,.025,[-3,.896,3.40],palette.gold);
  // Seat is an open ceramic ring; omit floating ornamental studs.
  // Bath tap bridge and a separate spout.
  block(g,'bath-faucet-spout',[.31,.042,.06],[-4.32,1.29,1.95],palette.gold);
