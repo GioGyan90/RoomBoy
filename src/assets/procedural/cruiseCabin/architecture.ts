@@ -49,6 +49,9 @@ export function architecture(root:T.Group){
  block(g,"bath-rear-wall",[3.32,2.38,.13],[-4.16,1.19,.66],palette.cream);
  block(g,"bath-divider",[.13,2.38,1.72],[-2.5,1.19,1.49],palette.cream);
  block(g,"bath-door-jamb",[.13,2.38,.36],[-2.5,1.19,3.72],palette.wood);
+ // A lintel completes the service room doorframe without closing the walking aperture.
+ block(g,"bath-door-lintel",[.15,.16,1.19],[-2.5,2.30,2.945],palette.wood);
+ block(g,"bath-door-lintel-brass",[.035,.034,1.19],[-2.414,2.20,2.945],palette.gold);
  block(g,"bath-front-cutaway",[3.32,.27,.13],[-4.16,.135,p.front],palette.cream);
  // Ocean-side balcony, visually beyond the rear window.
  block(g,"balcony-deck",[3.75,.14,.72],[3.45,-.1,p.back-.48],palette.wood);
