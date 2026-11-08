@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {block,cylinder,palette} from './architecture';
+const mirrorGlass=new T.MeshStandardMaterial({color:0xb5b2a9,metalness:.72,roughness:.19});
 
 function ellipseRing(outerX:number,outerZ:number,innerX:number,innerZ:number,depth:number){
  const s=new T.Shape();
@@ -46,7 +47,7 @@ export function serviceRooms(root:T.Group){
  cylinder(g,'washbasin-tap',.036,.22,[-3.09,1.06,.97],palette.gold);
  // The backlit mirror is offset from the marble wall, not embedded inside it.
  block(g,'mirror-halo',[.89,1.04,.016],[-3.09,1.76,.838],palette.gold);
- block(g,'mirror',[.76,.90,.035],[-3.09,1.76,.87],palette.glass);
+ block(g,'mirror',[.76,.90,.035],[-3.09,1.76,.87],mirrorGlass);
  block(g,'mirror-gold-top',[.81,.035,.045],[-3.09,2.22,.87],palette.gold);
  for(const x of [-3.51,-2.67])block(g,'mirror-brass-frame',[.035,.92,.055],[x,1.76,.90],palette.gold);
  for(const x of [-3.56,-2.62]){
