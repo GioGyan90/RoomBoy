@@ -9,8 +9,11 @@ on:
       - '.github/workflows/visual-review.yml'
       - 'package*.json'
   workflow_dispatch:
+concurrency:
+  group: cruise-visual-review
+  cancel-in-progress: true
 permissions:
-  contents: read
+  contents: write
 jobs:
   capture:
     runs-on: ubuntu-latest
@@ -32,11 +35,23 @@ jobs:
         env:
           CI: 'true'
         run: node scripts/capture-cruise.mjs
+      - name: Publish QA contact sheet on separate review branch
+        if: success()
+        run: |
+          git config user.name "room-review-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B cruise-visual-review
+          mkdir -p docs/cruise-visual
+          cp artifacts/cruise-review/contact-sheet.jpg docs/cruise-visual/contact-sheet.jpg
+          cp artifacts/cruise-review/report.json docs/cruise-visual/report.json
+          git add docs/cruise-visual/
+          git commit -m "chore: refresh 12-angle cruise visual review (${GITHUB_SHA:0:8})"
+          git push origin HEAD:refs/heads/cruise-visual-review --force
       - name: Upload temporary screenshots and report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: cruise-cabin-review
           path: artifacts/cruise-review/
-          retention-days: 3
+          retention-days: 7
           if-no-files-found: warn
