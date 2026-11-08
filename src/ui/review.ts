@@ -13,6 +13,9 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   {id:'bath',label:'卫浴',theta:-.72,phi:.94,zoom:.55,target:[-4.15,1.05,2.25]},
   {id:'ocean',label:'海景',theta:.24,phi:1.04,zoom:.68,target:[3.45,1.3,-3.55]},
   {id:'top',label:'俯视',theta:-.35,phi:.25,zoom:1.05,target:[0,0,0]},
+  {id:'table',label:'茶几低角度',theta:.32,phi:1.35,zoom:.37,target:[3.53,.48,1.94]},
+  {id:'toilet',label:'马桶低角度',theta:-.85,phi:1.33,zoom:.28,target:[-3,.48,3.1]},
+  {id:'side',label:'侧面检查',theta:1.0,phi:1.19,zoom:.88,target:[0,1.1,0]},
  ] as const;
  let reviewStation=new URLSearchParams(location.search).get('station')??'overview';
  const query=new URLSearchParams(location.search);const requestedView=query.get('view')??'game';
