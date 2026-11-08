@@ -50,12 +50,18 @@ export function furniture(root:T.Group){
  block(g,"carpet-gold-inlay",[2.87,.027,2.5],[3.72,.028,1.18],gold);
  block(g,"carpet-center",[2.77,.03,2.4],[3.72,.03,1.18],palette.onyx);
  soft(g,"sofa-seat-frame",[2.26,.31,.91],[3.79,.37,.50],palette.ivory,.16);
- soft(g,"sofa-backrest",[2.26,.83,.25],[3.79,.76,.09],palette.ivory,.13);
+ // Seven overlapping upholstered panels create the curved yacht settee back seen in the concept.
+ for(let i=-3;i<=3;i++){
+  const x=3.79+i*.307;
+  const edge=Math.abs(i)/3;
+  const z=.12+.25*edge*edge;
+  const panel=soft(g,"sofa-curve-back-panel",[.36,.76,.27],[x,.78,z],palette.ivory,.11);
+  panel.rotation.y=-i*.075;
+ }
  for(const x of [2.77,4.81])soft(g,"sofa-arm",[.28,.63,.91],[x,.61,.50],palette.ivory,.12);
  for(const x of [3.24,4.33]){
   soft(g,"sofa-seat-cushion",[1.02,.16,.72],[x,.61,.57],palette.ivory);
-  soft(g,"sofa-back-cushion",[.93,.51,.17],[x,.83,.23],linen);
-  soft(g,"sofa-pillow",[.39,.39,.16],[x,.94,.32],x<4?palette.ivory:palette.onyx);
+  soft(g,"sofa-pillow",[.39,.34,.16],[x,.90,.40],palette.ivory);
  }
  cylinder(g,"cocktail-table-marble",.58,.085,[3.53,.57,1.94],palette.marble);
  cylinder(g,"cocktail-table-gold-rim",.60,.025,[3.53,.52,1.94],gold);
