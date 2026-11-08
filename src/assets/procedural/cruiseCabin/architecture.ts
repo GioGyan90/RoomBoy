@@ -21,9 +21,17 @@ export function architecture(root:T.Group){
  const p=cabin, g=new T.Group();g.name="ship-architecture";root.add(g);
  block(g,"ship-hull-foundation",[11.9,.36,8.1],[0,-.2,0],palette.wood);
  block(g,"cabin-floor",[11.55,.06,7.8],[0,-.015,0],palette.marble).userData.walkable=true;
+ // Brass marble seams, narrow enough to avoid z-fighting with the floor.
+ for(let i=0;i<10;i++)block(g,"marble-floor-gold-grout",[.012,.003,7.68],[-5.4+i*1.2,.018,0],palette.gold);
+ for(let i=0;i<7;i++)block(g,"marble-floor-cross-grout",[11.35,.003,.012],[0,.019,-3.5+i*1.16],palette.gold);
  block(g,"rear-bulkhead",[11.7,p.height,.18],[0,p.height/2,p.back],palette.cream);
+ for(let i=0;i<11;i++)block(g,"rear-panel-walnut-pilaster",[.08,2.56,.095],[-5.42+i*1.07,1.48,p.back+.12],palette.wood);
+ for(const y of [.31,2.83])block(g,"rear-brass-rail",[11.42,.036,.10],[0,y,p.back+.14],palette.gold);
  block(g,"left-bulkhead",[.18,p.height,7.8],[p.left,p.height/2,0],palette.cream);
  block(g,"right-hull",[.18,p.height,7.8],[p.right,p.height/2,0],palette.cream);
+ // Layered ship side plating with rounded longitudinal ribs.
+ for(const y of [.38,2.82])block(g,"ship-side-brass-stripe",[.038,.048,7.72],[p.right+.112,y,0],palette.gold);
+ for(let i=0;i<9;i++)block(g,"ship-hull-rib",[.065,2.65,.08],[p.right+.125,1.48,-3.44+i*.87],palette.cream);
  block(g,"front-cutaway",[11.7,.32,.18],[0,.16,p.front],palette.cream);
  for(const y of [.18,2.82])block(g,"gold-trim",[11.5,.047,.07],[0,y,p.back+.14],palette.gold);
  for(let i=0;i<3;i++){
@@ -43,10 +51,15 @@ export function architecture(root:T.Group){
  for(const x of [1.65,3.45,5.25])block(g,"balcony-post",[.04,.85,.04],[x,.4,p.back-.82],palette.gold);
  for(const y of [.44,.81])block(g,"balcony-rail",[3.65,.035,.035],[3.45,y,p.back-.82],palette.gold);
  block(g,"balcony-glass",[3.54,.58,.025],[3.45,.48,p.back-.82],palette.glass);
+ // Ocean backdrop beyond the balcony, not a walkable plane.
+ block(g,"sea-horizon",[9,.018,4],[3.1,-.34,p.back-3.05],palette.sea);
+ for(let i=0;i<13;i++)block(g,"sea-wave-highlight",[.35+i%4*.19,.007,.022],[.05+i*.49,-.324,p.back-1.35-(i%4)*.65],palette.glass);
  // Rear glass balcony doors and brass mullions.
  block(g,"ocean-window",[3.75,2.34,.045],[3.45,1.55,p.back+.14],palette.glass);
  for(const x of [1.56,3.45,5.34])block(g,"window-mullion",[.065,2.43,.075],[x,1.55,p.back+.18],palette.gold);
  for(const y of [.34,2.76])block(g,"window-rail",[3.82,.065,.08],[3.45,y,p.back+.18],palette.gold);
+ block(g,"balcony-door-handle",[.035,.29,.12],[3.53,1.29,p.back+.27],palette.gold);
+ for(const x of [1.45,5.40])block(g,"burgundy-window-curtain",[.37,2.47,.16],[x,1.54,p.back+.34],palette.cream);
  return createNavigation([
   obstacle("rear",-5.8,5.8,-4.05,-3.75),obstacle("left",-5.9,-5.7,-3.9,3.9),
   obstacle("right",5.7,5.9,-3.9,3.9),obstacle("bath-back",-5.8,-2.5,.59,.74),
