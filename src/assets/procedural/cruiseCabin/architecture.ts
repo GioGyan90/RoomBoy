@@ -35,7 +35,10 @@ export function architecture(root:T.Group){
  for(const x of [1.78,3.36,5.28])block(g,"rear-panel-gold-reveal",[.035,2.48,.061],[x,1.49,p.back+.155],palette.gold);
  // Structural rhythm is provided by the dedicated luxury wall panels; no duplicate slats.
  for(const y of [.31,2.83])block(g,"rear-brass-rail",[7.22,.036,.10],[-2.12,y,p.back+.14],palette.gold);
- block(g,"left-bulkhead",[.18,p.height,7.8],[p.left,p.height/2,0],palette.cream);
+ // Cutaway for the bathroom: the full-height exterior sidewall blocked the tub in isometric view.
+ block(g,"left-bulkhead-bedroom",[.18,p.height,4.55],[p.left,p.height/2,-1.625],palette.shell);
+ block(g,"left-bulkhead-bath-cutaway",[.18,.62,3.25],[p.left,.31,2.275],palette.shell);
+ block(g,"left-bath-sill",[.23,.07,3.25],[p.left,.65,2.275],palette.gold);
  // Actual side openings, not solid wall panels painted blue.
  block(g,"right-hull-aft",[.18,p.height,1.05],[p.right,p.height/2,-3.375],palette.shell);
  block(g,"right-hull-fore",[.18,p.height,2.75],[p.right,p.height/2,2.525],palette.shell);
@@ -49,9 +52,9 @@ export function architecture(root:T.Group){
  for(const y of [.18,2.82])block(g,"gold-trim",[7.22,.047,.07],[-2.12,y,p.back+.14],palette.gold);
  // The giant side windows are assembled in referenceArchitecture.ts.
  // Bath enclosure has an open doorway facing the bedroom.
- block(g,"bath-rear-wall",[3.32,2.38,.13],[-4.16,1.19,.66],palette.cream);
- block(g,"bath-divider",[.13,2.38,1.72],[-2.5,1.19,1.49],palette.cream);
- block(g,"bath-door-jamb",[.13,2.38,.36],[-2.5,1.19,3.72],palette.wood);
+ block(g,"bath-rear-wall",[3.32,2.38,.13],[-4.16,1.19,.66],palette.marble);
+ block(g,"bath-divider",[.13,1.94,1.72],[-2.5,.97,1.49],palette.shell);
+ block(g,"bath-door-jamb",[.13,2.38,.36],[-2.5,1.19,3.72],palette.shell);
  // A lintel completes the service room doorframe without closing the walking aperture.
  block(g,"bath-door-lintel",[.15,.16,1.19],[-2.5,2.30,2.945],palette.wood);
  block(g,"bath-door-lintel-brass",[.035,.034,1.19],[-2.414,2.20,2.945],palette.gold);
