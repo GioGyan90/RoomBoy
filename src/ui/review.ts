@@ -9,7 +9,7 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
  // Review-only camera stations. Never insert camera meshes into the playable scene.
  const reviewStations=[
   {id:'overview',label:'全景',theta:-.398,phi:1.062,zoom:1,target:[0,1.3,0]},
-  {id:'bed',label:'卧室',theta:-.24,phi:1.13,zoom:.68,target:[-1.05,1.2,-1.95]},
+  {id:'bed',label:'卧室',theta:-.24,phi:1.13,zoom:.68,target:[-.33,1.2,-1.95]},
   {id:'bath',label:'卫浴',theta:-.72,phi:.94,zoom:.55,target:[-4.15,1.05,2.25]},
   {id:'ocean',label:'海景舷窗',theta:-.62,phi:1.09,zoom:.68,target:[5.44,1.72,-1.55]},
   {id:'top',label:'俯视',theta:-.35,phi:.25,zoom:1.05,target:[0,0,0]},
@@ -21,8 +21,8 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   {id:'bath-tub-attachments',label:'浴缸水件近景',theta:-.77,phi:1.12,zoom:.28,target:[-4.9,1.14,1.77]},
   {id:'bath-shower-side',label:'卫浴水件侧视',theta:1.08,phi:1.15,zoom:.32,target:[-5.13,1.45,1.35]},
   {id:'side',label:'侧面检查',theta:1.0,phi:1.19,zoom:.88,target:[0,1.1,0]},
-  {id:'bed-left',label:'左床头柜',theta:-.32,phi:1.15,zoom:.32,target:[-2.87,.67,-3.06]},
-  {id:'bed-right',label:'右床头柜',theta:.32,phi:1.15,zoom:.32,target:[.77,.67,-3.06]},
+  {id:'bed-left',label:'左床头柜',theta:-.32,phi:1.15,zoom:.32,target:[-2.15,.67,-3.06]},
+  {id:'bed-right',label:'右床头柜',theta:.32,phi:1.15,zoom:.32,target:[1.49,.67,-3.06]},
   {id:'service-bar',label:'独立酒柜',theta:-.15,phi:1.18,zoom:.43,target:[-3.58,1.05,-3.25]},
   {id:'balcony-door',label:'海景玻璃门',theta:-.65,phi:1.18,zoom:.56,target:[5.60,1.50,.55]},
   {id:'exterior-starboard',label:'外侧船舷全景',theta:1.57,phi:1.17,zoom:.77,target:[5.79,1.64,-.45]},
