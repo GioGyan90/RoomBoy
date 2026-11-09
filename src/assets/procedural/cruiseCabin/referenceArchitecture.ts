@@ -1,5 +1,6 @@
 import * as T from 'three';
-import {block,cylinder,palette,cabin} from './architecture';
+import {block,cylinder,palette} from './architecture';
+import {createRoundedFrameGeometry} from './lowpolyAssets';
 
 // The reference suite's port-side doorway, broad ocean windows and curved cruise hull.
 const sea=new T.MeshBasicMaterial({color:0x1b8dbb,side:T.DoubleSide});
@@ -15,7 +16,9 @@ function rounded(w:number,h:number,r:number){
  return new T.ShapeGeometry(s,10);
 }
 function windowPane(g:T.Group,name:string,w:number,h:number,r:number,x:number,y:number,z:number,material:T.Material){
- const mesh=new T.Mesh(rounded(w,h,r),material);
+ const isRim=name.endsWith('brass-frame')||name.endsWith('gasket');
+ const geo=isRim?createRoundedFrameGeometry(w,h,r,name.endsWith('gasket')?.045:.072,.035):rounded(w,h,r);
+ const mesh=new T.Mesh(geo,material);
  mesh.name=name;mesh.position.set(x,y,z);mesh.rotation.y=-Math.PI/2;
  g.add(mesh);return mesh;
 }
@@ -26,7 +29,7 @@ function tube(g:T.Group,name:string,points:T.Vector3[],radius:number,material:T.
 }
 export function referenceArchitecture(root:T.Group){
  const g=new T.Group();g.name='reference-cruise-architecture';root.add(g);
- // Large, gold-rimmed rounded-rectangle sea window on the exterior hull.
+ // Cutout low-poly window modules use hollow extruded rings; no filled brass slabs.
  windowPane(g,'side-window-brass-frame',2.52,1.94,.40,5.68,1.72,-1.55,palette.gold);
  windowPane(g,'side-window-black-gasket',2.42,1.84,.36,5.661,1.72,-1.55,marine);
  windowPane(g,'side-window-sea',2.30,1.72,.31,5.642,1.72,-1.55,sea);
