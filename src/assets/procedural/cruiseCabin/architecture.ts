@@ -1,6 +1,7 @@
 import * as T from "three";
 import { createNavigation } from "../../../game/navigation";
 import { obstacle } from "../blueApartment/plan";
+import {createCruiseFloorPrint} from "./surfacePatterns";
 export const cabin = { left:-5.8,right:5.8,back:-3.9,front:3.9,bathRight:-2.5,bathFront:0.65,wall:.18,height:3.15 };
 export const palette = {
   cream:new T.MeshStandardMaterial({color:0xe9d8bf,roughness:.8}),
@@ -20,13 +21,12 @@ export function block(parent:T.Group,name:string,size:[number,number,number],at:
 export function cylinder(parent:T.Group,name:string,r:number,depth:number,at:[number,number,number],mat:T.Material,axis:"x"|"y"|"z"="y"){
  const m=new T.Mesh(new T.CylinderGeometry(r,r,depth,32),mat);m.name=name;m.position.set(...at);if(axis==="x")m.rotation.z=Math.PI/2;else if(axis==="z")m.rotation.x=Math.PI/2;m.castShadow=true;parent.add(m);return m;
 }
+const printedFloor=new T.MeshStandardMaterial({map:createCruiseFloorPrint(),roughness:.42,color:0xffffff});
 export function architecture(root:T.Group){
  const p=cabin, g=new T.Group();g.name="ship-architecture";root.add(g);
  block(g,"ship-hull-foundation",[11.9,.36,8.1],[0,-.2,0],palette.shell);
- block(g,"cabin-floor",[11.55,.06,7.8],[0,-.015,0],palette.marble).userData.walkable=true;
- // Brass marble seams, narrow enough to avoid z-fighting with the floor.
- for(const x of [-5.52,5.52])block(g,"marble-floor-gold-border",[.018,.004,7.63],[x,.019,0],palette.gold);
- for(const z of [-3.66,3.66])block(g,"marble-floor-gold-border",[11.06,.004,.018],[0,.019,z],palette.gold);
+ block(g,"cabin-floor",[11.55,.06,7.8],[0,-.015,0],printedFloor).userData.walkable=true;
+ // Floor fillet lines live inside the UV material; no raised rods on the floor.
  // Split the rear bulkhead around the balcony opening: no opaque wall behind the glass.
  block(g,"rear-bulkhead-left",[7.35,p.height,.18],[-2.125,p.height/2,p.back],palette.cream);
  // The reference has a solid walnut rear bulkhead; sea access is on the starboard curve.
