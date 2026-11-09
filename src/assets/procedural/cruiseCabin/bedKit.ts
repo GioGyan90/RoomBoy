@@ -85,7 +85,7 @@ export function buildCruiseSleepingKit(bedZone:T.Group){
  const throwGroup=assembly(bedding,'bed-runner-draped-hem');
  // Keep black embroidered throw inside the white duvet and bind its height to
  // the duvet's drape. Neither edge can dive through the underlying cloth.
- const runnerWidth=2.24,runnerLength=.64,runnerZ=-.125;
+ const runnerWidth=2.24,runnerLength=.64,runnerZ=-.23;
  const runner=new T.Mesh(
   createConformingRunnerGeometry(runnerWidth,runnerLength,quiltWidth,quiltLength,quiltZ,runnerZ,quiltOptions,38,28),
   prints.dark
