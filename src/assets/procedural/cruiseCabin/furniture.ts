@@ -1,5 +1,6 @@
 import * as T from "three";
 import {block,cylinder,palette} from "./architecture";
+import {createDuvetGeometry} from "./lowpolyAssets";
 const velvet=new T.MeshStandardMaterial({color:0x262127,roughness:.96});
 const linen=new T.MeshStandardMaterial({color:0xfff0df,roughness:.91});
 const gold=palette.gold;
@@ -19,8 +20,11 @@ export function furniture(root:T.Group){
  block(g,"king-bed-frame",[2.82,.36,4.02],[-1.05,.31,-1.37],palette.wood);
  block(g,"bed-brass-base",[2.86,.045,4.05],[-1.05,.17,-1.37],gold);
  soft(g,"pillowtop-mattress",[2.61,.26,3.85],[-1.05,.65,-1.37],linen);
- soft(g,"quilt-ivory",[2.58,.12,2.85],[-1.05,.82,-1.03],linen);
- soft(g,"quilt-burgundy-runner",[2.62,.045,.80],[-1.05,.91,.18],velvet);
+ // Draped low-poly fabric shells, authored with folds and hem UVs, rather than hard slabs.
+ const quilt=new T.Mesh(createDuvetGeometry(2.58,2.85,.12,'ivoryCloth'),linen);
+ quilt.name='quilt-ivory';quilt.position.set(-1.05,.84,-1.03);quilt.castShadow=true;quilt.receiveShadow=true;g.add(quilt);
+ const runner=new T.Mesh(createDuvetGeometry(2.62,.80,.045,'midnightCloth'),velvet);
+ runner.name='quilt-burgundy-runner';runner.position.set(-1.05,.91,.18);runner.castShadow=true;runner.receiveShadow=true;g.add(runner);
  block(g,"headboard-wood-frame",[3.42,1.70,.20],[-1.05,1.45,-3.57],palette.wood);
  block(g,"headboard-brass-cap",[3.44,.045,.22],[-1.05,2.32,-3.57],gold);
  for(let i=0;i<8;i++)soft(g,"headboard-vertical-tuft",[.35,1.47,.11],[-2.39+i*.383,1.48,-3.37],velvet,.065);
