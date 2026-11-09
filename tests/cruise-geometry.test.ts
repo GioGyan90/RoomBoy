@@ -311,3 +311,58 @@ test('toilet is kept clear of open bathroom doorway',()=>{
  assert.ok(box.max.x< -3.0,'toilet sits too close to bathroom passage');
  assert.ok(!box.intersectsBox(door),'sliding door collides with toilet');
 });
+
+test('TV is on the bed-foot wall, faces the mattress and has a dark off screen',()=>{
+ const root=new T.Group();architecture(root);furniture(root);referenceArchitecture(root);
+ root.updateMatrixWorld(true);
+ const bed=root.getObjectByName('king-bed-frame')!,tv=root.getObjectByName('wall-tv-screen') as T.Mesh;
+ const wall=root.getObjectByName('bed-foot-media-panel')!;
+ const a=new T.Box3().setFromObject(bed),b=new T.Box3().setFromObject(tv),w=new T.Box3().setFromObject(wall);
+ assert.ok(b.min.z>a.max.z+1,'TV should be in front of bed foot, not above headboard');
+ assert.ok(Math.abs(b.getCenter(new T.Vector3()).x-a.getCenter(new T.Vector3()).x)<.12,'TV must be centered opposite the bed');
+ assert.ok(b.max.z<w.min.z,'TV panel must face the bedroom');
+ const mat=tv.material as T.MeshStandardMaterial;
+ assert.ok(mat.color.r<.1&&mat.color.g<.1&&mat.color.b<.13,'TV must not be an ocean-blue screen');
+ assert.equal(root.getObjectByName('wall-tv-sea'),undefined);
+ assert.equal(root.getObjectByName('wall-tv-sky'),undefined);
+ assert.equal(root.getObjectByName('wall-tv-horizon'),undefined);
+ const frame=new T.Box3().setFromObject(root.getObjectByName('wall-tv-brass-frame')!);
+ const inset=new T.Box3().setFromObject(root.getObjectByName('bed-foot-media-inset')!);
+ assert.ok(frame.intersectsBox(b),'television floating outside frame');
+ assert.ok(frame.intersectsBox(inset),'TV frame is not attached to inset');
+ assert.ok(inset.intersectsBox(w),'media inset is detached from wall');
+});
+test('vanity has a genuine recessed bowl, open countertop and connected tap',()=>{
+ const root=new T.Group();serviceRooms(root);root.updateMatrixWorld(true);
+ const get=(n:string)=>{const o=root.getObjectByName(n) as T.Mesh;assert.ok(o,n+' missing');return o};
+ const bounds=(n:string)=>new T.Box3().setFromObject(get(n));
+ const basin=get('washbasin');
+ assert.ok(basin.geometry instanceof T.LatheGeometry,'sink should be a hollow lathable dish rather than slab');
+ const left=bounds('vanity-marble-left'),right=bounds('vanity-marble-right');
+ const back=bounds('vanity-marble-back'),front=bounds('vanity-marble-front');
+ const bowl=bounds('washbasin'),drain=bounds('washbasin-drain');
+ assert.ok(left.max.x<bowl.getCenter(new T.Vector3()).x && right.min.x>bowl.getCenter(new T.Vector3()).x);
+ assert.ok(back.max.z<bowl.getCenter(new T.Vector3()).z && front.min.z>bowl.getCenter(new T.Vector3()).z);
+ assert.ok(drain.min.y<bowl.max.y-.04,'basin must dip beneath the rim to a drain');
+ assert.equal(root.getObjectByName('vanity-marble'),undefined,'solid uncut slab must not return');
+ const stem=bounds('washbasin-tap'),spout=bounds('washbasin-faucet-spout'),tip=bounds('washbasin-faucet-aerator');
+ assert.ok(stem.intersectsBox(spout),'washbasin faucet stem is detached');
+ assert.ok(spout.intersectsBox(tip),'washbasin tip is detached');
+ assert.ok(tip.getCenter(new T.Vector3()).z>bowl.min.z,'faucet must discharge over washbasin');
+});
+test('tub fill plumbing connects wall riser to bathtub edge and has no hovering pieces',()=>{
+ const root=new T.Group();serviceRooms(root);root.updateMatrixWorld(true);
+ const bounds=(n:string)=>{
+  const o=root.getObjectByName(n)!;
+  assert.ok(o,n+' missing');return new T.Box3().setFromObject(o);
+ };
+ const pipe=bounds('shower-gold-riser'),spout=bounds('shower-spout');
+ const feed=bounds('tub-fill-wall-feed'),down=bounds('tub-fill-downpipe'),flange=bounds('tub-fill-rim-flange');
+ const rim=bounds('tub-rim');
+ assert.ok(pipe.intersectsBox(spout),'wall riser not linked to tub filler');
+ assert.ok(spout.intersectsBox(feed),'wall feed detached');
+ assert.ok(spout.intersectsBox(down),'filler downpipe suspended');
+ assert.ok(down.intersectsBox(flange),'filler downpipe misses flange');
+ assert.ok(flange.intersectsBox(rim),'flange does not seat on bathtub rim');
+ assert.ok(spout.max.z>rim.min.z,'fill pipe does not extend over tub');
+});
