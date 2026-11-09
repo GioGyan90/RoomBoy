@@ -79,28 +79,43 @@ export function createDuvetGeometry(
 export function createFoldedCornerGeometry(
  quiltWidth:number,quiltLength:number,options:ClothOptions={}
 ){
- const n=12,positions:number[]=[],uvs:number[]=[],indices:number[]=[];
- // Triangle: A & B along the foot-side edge, C raised inward.
- const A:[number,number]=[.35,.32],B:[number,number]=[.485,.47],C:[number,number]=[.18,.46];
+ // Right-foot turn-back: a real double-sided textile flap with a wrapped hem.
+ // Barycentric grid keeps local folds fine enough to silhouette from close-up.
+ const n=22,positions:number[]=[],uvs:number[]=[],indices:number[]=[];
  const atlas=cruiseUvRegions.ivoryCloth;
- const ix=(row:number,k:number)=>row*(n+1)-row*(row-1)/2+k;
- for(let row=0;row<=n;row++){
+ const start=(row:number)=>row*(n+1)-row*(row-1)/2;
+ const uvA:[number,number]=[.77,.77],uvB:[number,number]=[.99,.97],uvC:[number,number]=[.60,.985];
+ const count=(n+1)*(n+2)/2;
+ for(const underside of [false,true])for(let row=0;row<=n;row++){
   const t=row/n;
   for(let k=0;k<=n-row;k++){
-   const s=k/n;
-   const u=A[0]*(1-t-s)+B[0]*t+C[0]*s+.5;
-   const v=A[1]*(1-t-s)+B[1]*t+C[1]*s+.5;
-   const edgeFactor=Math.max(0,1-Math.pow(1-3*Math.min(t,s,Math.max(0,1-t-s)),2));
-   const h=drapeY(u,v,options)+.006+.09*edgeFactor;
-   positions.push((u-.5)*quiltWidth,h,(v-.5)*quiltLength);
+   const s=k/n,base=1-t-s;
+   const u=uvA[0]*base+uvB[0]*t+uvC[0]*s;
+   const v=uvA[1]*base+uvB[1]*t+uvC[1]*s;
+   const inside=Math.max(0,Math.min(1,t,s,base));
+   const crease=Math.sin(Math.PI*Math.min(1,inside*3))**1.4;
+   const roll=.105*crease+.014*Math.sin(Math.PI*t);
+   const y=drapeY(u,v,options)+.004+roll-(underside?.018:0);
+   const x=(u-.5)*quiltWidth,z=(v-.5)*quiltLength;
+   positions.push(x,y,z);
    uvs.push(atlas.u0+u*(atlas.u1-atlas.u0),atlas.v0+v*(atlas.v1-atlas.v0));
   }
  }
  for(let row=0;row<n;row++)for(let k=0;k<n-row;k++){
-  const p=ix(row,k),q=ix(row+1,k),r=ix(row,k+1);
-  indices.push(p,q,r);
-  if(k<n-row-1)indices.push(q,ix(row+1,k+1),r);
+  const a=start(row)+k,b=start(row+1)+k,d=start(row)+k+1;
+  indices.push(a,b,d,count+a,count+d,count+b);
+  if(k<n-row-1){
+   const e=start(row+1)+k+1;
+   indices.push(b,e,d,count+b,count+d,count+e);
+  }
  }
+ // Three sewn edge strips. Folded fabric has thickness, not a floating decal.
+ const edge=(a:number,b:number)=>indices.push(a,b,count+a,b,count+b,count+a);
+ for(let row=0;row<n;row++){
+  edge(start(row),start(row+1));
+  edge(start(row)+n-row,start(row+1)+n-row-1);
+ }
+ for(let k=0;k<n;k++)edge(k+1,k);
  const geometry=new T.BufferGeometry();
  geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
  geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));
@@ -112,14 +127,16 @@ export function createFoldedCornerGeometry(
  * corners and local UVs. The same grid resolution is used for top and bottom.
  */
 export function createPillowGeometry(width:number,depth:number,height:number,variant=0){
- const nx=16,nz=12,positions:number[]=[],uvs:number[]=[],indices:number[]=[];
+ const nx=24,nz=20,positions:number[]=[],uvs:number[]=[],indices:number[]=[];
  const atlas=cruiseUvRegions.ivoryCloth;
  for(const underside of [false,true])for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++){
   const u=i/nx,v=j/nz,ax=Math.abs(2*u-1),az=Math.abs(2*v-1);
   const corner=ax*ax*az*az;
-  const x=(u-.5)*width*(1-.15*corner),z=(v-.5)*depth*(1-.15*corner);
+  const x=(u-.5)*width*(1-.13*corner)+.012*Math.sin(v*Math.PI*2+variant)*Math.sin(Math.PI*u);
+  const z=(v-.5)*depth*(1-.13*corner)+.008*Math.sin(u*Math.PI*2+variant);
   const inflate=Math.pow(Math.max(0,1-ax*ax),.75)*Math.pow(Math.max(0,1-az*az),.75);
-  const scrunch=.009*Math.sin((u*2.7+v*1.9+variant)*Math.PI*2)*inflate;
+  const scrunch=(.012*Math.sin((u*2.7+v*1.9+variant)*Math.PI*2)
+   +.007*Math.cos(v*12.5+variant))*inflate;
   const y=underside?-.30*height+.022*inflate:
    .42*height+.55*height*inflate-.10*height*corner+scrunch;
   positions.push(x,y,z);
