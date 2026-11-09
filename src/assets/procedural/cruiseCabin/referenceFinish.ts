@@ -34,7 +34,7 @@ export function referenceFinish(root:T.Group){
  center.name='bouquet-center';center.position.set(3.39,1.17,1.83);g.add(center);
  // The vanity mirror and display television have subtle warm accent strips.
  // TV is off; a restrained brass media-wall toe rail sits below it (not on the screen).
- block(g,'tv-underlit-trim',[1.88,.019,.023],[-.33,.90,3.453],palette.gold);
+ block(g,'tv-underlit-trim',[1.88,.019,.023],[-.33,.90,3.503],palette.gold);
  for(const x of [-3.51,-2.67])block(g,'mirror-warm-side-strip',[.017,.93,.018],[x,1.76,.927],led);
  // Low-intensity highlights break up the dark marble without washing out its color.
  const tableLight=new T.PointLight(0xffd3a5,.35,3.3,2);
