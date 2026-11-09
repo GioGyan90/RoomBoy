@@ -56,8 +56,8 @@ export function serviceRooms(root:T.Group){
  const marble=palette.marble;
  block(sink,'vanity-marble-left',[.145,.07,.66],[-3.4275,.88,1.24],marble);
  block(sink,'vanity-marble-right',[.145,.07,.66],[-2.7525,.88,1.24],marble);
- block(sink,'vanity-marble-back',[.53,.07,.175],[-3.09,.88,.9975],marble);
- block(sink,'vanity-marble-front',[.53,.07,.175],[-3.09,.88,1.4825],marble);
+ block(sink,'vanity-marble-back',[.53,.07,.13],[-3.09,.88,.975],marble);
+ block(sink,'vanity-marble-front',[.53,.07,.13],[-3.09,.88,1.505],marble);
  // Lathe cross-section traces the outer wall, ceramic rim and inner bowl down to its drain.
  const profile=[
   [.0,.81],[.13,.81],[.215,.845],[.249,.91],[.265,.95],
