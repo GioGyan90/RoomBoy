@@ -1,9 +1,12 @@
 import * as T from "three";
 import {block,cylinder,palette} from "./architecture";
 import {createDuvetGeometry} from "./lowpolyAssets";
+import {createCruiseFabricMaterials,createCruiseRugPrint} from "./surfacePatterns";
 const velvet=new T.MeshStandardMaterial({color:0x262127,roughness:.96});
 const linen=new T.MeshStandardMaterial({color:0xfff0df,roughness:.91});
 const gold=palette.gold;
+const clothPrints=createCruiseFabricMaterials();
+const rugPrint=new T.MeshStandardMaterial({map:createCruiseRugPrint(),color:0xffffff,roughness:.89});
 function soft(parent:T.Group,name:string,size:[number,number,number],at:[number,number,number],mat:T.Material,r=.09){
  const s=new T.Shape();const w=size[0],d=size[2],x=-w/2,z=-d/2;
  s.moveTo(x+r,z);s.lineTo(x+w-r,z);s.quadraticCurveTo(x+w,z,x+w,z+r);s.lineTo(x+w,z+d-r);s.quadraticCurveTo(x+w,z+d,x+w-r,z+d);s.lineTo(x+r,z+d);s.quadraticCurveTo(x,z+d,x,z+d-r);s.lineTo(x,z+r);s.quadraticCurveTo(x,z,x+r,z);
@@ -14,16 +17,14 @@ function soft(parent:T.Group,name:string,size:[number,number,number],at:[number,
 export function furniture(root:T.Group){
  const g=new T.Group();g.name="cruise-furniture";root.add(g);
  // Black marble with cream and burgundy rugs; layered luxury bed and pleated upholstered headboard.
- block(g,"bed-rug",[3.78,.024,4.50],[-1.05,.022,-1.22],palette.onyx);
- block(g,"bed-rug-border",[3.61,.027,4.34],[-1.05,.038,-1.22],gold);
- block(g,"bed-rug-inner",[3.54,.031,4.26],[-1.05,.041,-1.22],palette.onyx);
+ block(g,"bed-rug",[3.78,.024,4.50],[-1.05,.022,-1.22],rugPrint);
  block(g,"king-bed-frame",[2.82,.36,4.02],[-1.05,.31,-1.37],palette.wood);
  block(g,"bed-brass-base",[2.86,.045,4.05],[-1.05,.17,-1.37],gold);
  soft(g,"pillowtop-mattress",[2.61,.26,3.85],[-1.05,.65,-1.37],linen);
  // Draped low-poly fabric shells, authored with folds and hem UVs, rather than hard slabs.
- const quilt=new T.Mesh(createDuvetGeometry(2.58,2.85,.12,'ivoryCloth'),linen);
+ const quilt=new T.Mesh(createDuvetGeometry(2.58,2.85,.12,'ivoryCloth'),clothPrints.ivory);
  quilt.name='quilt-ivory';quilt.position.set(-1.05,.84,-1.03);quilt.castShadow=true;quilt.receiveShadow=true;g.add(quilt);
- const runner=new T.Mesh(createDuvetGeometry(2.62,.80,.045,'midnightCloth'),velvet);
+ const runner=new T.Mesh(createDuvetGeometry(2.62,.80,.045,'midnightCloth'),clothPrints.dark);
  runner.name='quilt-burgundy-runner';runner.position.set(-1.05,.91,.18);runner.castShadow=true;runner.receiveShadow=true;g.add(runner);
  block(g,"headboard-wood-frame",[3.42,1.70,.20],[-1.05,1.45,-3.57],palette.wood);
  block(g,"headboard-brass-cap",[3.44,.045,.22],[-1.05,2.32,-3.57],gold);
@@ -49,9 +50,7 @@ export function furniture(root:T.Group){
   block(g,"wardrobe-gold-pull",[.024,.42,.05],[x+(x< -4.7?.22:-.22),1.19,-2.912],gold);
  }
  // Sofa: a real upholstered seat with distinct back, arms, cushions and piping.
- block(g,"lounge-carpet",[3.02,.025,2.65],[3.72,.025,1.18],palette.onyx);
- block(g,"carpet-gold-inlay",[2.87,.027,2.5],[3.72,.028,1.18],gold);
- block(g,"carpet-center",[2.77,.03,2.4],[3.72,.03,1.18],palette.onyx);
+ block(g,"lounge-carpet",[3.02,.025,2.65],[3.72,.025,1.18],rugPrint);
  soft(g,"sofa-seat-frame",[2.26,.31,.91],[3.79,.37,.50],palette.ivory,.16);
  // One continuous sculpted yacht settee: gently curved back instead of seven blocky overlaps.
  const curveShape=new T.Shape();
