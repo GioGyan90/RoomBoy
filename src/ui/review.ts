@@ -10,6 +10,10 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
  const reviewStations=[
   {id:'overview',label:'全景',theta:-.398,phi:1.062,zoom:1,target:[0,1.3,0]},
   {id:'bed',label:'卧室',theta:-.24,phi:1.13,zoom:.68,target:[-.33,1.2,-1.95]},
+  {id:'entry-landing',label:'玄关落脚区',theta:-1.13,phi:1.19,zoom:.43,target:[-4.70,1.10,-1.75]},
+  {id:'entry-aisle',label:'入口通道',theta:-.85,phi:.96,zoom:.55,target:[-3.04,1.03,-1.38]},
+  {id:'bed-foot-clearance',label:'床尾净空',theta:-.43,phi:1.19,zoom:.46,target:[-.55,.75,.62]},
+  {id:'entry-to-bath',label:'玄关到卫浴',theta:-1.00,phi:.73,zoom:.66,target:[-2.60,.95,1.32]},
   {id:'bath',label:'卫浴',theta:-.72,phi:.94,zoom:.55,target:[-4.15,1.05,2.25]},
   {id:'ocean',label:'海景舷窗',theta:-.62,phi:1.09,zoom:.68,target:[5.44,1.72,-1.55]},
   {id:'top',label:'俯视',theta:-.35,phi:.25,zoom:1.05,target:[0,0,0]},
