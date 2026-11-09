@@ -19,7 +19,7 @@ export function luxuryDetails(root:T.Group){
  block(g,'rear-crown-wood',[7.35,.14,.24],[-2.125,3.01,-3.66],palette.wood);
  block(g,'rear-crown-gold',[7.36,.035,.26],[-2.125,2.91,-3.65],palette.gold);
  // Backlit, layered bedside wall sconces and pendant rods.
- for(const x of [-3.20,1.06]){
+ for(const x of [-2.56,1.55]){
   block(g,'sconce-wall-plate',[.22,.39,.055],[x,1.67,-3.59],palette.gold);
   block(g,'sconce-diffuser',[.15,.27,.07],[x,1.67,-3.53],light);
   cylinder(g,'sconce-pin',.026,.11,[x,1.49,-3.49],palette.gold);
