@@ -109,3 +109,22 @@ test('individual pillows are sculpted high-density shells, not warped cubes',()=
  assert.ok(extra.getAttribute('normal'));
  assert.ok(createFoldedCornerGeometry(2.6,2.7).getAttribute('normal'));
 });
+
+test('finished bedding has high-resolution drape, two-sided turn-back and full pillow shells',()=>{
+ const root=new T.Group();furniture(root);root.updateMatrixWorld(true);
+ const get=(n:string)=>{const m=root.getObjectByName(n) as T.Mesh;assert.ok(m,n+' missing');return m};
+ const sheet=get('bedsheet-top'),quilt=get('quilt-ivory'),runner=get('quilt-burgundy-runner');
+ const corner=get('quilt-folded-corner');
+ assert.ok(sheet.geometry.getAttribute('position').count>=3000,'sheet needs true edge shaping');
+ assert.ok(quilt.geometry.getAttribute('position').count>=4800,'duvet must have more modeled folds');
+ assert.ok(runner.geometry.getAttribute('position').count>=2100,'runner requires modeled edges');
+ assert.ok(corner.geometry.getAttribute('position').count>=500,'turn-back needs a dense two-sided mesh');
+ assert.ok(corner.geometry.index!.count>=2400,'turned-back corner must have front, back and hem faces');
+ const quiltBox=new T.Box3().setFromObject(quilt),foldBox=new T.Box3().setFromObject(corner);
+ assert.ok(foldBox.min.x>=quiltBox.min.x&&foldBox.max.x<=quiltBox.max.x+.005,'fold outside quilt');
+ assert.ok(foldBox.min.z>=quiltBox.min.z&&foldBox.max.z<=quiltBox.max.z+.005,'fold outside quilt foot');
+ assert.ok(foldBox.max.y>quiltBox.max.y-.10,'fold disappears into bed');
+ const pillows=root.getObjectsByProperty('name','sleeping-pillow') as T.Mesh[];
+ assert.equal(pillows.length,2);
+ for(const p of pillows)assert.ok(p.geometry.getAttribute('position').count>=1000,'pillow must have sufficient curvature faces');
+});
