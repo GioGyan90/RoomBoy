@@ -28,11 +28,11 @@ export function bathroomStructure(root:T.Group){
  // Door leaf is parked open along the short partition (sliding-door logic).
  // It does NOT occupy the passage or swing through the adjacent toilet.
  const panel=new T.Group();panel.name='bath-door-open-panel';doorway.add(panel);
- block(panel,'bath-sliding-glass',[.045,2.25,1.11],[-2.375,1.1925,1.40],new T.MeshStandardMaterial({
+ block(panel,'bath-sliding-glass',[.045,2.25,1.11],[-2.405,1.1925,1.40],new T.MeshStandardMaterial({
   color:0xc5c7bf,roughness:.39,metalness:.18,transparent:true,opacity:.33,depthWrite:false,side:T.DoubleSide
  }));
- for(const z of [.84,1.96])block(panel,'bath-sliding-edge',[.07,2.25,.035],[-2.375,1.1925,z],palette.gold);
- block(panel,'bath-sliding-handle',[.085,.27,.035],[-2.327,1.05,1.89],palette.gold);
+ for(const z of [.84,1.96])block(panel,'bath-sliding-edge',[.07,2.25,.035],[-2.405,1.1925,z],palette.gold);
+ block(panel,'bath-sliding-handle',[.085,.27,.035],[-2.35,1.05,1.89],palette.gold);
  const cutaway=new T.Group();cutaway.name='bathroom-cutaway';shell.add(cutaway);
  block(cutaway,'bath-front-cutaway',[3.32,.27,.13],[-4.16,.135,3.9],palette.shell);
  return shell;
