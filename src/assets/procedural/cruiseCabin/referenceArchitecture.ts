@@ -34,9 +34,9 @@ export function referenceArchitecture(root:T.Group){
   {name:'window-hull-corner-infill',rectW:2.60,rectH:2.13,cutW:2.54,cutH:2.105,r:.40,y:1.615,z:-1.55},
   {name:'door-hull-corner-infill',rectW:1.40,rectH:2.78,cutW:1.365,cutH:2.755,r:.16,y:1.54,z:.45}
  ]){
-  const geom=createWallApertureCornerGeometry(item.rectW,item.rectH,item.cutW,item.cutH,item.r,.185);
+  const geom=createWallApertureCornerGeometry(item.rectW,item.rectH,item.cutW,item.cutH,item.r,.18);
   const mesh=new T.Mesh(geom,palette.shell);
-  mesh.name=item.name;mesh.position.set(5.895,item.y,item.z);
+  mesh.name=item.name;mesh.position.set(5.89,item.y,item.z);
   mesh.rotation.y=-Math.PI/2;mesh.castShadow=true;mesh.receiveShadow=true;g.add(mesh);
  }
  // Starboard modules occupy the ACTUAL cutouts in the .18-thick hull:
@@ -61,10 +61,7 @@ export function referenceArchitecture(root:T.Group){
  block(g,'side-balcony-divider',[.025,2.54,.045],[5.85,1.54,.45],palette.gold);
  block(g,'side-balcony-pull',[.053,.43,.035],[5.89,1.36,.75],palette.gold);
  block(g,'side-balcony-handle-return',[.052,.03,.12],[5.89,1.56,.75],palette.gold);
- // Outside cap trims make the frame-to-wall contacts visible without a gap.
- for(const z of [-2.825,-.275,1.125]){
-  block(g,'hull-reveal-post',[.24,.11,.036],[5.82,2.64,z],palette.shell);
- }
+ // The wall corner infills themselves seal the window-to-post connection.
  // Side service deck and glass guardrail, visually outside the glazed door.
  block(g,'side-balcony-deck',[.76,.12,1.53],[6.22,-.09,.45],palette.wood);
  block(g,'side-balcony-glass',[.025,.71,1.45],[6.60,.53,.45],palette.glass);
