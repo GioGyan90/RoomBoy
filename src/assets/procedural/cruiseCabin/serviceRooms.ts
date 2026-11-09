@@ -41,7 +41,14 @@ export function serviceRooms(root:T.Group){
  block(showerMount,'shower-overhead-arm',[.045,.045,.79],[-5.13,2.33,1.275],palette.gold);
  cylinder(showerMount,'shower-rain-head',.155,.038,[-5.13,2.292,1.69],palette.gold);
  cylinder(showerMount,'shower-control-knob',.075,.045,[-5.13,1.31,.886],palette.gold,'z');
- block(showerMount,'shower-spout',[.045,.045,.76],[-5.13,.955,1.245],palette.gold);
+ // Independent low filler branches from the wall riser and ends at the near tub rim.
+ // Real physical joins: riser -> arm -> downpipe -> rim-mounted flange.
+ const filler=new T.Group();filler.name='tub-filler-connected-assembly';showerMount.add(filler);
+ block(filler,'shower-spout',[.045,.045,.82],[-5.13,.955,1.278],palette.gold);
+ cylinder(filler,'tub-fill-downpipe',.024,.145,[-5.13,.881,1.669],palette.gold);
+ cylinder(filler,'tub-fill-rim-flange',.085,.018,[-5.13,.805,1.669],palette.gold);
+ // A short wall-fed pipe from the mounting plate is deliberately visible at the connection.
+ block(filler,'tub-fill-wall-feed',[.055,.055,.18],[-5.13,.955,.943],palette.gold);
  // One integrated vanity: four countertop pieces surround an actual recessed sink.
  const sink=new T.Group();sink.name='vanity-recessed-sink-assembly';vanityZone.add(sink);
  block(vanityZone,'vanity-cabinet',[.72,.13,.59],[-3.09,.36,1.24],palette.wood);
