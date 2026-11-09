@@ -44,4 +44,9 @@ solid palettes to save pixels, with bevel highlights painted only where useful.
 ## Validation
 Run `npm test` and `npm run build`. CI visual review captures overview,
 bed, bath, ocean, top, table, toilet, side, bed-left, bed-right, service-bar,
-and balcony-door. Extra external closeup is needed before approving Round 2.
+and balcony-door. Round 2 exterior quality gates use eight new cameras: exterior-starboard,
+exterior-window-front, exterior-window-oblique, exterior-window-low,
+exterior-door-front, exterior-door-jamb, exterior-hull-top, exterior-entry.
+All 20 frames must be captured, with successful browser console checks.
+Use real screenshots to check frame corners, sill, gasket, shell lip and metal
+ribbons; geometry tests cover through-wall contact and non-obstructed glazing.
