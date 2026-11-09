@@ -42,12 +42,31 @@ export function serviceRooms(root:T.Group){
  cylinder(showerMount,'shower-rain-head',.155,.038,[-5.13,2.292,1.69],palette.gold);
  cylinder(showerMount,'shower-control-knob',.075,.045,[-5.13,1.31,.886],palette.gold,'z');
  block(showerMount,'shower-spout',[.045,.045,.76],[-5.13,.955,1.245],palette.gold);
- // A lighter vanity silhouette: marble counter, open towel shelf, two slim supports.
+ // One integrated vanity: four countertop pieces surround an actual recessed sink.
+ const sink=new T.Group();sink.name='vanity-recessed-sink-assembly';vanityZone.add(sink);
  block(vanityZone,'vanity-cabinet',[.72,.13,.59],[-3.09,.36,1.24],palette.wood);
  for(const x of [-3.40,-2.78])block(vanityZone,'vanity-support',[.06,.62,.58],[x,.53,1.24],palette.wood);
- block(vanityZone,'vanity-marble',[.82,.07,.66],[-3.09,.88,1.24],palette.marble);
- block(vanityZone,'washbasin',[.44,.045,.30],[-3.09,.943,1.24],palette.ivory);
- cylinder(vanityZone,'washbasin-tap',.036,.22,[-3.09,1.06,.97],palette.gold);
+ const marble=palette.marble;
+ block(sink,'vanity-marble-left',[.145,.07,.66],[-3.4275,.88,1.24],marble);
+ block(sink,'vanity-marble-right',[.145,.07,.66],[-2.7525,.88,1.24],marble);
+ block(sink,'vanity-marble-back',[.53,.07,.175],[-3.09,.88,.9975],marble);
+ block(sink,'vanity-marble-front',[.53,.07,.175],[-3.09,.88,1.4825],marble);
+ // Lathe cross-section traces the outer wall, ceramic rim and inner bowl down to its drain.
+ const profile=[
+  [.0,.81],[.13,.81],[.215,.845],[.249,.91],[.265,.95],
+  [.255,.973],[.222,.97],[.199,.92],[.12,.857],[.035,.841],[0,.841]
+ ] as const;
+ const sinkGeometry=new T.LatheGeometry(profile.map(([rad,y])=>new T.Vector2(rad,y)),24);
+ const basin=new T.Mesh(sinkGeometry,palette.ivory);
+ basin.name='washbasin';basin.scale.z=.74;basin.position.set(-3.09,0,1.24);
+ basin.castShadow=true;basin.receiveShadow=true;sink.add(basin);
+ const waste=new T.Mesh(new T.CylinderGeometry(.033,.033,.008,12),palette.gold);
+ waste.name='washbasin-drain';waste.position.set(-3.09,.846,1.24);sink.add(waste);
+ // Faucet stem emerges from rear marble, joins horizontal delivery arm and downturned tip.
+ const faucet=new T.Group();faucet.name='vanity-faucet-assembly';sink.add(faucet);
+ cylinder(faucet,'washbasin-tap',.036,.24,[-3.09,1.07,.99],palette.gold);
+ block(faucet,'washbasin-faucet-spout',[.052,.048,.26],[-3.09,1.19,1.11],palette.gold);
+ cylinder(faucet,'washbasin-faucet-aerator',.023,.06,[-3.09,1.151,1.23],palette.gold);
  // The backlit mirror is offset from the marble wall, not embedded inside it.
  block(vanityZone,'mirror-halo',[.89,1.04,.016],[-3.09,1.76,.838],palette.gold);
  block(vanityZone,'mirror',[.76,.90,.035],[-3.09,1.76,.87],mirrorGlass);
