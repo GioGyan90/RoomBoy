@@ -252,3 +252,54 @@ test('exterior metal trim must stop on either side of the balcony aperture',()=>
  assert.equal(root.getObjectByName('hull-longitudinal-brass'),undefined);
  assert.equal(root.getObjectByName('hull-gold-longitudinal-band'),undefined);
 });
+
+test('bathroom is composed of independent grouped assemblies with open sliding doorway',()=>{
+ const root=new T.Group();architecture(root);serviceRooms(root);
+ const required=[
+  'cruise-bathroom-shell','bathroom-partitions','bathroom-sliding-door-assembly','bath-door-open-panel',
+  'bathroom-finish-materials','bathroom-soaking-tub','bathroom-wall-plumbing','wall-fixed-shower-mount',
+  'bathroom-vanity','bathroom-toilet'
+ ];
+ for(const name of required)assert.ok(root.getObjectByName(name),name+' missing');
+ const bounds=(name:string)=>{
+  const item=root.getObjectByName(name);
+  assert.ok(item,name+' missing');
+  return new T.Box3().setFromObject(item);
+ };
+ const left=bounds('bath-divider'),right=bounds('bath-end-return'),leaf=bounds('bath-sliding-glass');
+ assert.ok(left.max.z<2.25,'the partition blocks the doorway');
+ assert.ok(right.min.z>3.5,'the return blocks the doorway');
+ assert.ok(leaf.max.z<2.1,'sliding leaf must park outside opening');
+ const lintel=bounds('bath-door-lintel');
+ const posts=[...root.getObjectsByProperty('name','bath-door-jamb')];
+ assert.equal(posts.length,2,'real doorway must have two supported jambs');
+ for(const post of posts){
+  const box=new T.Box3().setFromObject(post);
+  assert.ok(box.max.y>=lintel.min.y-.07,'door header must meet jamb');
+ }
+});
+test('tub plumbing has no floating extras and shower pipe is physically continuous',()=>{
+ const root=new T.Group();serviceRooms(root);root.updateMatrixWorld(true);
+ const bounds=(name:string)=>{
+  const item=root.getObjectByName(name);
+  assert.ok(item,name+' missing');
+  return new T.Box3().setFromObject(item);
+ };
+ const base=bounds('tub-plinth'),body=bounds('tub-body'),rim=bounds('tub-rim'),water=bounds('tub-water');
+ assert.ok(base.min.y<.075,'tub base must rest on bath floor');
+ assert.ok(base.intersectsBox(body),'tub body must rest on its base');
+ assert.ok(water.max.y<rim.max.y,'water must remain inside tub');
+ const pipe=bounds('shower-gold-riser'),arm=bounds('shower-overhead-arm'),spout=bounds('shower-spout');
+ assert.ok(pipe.intersectsBox(arm),'shower arm is floating');
+ assert.ok(pipe.intersectsBox(spout),'shower spout is floating');
+ for(const name of ['bath-faucet-spout','bath-tap-knob','bath-towel-rail','bath-towel-bracket']){
+  assert.equal(root.getObjectByName(name),undefined,name+' obsolete floating object');
+ }
+});
+test('toilet is kept clear of open bathroom doorway',()=>{
+ const root=new T.Group();architecture(root);serviceRooms(root);
+ const toilet=root.getObjectByName('toilet-bowl')!,leaf=root.getObjectByName('bath-sliding-glass')!;
+ const box=new T.Box3().setFromObject(toilet),door=new T.Box3().setFromObject(leaf);
+ assert.ok(box.max.x< -3.0,'toilet sits too close to bathroom passage');
+ assert.ok(!box.intersectsBox(door),'sliding door collides with toilet');
+});
