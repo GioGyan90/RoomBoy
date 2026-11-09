@@ -77,6 +77,6 @@ export function architecture(root:T.Group){
   obstacle("coffee-table",3.0,4.1,1.3,2.4),
   obstacle("bathtub",-5.55,-4.05,1.68,3.48),
   obstacle("vanity",-3.52,-2.65,.91,1.6),
-  obstacle("toilet",-3.3,-2.7,2.82,3.42)
+  obstacle("toilet",-3.68,-3.02,2.72,3.53)
  ],{minX:-5.65,maxX:5.65,minZ:-3.72,maxZ:3.72});
 }
