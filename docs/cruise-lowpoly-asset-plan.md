@@ -50,3 +50,27 @@ exterior-door-front, exterior-door-jamb, exterior-hull-top, exterior-entry.
 All 20 frames must be captured, with successful browser console checks.
 Use real screenshots to check frame corners, sill, gasket, shell lip and metal
 ribbons; geometry tests cover through-wall contact and non-obstructed glazing.
+
+## Bathroom rebuild: grouped modules (Nov 9, 2026)
+The bathroom is not a bag of unrelated props. Keep the following assembly hierarchy
+and make fixture-local edits inside its own module, not in `luxuryDetails.ts`:
+
+- `cruise-bathroom-shell`
+  - `bathroom-partitions`: rear wall, low dollhouse cutaway wall and short return
+  - `bathroom-sliding-door-assembly`: two supporting jambs, header, low threshold
+    and a frosted panel parked along the low wall (doorway stays open)
+  - `bathroom-cutaway`: front view cutaway, never a full obstructing wall
+- `cruise-marble-bathroom`
+  - `bathroom-finish-materials`: UV printed marble floor and wall
+  - `bathroom-soaking-tub`: oval grounded plinth, open bowl, rim, recessed water
+  - `bathroom-wall-plumbing`: one connected rear-wall shower mounting assembly
+  - `bathroom-vanity`: mirror, counter, washbasin, storage and lamps
+  - `bathroom-toilet`: grounded pedestal, bowl, open seat, connected tank
+
+### Review constraints
+Keep doorway around x=-2.5, z=2.18..3.53 open.
+Toilet center x=-3.35, z≈3.08 and synchronized character interaction.
+No detached brass lines/towel racks/faucets unless anchored and tested.
+Decorative veins remain pigment on UV surfaces, not hovering `Line` meshes.
+The 25 screenshot stations include `bath-door-bedroom`, `bath-door-bathroom`,
+`bath-door-top`, `bath-tub-attachments`, `bath-shower-side`.
