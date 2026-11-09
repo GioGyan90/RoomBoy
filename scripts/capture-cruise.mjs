@@ -18,7 +18,7 @@ try{
  const page=await browser.newPage({viewport:{width:1120,height:700},deviceScaleFactor:1});
  page.on('pageerror',e=>issues.push('pageerror: '+e.message));
  page.on('console',m=>{if(m.type()==='error')issues.push('console: '+m.text())});
- const stations=['overview','bed','entry-landing','entry-aisle','bed-foot-clearance','bed-tv-alignment','bed-tv-side','vanity-sink-top','tub-fill-joint','entry-to-bath','bath','ocean','top','table','toilet','side','bed-left','bed-right','service-bar','balcony-door','exterior-starboard','exterior-window-front','exterior-window-oblique','exterior-window-low','exterior-door-front','exterior-door-jamb','exterior-hull-top','exterior-entry','bath-door-bedroom','bath-door-bathroom','bath-door-top','bath-tub-attachments','bath-shower-side'];
+ const stations=['overview','bed','bed-kit-front','bed-kit-headboard','bed-kit-duvet','bed-kit-nightstand','bed-kit-underlight','entry-landing','entry-aisle','bed-foot-clearance','bed-tv-alignment','bed-tv-side','vanity-sink-top','tub-fill-joint','entry-to-bath','bath','ocean','top','table','toilet','side','bed-left','bed-right','service-bar','balcony-door','exterior-starboard','exterior-window-front','exterior-window-oblique','exterior-window-low','exterior-door-front','exterior-door-jamb','exterior-hull-top','exterior-entry','bath-door-bedroom','bath-door-bathroom','bath-door-top','bath-tub-attachments','bath-shower-side'];
  // Boot WebGL once. Repeated full-page reloads made SwiftShader capture flaky and slow.
  await page.goto(base+'?room=cruise&view=room&capture=1&station=overview',{waitUntil:'networkidle',timeout:60000});
  await page.waitForTimeout(1000);
