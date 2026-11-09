@@ -99,9 +99,10 @@ export function buildCruiseSleepingKit(bedZone:T.Group){
  for(const x of [-2.59,.49]){
   const reading=assembly(lamps,'bed-reading-lamp');
   // Gold wall plate touches rear walnut panel; angled reading arm and lamp body.
-  cylinder(reading,'reading-lamp-wall-plate',.095,.028,[x,1.70,-3.426],darkGold,'z');
-  const arm=block(reading,'reading-lamp-arm',[.038,.35,.038],[x,1.55,-3.33],darkGold);
+  cylinder(reading,'reading-lamp-wall-plate',.095,.050,[x,1.70,-3.457],darkGold,'z');
+  const arm=block(reading,'reading-lamp-arm',[.038,.35,.045],[x,1.55,-3.431],darkGold);
   arm.rotation.z=x<0?.32:-.32;
+  block(reading,'reading-lamp-neck',[.045,.045,.20],[x,1.415,-3.336],darkGold);
   const head=cylinder(reading,'reading-lamp-head',.082,.20,[x+(x<0?.07:-.07),1.39,-3.22],darkGold);
   head.rotation.z=x<0?.4:-.4;
   cylinder(reading,'reading-lamp-diffuser',.058,.015,[x+(x<0?.13:-.13),1.29,-3.22],lightGold);
