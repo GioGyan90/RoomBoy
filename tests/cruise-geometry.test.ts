@@ -215,3 +215,40 @@ test('entry wall is genuinely cut around the door and exterior reveal lines its 
  const frame=bounds('suite-entry-door-frame');
  assert.ok(frame.min.x<aft.min.x && frame.max.x>aft.max.x,'entry frame must wrap external and internal shell');
 });
+
+test('rounded window and door openings have wall-thickness corner infills rather than visible gaps',()=>{
+ const root=new T.Group();architecture(root);referenceArchitecture(root);root.updateMatrixWorld(true);
+ const box=(name:string)=>{
+  const mesh=root.getObjectByName(name) as T.Mesh;
+  assert.ok(mesh,name+' missing');
+  return {mesh,box:new T.Box3().setFromObject(mesh)};
+ };
+ const window=box('window-hull-corner-infill');
+ const door=box('door-hull-corner-infill');
+ for(const item of [window,door]){
+  assert.ok(item.mesh.geometry instanceof T.ExtrudeGeometry,'infill must be an extruded negative-aperture shape');
+  const shapes=(item.mesh.geometry as T.ExtrudeGeometry).parameters.shapes;
+  const shape=Array.isArray(shapes)?shapes[0]:shapes;
+  assert.equal(shape.holes.length,1,'rounded opening must be subtracted from wall infill');
+  assert.ok(item.box.min.x<5.72&&item.box.max.x>5.88,'infill must engage complete hull skin');
+ }
+ const wall=root.getObjectByName('right-window-sill')!;
+ const wallBox=new T.Box3().setFromObject(wall);
+ assert.ok(window.box.max.x<=wallBox.max.x+.025);
+});
+test('exterior metal trim must stop on either side of the balcony aperture',()=>{
+ const root=new T.Group();architecture(root);referenceArchitecture(root);root.updateMatrixWorld(true);
+ const door=root.getObjectByName('side-balcony-brass-frame')!;
+ const doorBox=new T.Box3().setFromObject(door);
+ const names=['hull-longitudinal-brass-aft','hull-longitudinal-brass-fore',
+  'hull-gold-longitudinal-band-aft','hull-gold-longitudinal-band-fore'];
+ for(const name of names){
+  const item=root.getObjectByName(name);
+  assert.ok(item,name+' missing');
+  const box=new T.Box3().setFromObject(item);
+  if(name.includes('aft'))assert.ok(box.max.z<doorBox.min.z,'aft rail crosses glass at '+name);
+  else assert.ok(box.min.z>doorBox.max.z,'fore rail crosses glass at '+name);
+ }
+ assert.equal(root.getObjectByName('hull-longitudinal-brass'),undefined);
+ assert.equal(root.getObjectByName('hull-gold-longitudinal-band'),undefined);
+});
