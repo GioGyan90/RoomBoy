@@ -36,12 +36,12 @@ export function serviceRooms(root:T.Group){
  water.name='tub-water';water.rotation.x=-Math.PI/2;water.scale.set(.51,.79,1);water.position.set(-4.8,.63,2.57);tubZone.add(water);
  // One coherent, wall-mounted plumbing assembly. No hovering faucets above the tub.
  const showerMount=new T.Group();showerMount.name='wall-fixed-shower-mount';showerZone.add(showerMount);
- block(showerMount,'shower-wall-plate',[.18,.78,.035],[-5.13,1.45,.852],palette.gold);
- block(showerMount,'shower-gold-riser',[.045,1.62,.045],[-5.13,1.555,.89],palette.gold);
+ block(showerMount,'shower-wall-plate',[.18,.78,.035],[-5.13,1.45,.838],palette.gold);
+ block(showerMount,'shower-gold-riser',[.045,1.62,.045],[-5.13,1.555,.868],palette.gold);
  block(showerMount,'shower-overhead-arm',[.045,.045,.79],[-5.13,2.33,1.275],palette.gold);
- cylinder(showerMount,'shower-rain-head',.155,.038,[-5.13,2.275,1.69],palette.gold);
- cylinder(showerMount,'shower-control-knob',.075,.045,[-5.13,1.31,.91],palette.gold,'z');
- block(showerMount,'shower-spout',[.045,.045,.72],[-5.13,.955,1.265],palette.gold);
+ cylinder(showerMount,'shower-rain-head',.155,.038,[-5.13,2.292,1.69],palette.gold);
+ cylinder(showerMount,'shower-control-knob',.075,.045,[-5.13,1.31,.886],palette.gold,'z');
+ block(showerMount,'shower-spout',[.045,.045,.76],[-5.13,.955,1.245],palette.gold);
  // A lighter vanity silhouette: marble counter, open towel shelf, two slim supports.
  block(vanityZone,'vanity-cabinet',[.72,.13,.59],[-3.09,.36,1.24],palette.wood);
  for(const x of [-3.40,-2.78])block(vanityZone,'vanity-support',[.06,.62,.58],[x,.53,1.24],palette.wood);
