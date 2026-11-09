@@ -2,6 +2,7 @@ import * as T from "three";
 import { createNavigation } from "../../../game/navigation";
 import { obstacle } from "../blueApartment/plan";
 import {createCruiseFloorPrint} from "./surfacePatterns";
+import {bathroomStructure} from "./bathroomStructure";
 export const cabin = { left:-5.8,right:5.8,back:-3.9,front:3.9,bathRight:-2.5,bathFront:0.65,wall:.18,height:3.15 };
 export const palette = {
   cream:new T.MeshStandardMaterial({color:0xe9d8bf,roughness:.8}),
@@ -62,19 +63,13 @@ export function architecture(root:T.Group){
  block(g,"front-cutaway",[11.7,.32,.18],[0,.16,p.front],palette.shell);
  for(const y of [.18,2.82])block(g,"gold-trim",[7.22,.047,.07],[-2.12,y,p.back+.14],palette.gold);
  // The giant side windows are assembled in referenceArchitecture.ts.
- // Bath enclosure has an open doorway facing the bedroom.
- block(g,"bath-rear-wall",[3.32,2.38,.13],[-4.16,1.19,.66],palette.marble);
- block(g,"bath-divider",[.13,1.16,1.72],[-2.5,.58,1.49],palette.shell);
- block(g,"bath-door-jamb",[.13,1.16,.36],[-2.5,.58,3.72],palette.shell);
- // A lintel completes the service room doorframe without closing the walking aperture.
- block(g,"bath-door-lintel",[.15,.09,1.19],[-2.5,1.16,2.945],palette.wood);
- block(g,"bath-door-lintel-brass",[.035,.026,1.19],[-2.414,1.105,2.945],palette.gold);
- block(g,"bath-front-cutaway",[3.32,.27,.13],[-4.16,.135,p.front],palette.cream);
+ // Independent bathroom shell: door/partition/threshold share a single module.
+ bathroomStructure(root);
  // Starboard-side ocean window, side balcony and curved hull are authored separately.
  return createNavigation([
   obstacle("rear",-5.8,5.8,-4.05,-3.75),obstacle("left",-5.9,-5.7,-3.9,3.9),
   obstacle("right",5.7,5.9,-3.9,3.9),obstacle("bath-back",-5.8,-2.5,.59,.74),
-  obstacle("bath-divider",-2.57,-2.43,.65,2.35),obstacle("bath-jamb",-2.57,-2.43,3.53,3.9),
+  obstacle("bath-divider",-2.57,-2.43,.65,2.18),obstacle("bath-jamb",-2.57,-2.43,3.53,3.9),
   obstacle("king-bed",-2.4,.3,-3.4,.70),
   obstacle("wardrobe",-5.47,-3.9,-3.7,-2.9),
   obstacle("minibar",-5.50,-4.80,-1.80,-.24),
