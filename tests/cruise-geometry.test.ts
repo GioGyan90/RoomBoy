@@ -122,24 +122,48 @@ test('unrelated primary furniture modules have no three-dimensional intersection
   assert.ok(!new T.Box3().setFromObject(a).intersectsBox(new T.Box3().setFromObject(b)),first+' intersects '+second);
  }
 });
-test('bedside lamps and flower vase have supporting surfaces',()=>{
+test('bedside reading lamps are anchored to upholstered headboard, and flowers remain on table',()=>{
  const root=new T.Group();furniture(root);root.updateMatrixWorld(true);
- const objects:T.Mesh[]=[];root.traverse(o=>{if(o instanceof T.Mesh)objects.push(o)});
- const tops=objects.filter(o=>o.name==='nightstand-marble-top');
- const bases=objects.filter(o=>o.name==='brass-lamp-base');
- assert.equal(tops.length,2);assert.equal(bases.length,2);
+ const all:T.Mesh[]=[];root.traverse(o=>{if(o instanceof T.Mesh)all.push(o)});
+ const plates=all.filter(m=>m.name==='reading-lamp-wall-plate');
+ const arms=all.filter(m=>m.name==='reading-lamp-arm');
+ const heads=all.filter(m=>m.name==='reading-lamp-head');
+ const controls=all.filter(m=>m.name==='reading-control-panel');
+ assert.equal(plates.length,2);assert.equal(arms.length,2);
+ assert.equal(heads.length,2);assert.equal(controls.length,2);
+ const board=new T.Box3().setFromObject(root.getObjectByName('headboard-wood-frame')!);
  for(let i=0;i<2;i++){
-  const top=new T.Box3().setFromObject(tops[i]);
-  const base=new T.Box3().setFromObject(bases[i]);
-  assert.ok(base.min.y<=top.max.y+.015&&base.max.y>top.max.y,'lamp base is floating above nightstand');
+  const plate=new T.Box3().setFromObject(plates[i]);
+  assert.ok(plate.intersectsBox(board),'reading light must mount on headboard');
+  const arm=new T.Box3().setFromObject(arms[i]);
+  const head=new T.Box3().setFromObject(heads[i]);
+  assert.ok(plate.intersectsBox(arm),'reading light arm is detached from wall plate');
+  assert.ok(arm.intersectsBox(head),'reading lamp head detached from arm');
  }
  const table=root.getObjectByName('cocktail-table-marble')!;
  const vase=root.getObjectByName('table-flower-vase')!;
  const top=new T.Box3().setFromObject(table).max.y;
  const bottom=new T.Box3().setFromObject(vase).min.y;
- assert.ok(Math.abs(top-bottom)<.025,'vase floats above or sinks into the table');
+ assert.ok(Math.abs(top-bottom)<.025,'vase floats above or sinks into table');
 });
 
+test('reference sleeping kit has six grouped assets and preserves the cleared entrance aisle',()=>{
+ const root=new T.Group();furniture(root);root.updateMatrixWorld(true);
+ const zone=root.getObjectByName('cruise-sleeping-zone') as T.Group;
+ assert.ok(zone);
+ for(const name of ['bed-kit-rug-and-underlight','bed-kit-frame-and-slats',
+  'bed-kit-mattress','bed-kit-duvet-and-pillows','bed-kit-upholstered-headboard',
+  'bed-kit-two-nightstands','bed-kit-reading-lamps-and-controls']){
+  assert.ok(zone.getObjectByName(name),'missing kit module '+name);
+ }
+ assert.equal(zone.getObjectsByProperty('name','bed-frame-slat').length,12);
+ assert.equal(zone.getObjectsByProperty('name','headboard-vertical-tuft').length,8);
+ assert.equal(zone.getObjectsByProperty('name','nightstand-marble-top').length,2);
+ assert.ok(zone.getObjectByName('headboard-art-deco-gold-arch'));
+ assert.ok(zone.getObjectByName('headboard-warm-halo'));
+ const bed=new T.Box3().setFromObject(zone.getObjectByName('king-bed-frame')!);
+ assert.ok(bed.min.x>-1.75&&bed.max.z<.3,'bed must not re-block the entrance');
+});
 test('bathroom cutaway preserves view of the tub without removing bedroom exterior wall',()=>{
  const root=new T.Group();architecture(root);
  const bedroom=root.getObjectByName('left-bulkhead-bedroom') as T.Mesh;
