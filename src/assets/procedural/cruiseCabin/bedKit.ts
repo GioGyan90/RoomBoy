@@ -69,12 +69,12 @@ export function buildCruiseSleepingKit(bedZone:T.Group){
  cushion(mattress,'pillowtop-mattress',2.42,.26,3.43,-1.05,.65,-1.585,linen);
  const bedding=assembly(bedZone,'bed-kit-duvet-and-pillows');
  const sheet=assembly(bedding,'bedsheet-and-tucked-hem');
- const sheetOptions:ClothOptions={nx:28,nz:34,sideDrop:.08,footDrop:.085,centerLift:.012,foldStrength:.012,seed:.2};
+ const sheetOptions:ClothOptions={nx:34,nz:42,sideDrop:.12,footDrop:.12,centerLift:.022,foldStrength:.015,seed:.2};
  const bottomSheet=new T.Mesh(createDuvetGeometry(2.49,3.34,.025,'ivoryCloth',sheetOptions),prints.ivory);
  bottomSheet.name='bedsheet-top';bottomSheet.position.set(-1.05,.813,-1.585);
  bottomSheet.castShadow=true;bottomSheet.receiveShadow=true;sheet.add(bottomSheet);
  const cover=assembly(bedding,'quilt-shell-and-turned-corner');
- const quiltOptions:ClothOptions={nx:36,nz:44,sideDrop:.185,footDrop:.155,centerLift:.064,foldStrength:.043,seed:.7};
+ const quiltOptions:ClothOptions={nx:44,nz:54,sideDrop:.27,footDrop:.305,centerLift:.082,foldStrength:.048,seed:.7};
  const quiltWidth=2.62,quiltLength=2.67,quiltZ=-1.18,quiltY=.885;
  const quilt=new T.Mesh(createDuvetGeometry(quiltWidth,quiltLength,.085,'ivoryCloth',quiltOptions),prints.ivory);
  quilt.name='quilt-ivory';quilt.position.set(-1.05,quiltY,quiltZ);
@@ -83,14 +83,14 @@ export function buildCruiseSleepingKit(bedZone:T.Group){
  corner.name='quilt-folded-corner';corner.position.copy(quilt.position);
  corner.castShadow=true;corner.receiveShadow=true;cover.add(corner);
  const throwGroup=assembly(bedding,'bed-runner-draped-hem');
- const throwOptions:ClothOptions={nx:32,nz:22,sideDrop:.14,footDrop:.18,centerLift:.020,foldStrength:.017,seed:1.5};
+ const throwOptions:ClothOptions={nx:38,nz:28,sideDrop:.23,footDrop:.26,centerLift:.035,foldStrength:.025,seed:1.5};
  const runner=new T.Mesh(createDuvetGeometry(2.65,.80,.032,'midnightCloth',throwOptions),prints.dark);
- runner.name='quilt-burgundy-runner';runner.position.set(-1.05,.939,-.035);
+ runner.name='quilt-burgundy-runner';runner.position.set(-1.05,.961,-.035);
  runner.castShadow=true;runner.receiveShadow=true;throwGroup.add(runner);
  const pillows=assembly(bedding,'bed-pillows-sculpted-pair');
  for(const [index,x] of [-1.69,-.41].entries()){
   const pillow=new T.Mesh(createPillowGeometry(1.06,.62,.22,index*.17),prints.ivory);
-  pillow.name='sleeping-pillow';pillow.position.set(x,.846,-2.88);
+  pillow.name='sleeping-pillow';pillow.position.set(x,.832+index*.013,-2.88);
   pillow.rotation.y=index===0?-.06:.045;
   pillow.castShadow=true;pillow.receiveShadow=true;pillows.add(pillow);
  }
