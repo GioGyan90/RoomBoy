@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {block,cylinder,palette} from './architecture';
-import {createRoundedFrameGeometry} from './lowpolyAssets';
+import {createRoundedFrameGeometry,createWallApertureCornerGeometry} from './lowpolyAssets';
 
 // The reference suite's port-side doorway, broad ocean windows and curved cruise hull.
 const sea=new T.MeshBasicMaterial({color:0x1b8dbb,side:T.DoubleSide});
@@ -29,6 +29,16 @@ function tube(g:T.Group,name:string,points:T.Vector3[],radius:number,material:T.
 }
 export function referenceArchitecture(root:T.Group){
  const g=new T.Group();g.name='reference-cruise-architecture';root.add(g);
+ // Boolean rounded aperture infills close triangular gaps at each corner.
+ for(const item of [
+  {name:'window-hull-corner-infill',rectW:2.60,rectH:2.13,cutW:2.54,cutH:2.105,r:.40,y:1.615,z:-1.55},
+  {name:'door-hull-corner-infill',rectW:1.40,rectH:2.78,cutW:1.365,cutH:2.755,r:.16,y:1.54,z:.45}
+ ]){
+  const geom=createWallApertureCornerGeometry(item.rectW,item.rectH,item.cutW,item.cutH,item.r,.185);
+  const mesh=new T.Mesh(geom,palette.shell);
+  mesh.name=item.name;mesh.position.set(5.895,item.y,item.z);
+  mesh.rotation.y=-Math.PI/2;mesh.castShadow=true;mesh.receiveShadow=true;g.add(mesh);
+ }
  // Starboard modules occupy the ACTUAL cutouts in the .18-thick hull:
  // outer x=5.94, through-wall reveal to x=5.705, inner trim x=5.71.
  // The window opening spans z [-2.85,-.25], y [.55,2.68].
@@ -61,18 +71,24 @@ export function referenceArchitecture(root:T.Group){
  for(const z of [-.20,1.10])block(g,'side-balcony-post',[.055,1.03,.055],[6.60,.52,z],palette.gold);
  block(g,'side-balcony-rail',[.065,.046,1.51],[6.60,1.04,.45],palette.gold);
  // Built-up cream shell: the upper section rolls down toward the stern.
+ // Sculpted shell lip touches the wall instead of floating as a fat cylinder.
  tube(g,'upper-hull-cream-curve',[
-  new T.Vector3(5.53,3.19,-3.90),new T.Vector3(5.78,3.22,-3.1),
-  new T.Vector3(5.93,3.15,-1.65),new T.Vector3(5.99,2.91,.40),
-  new T.Vector3(5.90,2.68,1.45),new T.Vector3(5.83,2.58,2.32)
- ],.13,pale);
- tube(g,'hull-gold-longitudinal-band',[
-  new T.Vector3(5.94,.45,-3.86),new T.Vector3(5.96,.47,-2.3),
-  new T.Vector3(5.97,.48,-.48),new T.Vector3(5.95,.46,1.72),
-  new T.Vector3(5.85,.43,3.74)
- ],.022,palette.gold);
+  new T.Vector3(5.83,3.15,-3.90),new T.Vector3(5.89,3.14,-3.1),
+  new T.Vector3(5.92,3.13,-1.65),new T.Vector3(5.93,3.12,.40),
+  new T.Vector3(5.90,3.08,1.45),new T.Vector3(5.86,3.04,3.86)
+ ],.062,pale);
+ // Longitudinal gold piping stops cleanly at the balcony aperture.
+ tube(g,'hull-gold-longitudinal-band-aft',[
+  new T.Vector3(5.925,.45,-3.84),new T.Vector3(5.932,.45,-2.2),
+  new T.Vector3(5.932,.45,-.27)
+ ],.018,palette.gold);
+ tube(g,'hull-gold-longitudinal-band-fore',[
+  new T.Vector3(5.932,.45,1.18),new T.Vector3(5.925,.45,2.35),
+  new T.Vector3(5.915,.45,3.80)
+ ],.018,palette.gold);
  for(let i=0;i<15;i++){
   const z=-3.55+i*.51;
+  if(z>-.30&&z<1.20)continue;
   cylinder(g,'outer-hull-rivet',.028,.02,[5.93,.27,z],palette.gold,'x');
  }
  // Port-side entrance is physically cut from the shell in architecture.ts.
