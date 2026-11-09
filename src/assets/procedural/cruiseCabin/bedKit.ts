@@ -74,7 +74,7 @@ export function buildCruiseSleepingKit(bedZone:T.Group){
  bottomSheet.name='bedsheet-top';bottomSheet.position.set(-1.05,.840,-1.585);
  bottomSheet.castShadow=true;bottomSheet.receiveShadow=true;sheet.add(bottomSheet);
  const cover=assembly(bedding,'quilt-shell-and-turned-corner');
- const quiltOptions:ClothOptions={nx:44,nz:54,sideDrop:.14,footDrop:.16,centerLift:.082,foldStrength:.048,seed:.7};
+ const quiltOptions:ClothOptions={nx:44,nz:54,sideDrop:.105,footDrop:.09,centerLift:.082,foldStrength:.048,seed:.7};
  const quiltWidth=2.62,quiltLength=2.67,quiltZ=-1.18,quiltY=.885;
  const quilt=new T.Mesh(createDuvetGeometry(quiltWidth,quiltLength,.085,'ivoryCloth',quiltOptions),prints.ivory);
  quilt.name='quilt-ivory';quilt.position.set(-1.05,quiltY,quiltZ);
