@@ -84,7 +84,7 @@ export function createFoldedCornerGeometry(
  const n=22,positions:number[]=[],uvs:number[]=[],indices:number[]=[];
  const atlas=cruiseUvRegions.ivoryCloth;
  const start=(row:number)=>row*(n+1)-row*(row-1)/2;
- const uvA:[number,number]=[.77,.77],uvB:[number,number]=[.99,.97],uvC:[number,number]=[.60,.985];
+ const uvA:[number,number]=[.78,.59],uvB:[number,number]=[.97,.705],uvC:[number,number]=[.68,.725];
  const count=(n+1)*(n+2)/2;
  for(const underside of [false,true])for(let row=0;row<=n;row++){
   const t=row/n;
@@ -94,7 +94,7 @@ export function createFoldedCornerGeometry(
    const v=uvA[1]*base+uvB[1]*t+uvC[1]*s;
    const inside=Math.max(0,Math.min(1,t,s,base));
    const crease=Math.sin(Math.PI*Math.min(1,inside*1.5))**1.4;
-   const roll=.105*crease+.014*Math.sin(Math.PI*t);
+   const roll=.065*crease+.012*Math.sin(Math.PI*t);
    const y=drapeY(u,v,options)+.004+roll-(underside?.018:0);
    const x=(u-.5)*quiltWidth,z=(v-.5)*quiltLength;
    positions.push(x,y,z);
