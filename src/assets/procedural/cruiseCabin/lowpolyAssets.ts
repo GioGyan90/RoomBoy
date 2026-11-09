@@ -214,3 +214,46 @@ export function createWallApertureCornerGeometry(rectW:number,rectH:number,cutW:
  outer.holes.push(hole);
  return new T.ExtrudeGeometry(outer,{depth,steps:1,bevelEnabled:false,curveSegments:8});
 }
+
+/** A flat printed runner conforming to the already draped quilt.
+ * All vertices share the duvet's actual height field, so the runner is inset
+ * without detached pointed hems or geometry crossing through white bedding.
+ */
+export function createConformingRunnerGeometry(
+ width:number,length:number,quiltWidth:number,quiltLength:number,
+ quiltZ:number,runnerZ:number,quiltOptions:ClothOptions,
+ nx=36,nz=24
+){
+ const vertices:number[]=[],uv:number[]=[],indices:number[]=[];
+ const atlas=cruiseUvRegions.midnightCloth;
+ const offset=runnerZ-quiltZ;
+ const add=(u:number,v:number,underside:boolean)=>{
+  const x=(u-.5)*width,z=(v-.5)*length;
+  const qu=(x/quiltWidth)+.5,qv=(z+offset)/quiltLength+.5;
+  // A very slight rolled hem; stays on the same physical cloth everywhere.
+  const seam=.009*Math.sin(Math.PI*u)*Math.sin(Math.PI*v);
+  const y=drapeY(qu,qv,quiltOptions)+.024+seam-(underside?.013:0);
+  vertices.push(x,y,z);
+  uv.push(atlas.u0+(atlas.u1-atlas.u0)*u,atlas.v0+(atlas.v1-atlas.v0)*v);
+ };
+ for(const below of [false,true])for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++)add(i/nx,j/nz,below);
+ const count=(nx+1)*(nz+1);
+ for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){
+  const a=j*(nx+1)+i,b=a+1,c=a+nx+1,d=c+1;
+  indices.push(a,c,b,b,c,d,count+a,count+b,count+c,count+b,count+d,count+c);
+ }
+ const side=(a:number,b:number)=>indices.push(a,b,count+a,b,count+b,count+a);
+ for(let i=0;i<nx;i++){
+  side(i+1,i);side(nz*(nx+1)+i,nz*(nx+1)+i+1);
+ }
+ for(let j=0;j<nz;j++){
+  side(j*(nx+1),(j+1)*(nx+1));
+  side((j+1)*(nx+1)+nx,j*(nx+1)+nx);
+ }
+ const geo=new T.BufferGeometry();
+ geo.setAttribute('position',new T.Float32BufferAttribute(vertices,3));
+ geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));
+ geo.setIndex(indices);geo.computeVertexNormals();
+ return geo;
+}
+
