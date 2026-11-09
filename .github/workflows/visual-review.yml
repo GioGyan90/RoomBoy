@@ -31,7 +31,7 @@ jobs:
         run: |
           npm install --no-save --package-lock=false playwright
           npx playwright install --with-deps chromium
-      - name: Capture 20 cabin views (exterior seam checks)
+      - name: Capture 25 cabin views (exterior and bathroom closeups)
         env:
           CI: 'true'
         run: node scripts/capture-cruise.mjs
