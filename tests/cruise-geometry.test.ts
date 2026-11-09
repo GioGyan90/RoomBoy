@@ -290,8 +290,12 @@ test('tub plumbing has no floating extras and shower pipe is physically continuo
  assert.ok(base.intersectsBox(body),'tub body must rest on its base');
  assert.ok(water.max.y<rim.max.y,'water must remain inside tub');
  const pipe=bounds('shower-gold-riser'),arm=bounds('shower-overhead-arm'),spout=bounds('shower-spout');
+ const head=bounds('shower-rain-head'),plate=bounds('shower-wall-plate'),wall=bounds('bath-back-marble-panel');
  assert.ok(pipe.intersectsBox(arm),'shower arm is floating');
  assert.ok(pipe.intersectsBox(spout),'shower spout is floating');
+ assert.ok(arm.intersectsBox(head),'shower head is detached from its arm');
+ assert.ok(plate.intersectsBox(wall),'shower wall plate is not mounted to marble');
+ assert.ok(plate.intersectsBox(pipe),'shower riser is detached from wall plate');
  for(const name of ['bath-faucet-spout','bath-tap-knob','bath-towel-rail','bath-towel-bracket']){
   assert.equal(root.getObjectByName(name),undefined,name+' obsolete floating object');
  }
