@@ -89,7 +89,7 @@ test('quilt, fitted sheet, runner and folded corner have distinct detailed cloth
  assert.ok(corner.count>75,'corner flip needs a properly subdivided fold');
  for(const mesh of meshes){
   const uv=mesh.geometry.getAttribute('uv');
-  const pos=mesh.geometry.getAttribute('position');
+  const pos=mesh.geometry.getAttribute('position') as T.BufferAttribute;
   for(let i=0;i<pos.count;i++){
    for(let k=0;k<3;k++)assert.ok(Number.isFinite(pos.getComponent(i,k)));
    assert.ok(Number.isFinite(uv.getX(i))&&Number.isFinite(uv.getY(i)));
