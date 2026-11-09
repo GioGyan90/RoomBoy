@@ -24,8 +24,11 @@ test('hollow rounded frame leaves its central aperture open',()=>{
  const gasket=root.getObjectByName('side-window-black-gasket') as T.Mesh;
  assert.ok(brass.geometry instanceof T.ExtrudeGeometry);
  assert.ok(gasket.geometry instanceof T.ExtrudeGeometry);
- assert.equal((brass.geometry as T.ExtrudeGeometry).parameters.shapes.holes.length,1);
- assert.equal((gasket.geometry as T.ExtrudeGeometry).parameters.shapes.holes.length,1);
+ const bs=(brass.geometry as T.ExtrudeGeometry).parameters.shapes;
+ const gs=(gasket.geometry as T.ExtrudeGeometry).parameters.shapes;
+ const first=(v:T.Shape|T.Shape[])=>Array.isArray(v)?v[0]:v;
+ assert.equal(first(bs).holes.length,1);
+ assert.equal(first(gs).holes.length,1);
 });
 test('scene uses UV-ready cloth shells instead of solid rectangular quilt pieces',()=>{
  const root=new T.Group();furniture(root);
