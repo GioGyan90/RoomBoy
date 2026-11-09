@@ -15,12 +15,12 @@ export function referenceFinish(root:T.Group){
   [-2.60,.76],[-2.62,1.55],[-2.54,2.06],[-2.32,2.19],[-1.92,2.24],
   [-.14,2.24],[.29,2.19],[.46,2.06],[.50,1.55],[.49,.76],
   [.20,.72],[-2.34,.72]
- ].map(([x,y])=>new T.Vector3(x,y,-3.273));
+ ].map(([x,y])=>new T.Vector3(x+.72,y,-3.273));
  stroke(g,'headboard-warm-halo',outline,halo,.057,true);
  stroke(g,'headboard-gold-light',outline,led,.020,true);
  // Visible lower bed perimeter lights, above the floor.
- block(g,'floating-bed-gold-footrail',[2.75,.04,.036],[-1.05,.16,.67],palette.gold);
- block(g,'floating-bed-amber-footlight',[2.66,.016,.018],[-1.05,.11,.69],led);
+ block(g,'floating-bed-gold-footrail',[2.55,.04,.036],[-.33,.16,.19],palette.gold);
+ block(g,'floating-bed-amber-footlight',[2.46,.016,.018],[-.33,.11,.21],led);
  // Art-deco corner print is now integrated into the rug's UV texture.
  // Avoid duplicated floating-looking zig-zag brass marks on bare floor.
  // Coffee table bouquet, with each flower tied to the vase's actual position.
