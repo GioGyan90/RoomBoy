@@ -13,6 +13,7 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   {id:'bed-kit-front',label:'床区正面组合',theta:0,phi:1.17,zoom:.51,target:[-.33,1.23,-1.80]},
   {id:'bed-kit-headboard',label:'黑金软包床头',theta:-.27,phi:1.16,zoom:.31,target:[-.33,1.56,-3.38]},
   {id:'bed-kit-duvet',label:'被褥布面近景',theta:-.22,phi:.70,zoom:.34,target:[-.33,.86,-1.12]},
+  {id:'bed-foot-corner-close',label:'床尾右角布面检查',theta:.62,phi:1.15,zoom:.24,target:[.81,.73,.02]},
   {id:'bed-kit-nightstand',label:'床头柜与阅读灯',theta:.35,phi:1.20,zoom:.28,target:[1.16,1.11,-3.20]},
   {id:'bed-kit-underlight',label:'床底灯低机位',theta:.18,phi:1.46,zoom:.35,target:[-.33,.24,.17]},
   {id:'entry-landing',label:'玄关落脚区',theta:-1.13,phi:1.19,zoom:.43,target:[-4.70,1.10,-1.75]},
