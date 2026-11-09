@@ -175,3 +175,43 @@ test('cruise has an unobstructed bathroom cutaway and a single curved sofa shell
  let obsolete=0;root.traverse(o=>{if(o.name==='sofa-curve-back-panel')obsolete++});
  assert.equal(obsolete,0,'segmented sofa backs must not return');
 });
+
+test('exterior glazing frames span real hull thickness on both sides',()=>{
+ const root=new T.Group();architecture(root);referenceArchitecture(root);root.updateMatrixWorld(true);
+ const bounds=(name:string)=>{
+  const obj=root.getObjectByName(name);
+  assert.ok(obj,name+' missing');
+  return new T.Box3().setFromObject(obj);
+ };
+ const wall=bounds('right-window-sill');
+ const outer=bounds('side-window-brass-frame');
+ const inner=bounds('side-window-inner-brass-frame');
+ const glass=bounds('side-window-sea');
+ assert.ok(outer.max.x>wall.max.x+.025,'outer brass reveal must project beyond ship skin');
+ assert.ok(outer.min.x<wall.min.x+.025,'outer frame must engage full shell thickness');
+ assert.ok(inner.min.x<wall.min.x-.005,'inner trim must sit inside room');
+ assert.ok(glass.min.x>wall.min.x && glass.max.x<wall.max.x,'glass must sit within thickness, not on face');
+ const door=bounds('side-balcony-brass-frame');
+ const doorGlass=bounds('side-balcony-sea');
+ const doorInner=bounds('side-balcony-inner-brass-frame');
+ assert.ok(door.max.x>wall.max.x+.025 && door.min.x<wall.min.x+.025);
+ assert.ok(doorInner.min.x<wall.min.x-.005);
+ assert.ok(doorGlass.min.x>wall.min.x && doorGlass.max.x<wall.max.x);
+});
+test('entry wall is genuinely cut around the door and exterior reveal lines its jambs',()=>{
+ const root=new T.Group();architecture(root);referenceArchitecture(root);root.updateMatrixWorld(true);
+ const entry=root.getObjectByName('left-bulkhead-bedroom') as T.Group;
+ assert.ok(entry&&entry.children.length>=4,'entrance wall should have four aperture segments');
+ const bounds=(name:string)=>{
+  const m=root.getObjectByName(name);
+  assert.ok(m,name+' missing');
+  return new T.Box3().setFromObject(m);
+ };
+ const aft=bounds('entry-wall-aft'),fore=bounds('entry-wall-forward');
+ const header=bounds('entry-wall-header'),threshold=bounds('entry-wall-threshold');
+ const door=bounds('suite-entry-door');
+ assert.ok(aft.max.z<door.min.z && fore.min.z>door.max.z,'door must fit between wall segments');
+ assert.ok(header.min.y>door.max.y && threshold.max.y<door.min.y,'opening must continue above and below door');
+ const frame=bounds('suite-entry-door-frame');
+ assert.ok(frame.min.x<aft.min.x && frame.max.x>aft.max.x,'entry frame must wrap external and internal shell');
+});
