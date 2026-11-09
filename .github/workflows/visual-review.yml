@@ -31,7 +31,7 @@ jobs:
         run: |
           npm install --no-save --package-lock=false playwright
           npx playwright install --with-deps chromium
-      - name: Capture 33 cabin views (TV, sink, tub plumbing and circulation)
+      - name: Capture 38 cabin views (modular bedroom, plumbing and circulation)
         env:
           CI: 'true'
         run: node scripts/capture-cruise.mjs
