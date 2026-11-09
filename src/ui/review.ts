@@ -61,11 +61,21 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   location.assign(url);
  });
  roomTools.prepend(selector);
+ // QA stations are internal DOM hooks for automated screenshots only.
+ // They must NEVER display names, badges or buttons in the player interface.
  if(roomId==='cruise' && query.get('capture')==='1'){
-  const toolbar=document.createElement('div');toolbar.id='cruise-camera-review';toolbar.style.cssText='display:flex;flex-wrap:wrap;gap:5px;padding:6px;background:#29212bcc;border-radius:8px;';
-  const label=document.createElement('span');label.textContent='检查机位';label.style.cssText='color:#fff;font-size:12px;align-self:center';toolbar.append(label);
-  for(const station of reviewStations){const button=document.createElement('button');button.textContent=station.label;button.dataset.station=station.id;button.style.cssText='padding:4px 7px;font-size:12px;cursor:pointer';button.addEventListener('click',()=>{reviewStation=station.id;apply('room');});toolbar.append(button);}
-  const shot=document.createElement('button');shot.textContent='保存截图';shot.style.cssText='padding:4px 7px;font-size:12px;cursor:pointer';shot.addEventListener('click',()=>{const canvas=document.querySelector('canvas');if(!canvas)return;canvas.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='cruise-'+reviewStation+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);},'image/png');});toolbar.append(shot);roomTools.append(toolbar);
+  const toolbar=document.createElement('div');
+  toolbar.id='cruise-camera-review';
+  toolbar.hidden=true;
+  toolbar.style.setProperty('display','none','important');
+  for(const station of reviewStations){
+   const button=document.createElement('button');
+   button.type='button';
+   button.dataset.station=station.id;
+   button.addEventListener('click',()=>{reviewStation=station.id;apply('room');});
+   toolbar.append(button);
+  }
+  document.body.append(toolbar);
  }
  const angles=document.createElement('div');angles.id='character-angles';angles.innerHTML='<button data-angle="front">正面</button><button data-angle="side">侧面</button><button data-angle="back">背面</button>';document.body.append(angles);
  const panel=document.createElement('aside');panel.id='reference-panel';panel.hidden=true;
