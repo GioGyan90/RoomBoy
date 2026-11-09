@@ -271,6 +271,10 @@ test('bathroom is composed of independent grouped assemblies with open sliding d
  assert.ok(right.min.z>3.5,'the return blocks the doorway');
  assert.ok(leaf.max.z<2.1,'sliding leaf must park outside opening');
  const lintel=bounds('bath-door-lintel');
+ const track=bounds('bath-door-pocket-track'),wall=bounds('bath-rear-wall');
+ assert.ok(track.intersectsBox(lintel),'sliding track is detached from header');
+ assert.ok(track.intersectsBox(wall),'pocket door track is detached from rear partition');
+ assert.ok(track.intersectsBox(leaf),'stored door leaf does not engage its track');
  const posts=[...root.getObjectsByProperty('name','bath-door-jamb')];
  assert.equal(posts.length,2,'real doorway must have two supported jambs');
  for(const post of posts){
