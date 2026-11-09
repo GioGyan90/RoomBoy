@@ -100,12 +100,18 @@ export function referenceArchitecture(root:T.Group){
  block(g,'suite-entry-door-inset',[.009,1.95,.89],[-5.75,1.38,-2.23],marine);
  block(g,'suite-entry-door-knob',[.050,.055,.15],[-5.73,1.13,-1.89],palette.gold);
  cylinder(g,'suite-entry-peephole',.023,.025,[-5.72,1.80,-2.23],palette.gold,'x');
- // An inset TV on the rear wall: dark glass with a cinematic ocean-blue display.
- block(g,'wall-tv-brass-frame',[1.48,1.02,.06],[2.49,1.75,-3.715],palette.gold);
- block(g,'wall-tv-screen',[1.39,.94,.065],[2.49,1.75,-3.678],marine);
- block(g,'wall-tv-sea',[1.30,.44,.008],[2.49,1.55,-3.636],sea);
- block(g,'wall-tv-sky',[1.30,.40,.009],[2.49,1.98,-3.634],sky);
- block(g,'wall-tv-horizon',[1.30,.014,.012],[2.49,1.76,-3.622],pale);
+ // The media unit is on the FOOT wall (+Z) directly opposite the bed.
+ // Its tall, thin wall panel is supported by the cabin floor and kept within the front boundary.
+ // Screen front faces -Z, toward the headboard, not the sea-facing side wall.
+ const media=new T.Group();media.name='bed-foot-media-wall';g.add(media);
+ block(media,'bed-foot-media-panel',[2.52,2.34,.11],[-.33,1.17,3.65],palette.wood);
+ block(media,'bed-foot-media-inset',[2.40,2.23,.018],[-.33,1.17,3.58],palette.onyx);
+ const off=new T.MeshStandardMaterial({color:0x15161b,metalness:.35,roughness:.21,emissive:0x000000});
+ const darkGlass=new T.MeshStandardMaterial({color:0x28272a,metalness:.48,roughness:.22});
+ block(media,'wall-tv-brass-frame',[1.84,1.06,.064],[-.33,1.52,3.535],palette.gold);
+ block(media,'wall-tv-screen',[1.75,.98,.070],[-.33,1.52,3.487],off);
+ block(media,'wall-tv-black-glass-reflection',[.64,.025,.007],[-.78,1.77,3.447],darkGlass);
+ block(media,'wall-tv-mount',[.36,.25,.035],[-.33,1.48,3.61],palette.wood);
  // Tall cream drapes and tiebacks, restrained rather than competing with the glazing.
  for(const z of [-2.82,1.42]){
   block(g,'ocean-curtain',[.13,2.40,.25],[5.40,1.55,z],palette.cream);
