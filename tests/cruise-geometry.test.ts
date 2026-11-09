@@ -129,16 +129,19 @@ test('bedside reading lamps are anchored to upholstered headboard, and flowers r
  const arms=all.filter(m=>m.name==='reading-lamp-arm');
  const heads=all.filter(m=>m.name==='reading-lamp-head');
  const controls=all.filter(m=>m.name==='reading-control-panel');
+ const necks=all.filter(m=>m.name==='reading-lamp-neck');
  assert.equal(plates.length,2);assert.equal(arms.length,2);
- assert.equal(heads.length,2);assert.equal(controls.length,2);
+ assert.equal(heads.length,2);assert.equal(necks.length,2);assert.equal(controls.length,2);
  const board=new T.Box3().setFromObject(root.getObjectByName('headboard-wood-frame')!);
  for(let i=0;i<2;i++){
   const plate=new T.Box3().setFromObject(plates[i]);
   assert.ok(plate.intersectsBox(board),'reading light must mount on headboard');
   const arm=new T.Box3().setFromObject(arms[i]);
   const head=new T.Box3().setFromObject(heads[i]);
+  const neck=new T.Box3().setFromObject(necks[i]);
   assert.ok(plate.intersectsBox(arm),'reading light arm is detached from wall plate');
-  assert.ok(arm.intersectsBox(head),'reading lamp head detached from arm');
+  assert.ok(arm.intersectsBox(neck),'reading lamp neck detached from arm');
+  assert.ok(neck.intersectsBox(head),'reading lamp head detached from neck');
  }
  const table=root.getObjectByName('cocktail-table-marble')!;
  const vase=root.getObjectByName('table-flower-vase')!;
