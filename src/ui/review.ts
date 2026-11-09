@@ -20,6 +20,14 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   {id:'bed-right',label:'右床头柜',theta:.32,phi:1.15,zoom:.32,target:[.77,.67,-3.06]},
   {id:'service-bar',label:'独立酒柜',theta:-.15,phi:1.18,zoom:.43,target:[-3.58,1.05,-3.25]},
   {id:'balcony-door',label:'海景玻璃门',theta:-.65,phi:1.18,zoom:.56,target:[5.60,1.50,.55]},
+  {id:'exterior-starboard',label:'外侧船舷全景',theta:1.57,phi:1.17,zoom:.77,target:[5.79,1.64,-.45]},
+  {id:'exterior-window-front',label:'舷窗外侧正视',theta:1.57,phi:1.49,zoom:.41,target:[5.78,1.67,-1.55]},
+  {id:'exterior-window-oblique',label:'舷窗外侧斜视',theta:2.06,phi:1.33,zoom:.42,target:[5.82,1.67,-1.55]},
+  {id:'exterior-window-low',label:'舷窗外侧仰视',theta:1.48,phi:1.83,zoom:.39,target:[5.82,1.38,-1.55]},
+  {id:'exterior-door-front',label:'阳台门外侧正视',theta:1.57,phi:1.46,zoom:.41,target:[5.82,1.53,.53]},
+  {id:'exterior-door-jamb',label:'阳台门外侧门套',theta:1.99,phi:1.33,zoom:.33,target:[5.83,1.53,.53]},
+  {id:'exterior-hull-top',label:'外壳上缘衔接',theta:1.50,phi:.67,zoom:.56,target:[5.81,2.69,-.50]},
+  {id:'exterior-entry',label:'入口门外侧',theta:-1.57,phi:1.22,zoom:.43,target:[-5.75,1.42,-2.23]},
  ] as const;
  let reviewStation=new URLSearchParams(location.search).get('station')??'overview';
  const query=new URLSearchParams(location.search);const requestedView=query.get('view')??'game';
