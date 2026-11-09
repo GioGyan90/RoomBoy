@@ -46,20 +46,7 @@ export function luxuryDetails(root:T.Group){
  // Curved lounge segments replace the former straight gold rail.
  // Piping follows the cushion front edge rather than cutting across its top.
  block(g,'sofa-front-piping',[2.17,.018,.019],[3.79,.57,.955],palette.gold);
- // Marble bathroom: mirror edging, towel rails and rolled towels.
- block(g,'vanity-lower-brass-edge',[.72,.035,.59],[-3.09,.295,1.24],palette.gold);
- for(const y of [1.52,1.68]){
-  block(g,'bath-towel-rail',[.52,.035,.04],[-5.43,y,1.04],palette.gold);
-  for(const x of [-5.64,-5.22])block(g,'bath-towel-bracket',[.035,.05,.22],[x,y,.94],palette.gold);
- }
- for(const y of [1.38,1.47]){
-  block(g,'folded-towel',[.38,.07,.22],[-5.29,y,1.08],pearl);
- }
- // Toilet flush hardware and sculpted ceramic seat rim.
- cylinder(g,'flush-button',.055,.025,[-3,.896,3.40],palette.gold);
- // Seat is an open ceramic ring; omit floating ornamental studs.
- // Bath tap bridge and a separate spout.
- block(g,'bath-faucet-spout',[.31,.042,.06],[-4.32,1.29,1.95],palette.gold);
- sphere(g,'bath-tap-knob',.065,-4.10,1.32,1.95,palette.gold);
+ // Bath fixtures live in serviceRooms.ts and are mounted to their parent asset.
+ // No separate suspended towels, faucets, brackets or flush hardware.
  // Keep the central walking route free of decorative target disks.
 }
