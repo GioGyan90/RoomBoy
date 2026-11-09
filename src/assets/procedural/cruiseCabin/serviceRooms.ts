@@ -36,8 +36,8 @@ export function serviceRooms(root:T.Group){
  water.name='tub-water';water.rotation.x=-Math.PI/2;water.scale.set(.51,.79,1);water.position.set(-4.8,.63,2.57);tubZone.add(water);
  // One coherent, wall-mounted plumbing assembly. No hovering faucets above the tub.
  const showerMount=new T.Group();showerMount.name='wall-fixed-shower-mount';showerZone.add(showerMount);
- block(showerMount,'shower-wall-plate',[.18,.46,.035],[-5.13,1.49,.852],palette.gold);
- block(showerMount,'shower-gold-riser',[.045,1.26,.045],[-5.13,1.73,.89],palette.gold);
+ block(showerMount,'shower-wall-plate',[.18,.78,.035],[-5.13,1.45,.852],palette.gold);
+ block(showerMount,'shower-gold-riser',[.045,1.62,.045],[-5.13,1.555,.89],palette.gold);
  block(showerMount,'shower-overhead-arm',[.045,.045,.79],[-5.13,2.33,1.275],palette.gold);
  cylinder(showerMount,'shower-rain-head',.155,.038,[-5.13,2.275,1.69],palette.gold);
  cylinder(showerMount,'shower-control-knob',.075,.045,[-5.13,1.31,.91],palette.gold,'z');
