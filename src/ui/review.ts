@@ -61,7 +61,7 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   location.assign(url);
  });
  roomTools.prepend(selector);
- if(roomId==='cruise'){
+ if(roomId==='cruise' && query.get('capture')==='1'){
   const toolbar=document.createElement('div');toolbar.id='cruise-camera-review';toolbar.style.cssText='display:flex;flex-wrap:wrap;gap:5px;padding:6px;background:#29212bcc;border-radius:8px;';
   const label=document.createElement('span');label.textContent='检查机位';label.style.cssText='color:#fff;font-size:12px;align-self:center';toolbar.append(label);
   for(const station of reviewStations){const button=document.createElement('button');button.textContent=station.label;button.dataset.station=station.id;button.style.cssText='padding:4px 7px;font-size:12px;cursor:pointer';button.addEventListener('click',()=>{reviewStation=station.id;apply('room');});toolbar.append(button);}
@@ -107,7 +107,7 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   controller.usePerspective(portrait);
   const framing=profile.camera;
   character.charRoot.position.set(portrait?0:spawn.x,portrait?0:spawn.y??0,portrait?0:spawn.z);character.charRoot.rotation.y=portrait?0:spawn.rot;
-  const station=roomId==='cruise'&&view==='room'?reviewStations.find(s=>s.id===reviewStation):undefined;
+  const station=roomId==='cruise'&&view==='room'&&query.get('capture')==='1'?reviewStations.find(s=>s.id===reviewStation):undefined;
   const state=portrait
     ? {theta:angle==='side'?Math.PI/2:angle==='back'?Math.PI:0,phi:close?1.46:1.52,radius:close?.49:2.72,target:new T.Vector3(0,close?1.65:.91,0)}
     : {theta:station?.theta??framing.theta,phi:station?.phi??framing.phi,radius:(view==='room'?framing.roomRadius:framing.gameRadius)*profile.frameScale(innerWidth/innerHeight)*(station?.zoom??1),target:new T.Vector3(...(station?.target??framing.target))};
