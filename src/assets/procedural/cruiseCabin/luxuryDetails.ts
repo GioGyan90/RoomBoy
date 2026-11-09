@@ -3,7 +3,6 @@ import {block,cylinder,palette} from './architecture';
 const dark=new T.MeshStandardMaterial({color:0x221b27,roughness:.35,metalness:.12});
 const pearl=new T.MeshStandardMaterial({color:0xffefda,roughness:.62});
 const wine=new T.MeshStandardMaterial({color:0x9b4252,roughness:.83});
-const light=new T.MeshStandardMaterial({color:0xffdca1,emissive:0xf5a849,emissiveIntensity:.35,roughness:.5});
 function sphere(g:T.Group,name:string,r:number,x:number,y:number,z:number,mat:T.Material){
  const m=new T.Mesh(new T.SphereGeometry(r,12,8),mat);m.name=name;m.position.set(x,y,z);g.add(m);
 }
@@ -18,12 +17,7 @@ export function luxuryDetails(root:T.Group){
  // Continuous cornice only over the solid left portion of the rear wall.
  block(g,'rear-crown-wood',[7.35,.14,.24],[-2.125,3.01,-3.66],palette.wood);
  block(g,'rear-crown-gold',[7.36,.035,.26],[-2.125,2.91,-3.65],palette.gold);
- // Backlit, layered bedside wall sconces and pendant rods.
- for(const x of [-2.56,1.55]){
-  block(g,'sconce-wall-plate',[.22,.39,.055],[x,1.67,-3.59],palette.gold);
-  block(g,'sconce-diffuser',[.15,.27,.07],[x,1.67,-3.53],light);
-  cylinder(g,'sconce-pin',.026,.11,[x,1.49,-3.49],palette.gold);
- }
+ // Bedside lamps now belong to the connected bedroom kit, not detached wall props.
  // Quilt and runner are deformable fabric meshes; no detached rigid stitching bars.
  // Future embroidery should be in the fabric UV atlas or conform to its vertices.
  // No floating gold studs: the reference bed uses smooth white pillows.
