@@ -139,6 +139,17 @@ test('finished bedding has high-resolution drape, two-sided turn-back and full p
  for(const p of pillows)assert.ok(p.geometry.getAttribute('position').count>=1000,'pillow must have sufficient curvature faces');
 });
 
+test('turned white quilt corner stops before the black runner instead of making a triangular cut',()=>{
+ const root=new T.Group();furniture(root);root.updateMatrixWorld(true);
+ const fold=root.getObjectByName('quilt-folded-corner') as T.Mesh;
+ const runner=root.getObjectByName('quilt-burgundy-runner') as T.Mesh;
+ assert.ok(fold&&runner);
+ const f=new T.Box3().setFromObject(fold);
+ const r=new T.Box3().setFromObject(runner);
+ assert.ok(f.max.z<r.min.z-.01,'white fold protrudes through black bed runner');
+ const quilt=root.getObjectByName('quilt-ivory') as T.Mesh;
+ assert.ok(f.min.x>=new T.Box3().setFromObject(quilt).min.x);
+});
 test('black runner is inset and conforms to the white duvet instead of crossing its corners',()=>{
  const root=new T.Group();furniture(root);root.updateMatrixWorld(true);
  const quilt=root.getObjectByName('quilt-ivory') as T.Mesh;
