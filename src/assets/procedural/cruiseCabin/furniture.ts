@@ -1,11 +1,9 @@
 import * as T from "three";
 import {block,cylinder,palette} from "./architecture";
-import {createDuvetGeometry} from "./lowpolyAssets";
-import {createCruiseFabricMaterials,createCruiseRugPrint} from "./surfacePatterns";
-const velvet=new T.MeshStandardMaterial({color:0x262127,roughness:.96});
+import {createCruiseRugPrint} from "./surfacePatterns";
+import {buildCruiseSleepingKit} from "./bedKit";
 const linen=new T.MeshStandardMaterial({color:0xfff0df,roughness:.91});
 const gold=palette.gold;
-const clothPrints=createCruiseFabricMaterials();
 const rugPrint=new T.MeshStandardMaterial({map:createCruiseRugPrint(),color:0xffffff,roughness:.89});
 function soft(parent:T.Group,name:string,size:[number,number,number],at:[number,number,number],mat:T.Material,r=.09){
  const s=new T.Shape();const w=size[0],d=size[2],x=-w/2,z=-d/2;
@@ -16,34 +14,9 @@ function soft(parent:T.Group,name:string,size:[number,number,number],at:[number,
 }
 export function furniture(root:T.Group){
  const g=new T.Group();g.name="cruise-furniture";root.add(g);
- // Phase 1 circulation reflow: one self-contained bed assembly, moved right to free the entrance aisle.
+ // The complete bed is a single six-part kit, preserving the cleared entrance aisle.
  const bedZone=new T.Group();bedZone.name="cruise-sleeping-zone";bedZone.position.x=.72;g.add(bedZone);
- // Shorter bed preserves headboard alignment while opening the foreground turning zone.
- block(bedZone,"bed-rug",[3.60,.024,4.05],[-1.05,.022,-1.44],rugPrint);
- block(bedZone,"king-bed-frame",[2.62,.36,3.57],[-1.05,.31,-1.595],palette.wood);
- block(bedZone,"bed-brass-base",[2.66,.045,3.60],[-1.05,.17,-1.595],gold);
- soft(bedZone,"pillowtop-mattress",[2.42,.26,3.43],[-1.05,.65,-1.585],linen);
- // Draped low-poly fabric shells, authored with folds and hem UVs, rather than hard slabs.
- const quilt=new T.Mesh(createDuvetGeometry(2.37,2.52,.12,'ivoryCloth'),clothPrints.ivory);
- quilt.name='quilt-ivory';quilt.position.set(-1.05,.84,-1.18);quilt.castShadow=true;quilt.receiveShadow=true;bedZone.add(quilt);
- const runner=new T.Mesh(createDuvetGeometry(2.42,.72,.045,'midnightCloth'),clothPrints.dark);
- runner.name='quilt-burgundy-runner';runner.position.set(-1.05,.91,-.19);runner.castShadow=true;runner.receiveShadow=true;bedZone.add(runner);
- block(bedZone,"headboard-wood-frame",[3.42,1.70,.20],[-1.05,1.45,-3.57],palette.wood);
- block(bedZone,"headboard-brass-cap",[3.44,.045,.22],[-1.05,2.32,-3.57],gold);
- for(let i=0;i<8;i++)soft(bedZone,"headboard-vertical-tuft",[.35,1.47,.11],[-2.39+i*.383,1.48,-3.37],velvet,.065);
- for(const x of [-1.69,-.41]){
-  soft(bedZone,"sleeping-pillow",[1.05,.16,.57],[x,.87,-2.88],linen);
- }
- // Keep the two nightstands clear of both the bed frame and headboard.
- for(const x of [-2.87,.77]){
-  block(bedZone,"walnut-nightstand",[.55,.66,.62],[x,.38,-3.06],palette.wood);
-  block(bedZone,"nightstand-marble-top",[.61,.055,.68],[x,.74,-3.06],palette.marble);
-  block(bedZone,"nightstand-drawer",[.44,.22,.02],[x,.48,-2.736],palette.cream);
-  block(bedZone,"drawer-pull",[.17,.026,.04],[x,.48,-2.705],gold);
-  cylinder(bedZone,"brass-lamp-base",.085,.12,[x,.81,-3.06],gold);
-  cylinder(bedZone,"brass-lamp-stem",.028,.23,[x,.93,-3.06],gold);
-  cylinder(bedZone,"warm-lampshade",.18,.27,[x,1.04,-3.06],linen);
- }
+ buildCruiseSleepingKit(bedZone);
  // Left wall wardrobe; the independent minibar is built by minibar.ts.
  block(g,"full-height-wardrobe",[1.55,2.43,.65],[-4.69,1.24,-3.32],palette.wood);
  for(const x of [-5.07,-4.31]){
