@@ -54,7 +54,11 @@ export function architecture(root:T.Group){
  block(g,"right-balcony-sill",[.18,.15,1.40],[p.right,.075,.45],palette.shell);
  block(g,"right-balcony-lintel",[.18,.22,1.40],[p.right,3.04,.45],palette.shell);
  for(const z of [-2.85,-.25,1.15])block(g,"right-window-post",[.19,p.height,.10],[p.right,p.height/2,z],palette.shell);
- for(const y of [.35,2.84])block(g,"hull-longitudinal-brass",[.027,.048,7.69],[p.right+.104,y,0],palette.gold);
+ // Two rail runs either side of the balcony aperture; no metal line across glass.
+ for(const y of [.35,2.84]){
+  block(g,"hull-longitudinal-brass-aft",[.027,.048,3.55],[p.right+.104,y,-2.055],palette.gold);
+  block(g,"hull-longitudinal-brass-fore",[.027,.048,2.69],[p.right+.104,y,2.515],palette.gold);
+ }
  block(g,"front-cutaway",[11.7,.32,.18],[0,.16,p.front],palette.shell);
  for(const y of [.18,2.82])block(g,"gold-trim",[7.22,.047,.07],[-2.12,y,p.back+.14],palette.gold);
  // The giant side windows are assembled in referenceArchitecture.ts.
