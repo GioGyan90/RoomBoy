@@ -17,7 +17,7 @@ function rounded(w:number,h:number,r:number){
 }
 function windowPane(g:T.Group,name:string,w:number,h:number,r:number,x:number,y:number,z:number,material:T.Material){
  const isRim=name.endsWith('brass-frame')||name.endsWith('gasket');
- const geo=isRim?createRoundedFrameGeometry(w,h,r,name.endsWith('gasket')?.045:.072,.035):rounded(w,h,r);
+ const geo=isRim?createRoundedFrameGeometry(w,h,r,name.endsWith('gasket')?.045:.072,name.endsWith('brass-frame')?.235:.045):rounded(w,h,r);
  const mesh=new T.Mesh(geo,material);
  mesh.name=name;mesh.position.set(x,y,z);mesh.rotation.y=-Math.PI/2;
  g.add(mesh);return mesh;
@@ -29,29 +29,37 @@ function tube(g:T.Group,name:string,points:T.Vector3[],radius:number,material:T.
 }
 export function referenceArchitecture(root:T.Group){
  const g=new T.Group();g.name='reference-cruise-architecture';root.add(g);
- // Cutout low-poly window modules use hollow extruded rings; no filled brass slabs.
- windowPane(g,'side-window-brass-frame',2.52,1.94,.40,5.68,1.72,-1.55,palette.gold);
- windowPane(g,'side-window-black-gasket',2.42,1.84,.36,5.661,1.72,-1.55,marine);
- windowPane(g,'side-window-sea',2.30,1.72,.31,5.642,1.72,-1.55,sea);
- windowPane(g,'side-window-sky',2.15,.78,.24,5.625,2.13,-1.55,sky);
- // Faint sea horizon and glints, inset within the window, not over its rim.
- block(g,'window-horizon',[.009,.025,2.09],[5.614,1.69,-1.55],pale);
- for(let i=0;i<5;i++){
-  block(g,'window-wave',[.008,.012,.22+i*.05],[5.606,1.13+i*.10,-2.30+i*.33],sky);
+ // Starboard modules occupy the ACTUAL cutouts in the .18-thick hull:
+ // outer x=5.94, through-wall reveal to x=5.705, inner trim x=5.71.
+ // The window opening spans z [-2.85,-.25], y [.55,2.68].
+ windowPane(g,'side-window-brass-frame',2.56,2.14,.40,5.94,1.62,-1.55,palette.gold);
+ windowPane(g,'side-window-black-gasket',2.46,2.035,.36,5.915,1.62,-1.55,marine);
+ windowPane(g,'side-window-inner-brass-frame',2.56,2.14,.40,5.705,1.62,-1.55,palette.gold);
+ windowPane(g,'side-window-sea',2.365,1.945,.31,5.83,1.62,-1.55,sea);
+ windowPane(g,'side-window-sky',2.32,.87,.24,5.836,2.14,-1.55,sky);
+ // Painted horizon and distant sea streaks sit directly on the glazing plane.
+ block(g,'window-horizon',[.009,.018,2.29],[5.844,1.705,-1.55],pale);
+ for(let i=0;i<4;i++){
+  block(g,'window-wave',[.008,.009,.14+i*.05],[5.846,1.10+i*.12,-2.30+i*.38],sky);
  }
- // A tall, separately framed sliding door beside the sea window.
- windowPane(g,'side-balcony-brass-frame',1.46,2.71,.18,5.68,1.52,.55,palette.gold);
- windowPane(g,'side-balcony-gasket',1.36,2.61,.15,5.658,1.52,.55,marine);
- windowPane(g,'side-balcony-sea',1.26,2.51,.14,5.637,1.52,.55,sea);
- windowPane(g,'side-balcony-sky',1.18,1.05,.10,5.622,2.22,.55,sky);
- block(g,'side-balcony-divider',[.035,2.58,.055],[5.585,1.52,.55],palette.gold);
- block(g,'side-balcony-pull',[.075,.43,.045],[5.538,1.34,.87],palette.gold);
- block(g,'side-balcony-handle-return',[.07,.045,.14],[5.525,1.56,.87],palette.gold);
+ // Balcony aperture spans z [-.25,1.15], y [.15,2.93], centered z=.45.
+ windowPane(g,'side-balcony-brass-frame',1.38,2.78,.16,5.94,1.54,.45,palette.gold);
+ windowPane(g,'side-balcony-gasket',1.28,2.665,.14,5.915,1.54,.45,marine);
+ windowPane(g,'side-balcony-inner-brass-frame',1.38,2.78,.16,5.705,1.54,.45,palette.gold);
+ windowPane(g,'side-balcony-sea',1.19,2.56,.12,5.83,1.54,.45,sea);
+ windowPane(g,'side-balcony-sky',1.17,1.09,.10,5.836,2.275,.45,sky);
+ block(g,'side-balcony-divider',[.025,2.54,.045],[5.85,1.54,.45],palette.gold);
+ block(g,'side-balcony-pull',[.053,.43,.035],[5.89,1.36,.75],palette.gold);
+ block(g,'side-balcony-handle-return',[.052,.03,.12],[5.89,1.56,.75],palette.gold);
+ // Outside cap trims make the frame-to-wall contacts visible without a gap.
+ for(const z of [-2.825,-.275,1.125]){
+  block(g,'hull-reveal-post',[.24,.11,.036],[5.82,2.64,z],palette.shell);
+ }
  // Side service deck and glass guardrail, visually outside the glazed door.
- block(g,'side-balcony-deck',[.76,.12,1.53],[6.22,-.09,.58],palette.wood);
- block(g,'side-balcony-glass',[.025,.71,1.45],[6.60,.53,.58],palette.glass);
- for(const z of [-.14,1.30])block(g,'side-balcony-post',[.055,1.03,.055],[6.60,.52,z],palette.gold);
- block(g,'side-balcony-rail',[.065,.046,1.51],[6.60,1.04,.58],palette.gold);
+ block(g,'side-balcony-deck',[.76,.12,1.53],[6.22,-.09,.45],palette.wood);
+ block(g,'side-balcony-glass',[.025,.71,1.45],[6.60,.53,.45],palette.glass);
+ for(const z of [-.20,1.10])block(g,'side-balcony-post',[.055,1.03,.055],[6.60,.52,z],palette.gold);
+ block(g,'side-balcony-rail',[.065,.046,1.51],[6.60,1.04,.45],palette.gold);
  // Built-up cream shell: the upper section rolls down toward the stern.
  tube(g,'upper-hull-cream-curve',[
   new T.Vector3(5.53,3.19,-3.90),new T.Vector3(5.78,3.22,-3.1),
@@ -67,12 +75,18 @@ export function referenceArchitecture(root:T.Group){
   const z=-3.55+i*.51;
   cylinder(g,'outer-hull-rivet',.028,.02,[5.93,.27,z],palette.gold,'x');
  }
- // The entrance on the left wall reads as a real cabin door with a recessed dark panel.
- block(g,'suite-entry-door-frame',[.085,2.50,1.25],[-5.68,1.36,-2.23],palette.gold);
- block(g,'suite-entry-door',[.096,2.35,1.09],[-5.617,1.34,-2.23],palette.wood);
- block(g,'suite-entry-door-inset',[.012,1.95,.89],[-5.556,1.38,-2.23],marine);
- block(g,'suite-entry-door-knob',[.07,.055,.15],[-5.535,1.13,-1.89],palette.gold);
- cylinder(g,'suite-entry-peephole',.023,.025,[-5.531,1.80,-2.23],palette.gold,'x');
+ // Port-side entrance is physically cut from the shell in architecture.ts.
+ // Reveal edges run through its thickness; no full-height gold plate hides the door.
+ const entryFrame=new T.Group();entryFrame.name='suite-entry-door-frame';g.add(entryFrame);
+ for(const z of [-2.845,-1.615]){
+  block(entryFrame,'entry-jamb',[.25,2.49,.050],[-5.79,1.355,z],palette.gold);
+ }
+ block(entryFrame,'entry-lintel',[.25,.065,1.29],[-5.79,2.575,-2.23],palette.gold);
+ block(entryFrame,'entry-threshold',[.25,.05,1.29],[-5.79,.135,-2.23],palette.gold);
+ block(g,'suite-entry-door',[.065,2.35,1.09],[-5.8,1.34,-2.23],palette.wood);
+ block(g,'suite-entry-door-inset',[.009,1.95,.89],[-5.75,1.38,-2.23],marine);
+ block(g,'suite-entry-door-knob',[.050,.055,.15],[-5.73,1.13,-1.89],palette.gold);
+ cylinder(g,'suite-entry-peephole',.023,.025,[-5.72,1.80,-2.23],palette.gold,'x');
  // An inset TV on the rear wall: dark glass with a cinematic ocean-blue display.
  block(g,'wall-tv-brass-frame',[1.48,1.02,.06],[2.49,1.75,-3.715],palette.gold);
  block(g,'wall-tv-screen',[1.39,.94,.065],[2.49,1.75,-3.678],marine);
