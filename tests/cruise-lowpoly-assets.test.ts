@@ -138,3 +138,28 @@ test('finished bedding has high-resolution drape, two-sided turn-back and full p
  assert.equal(pillows.length,2);
  for(const p of pillows)assert.ok(p.geometry.getAttribute('position').count>=1000,'pillow must have sufficient curvature faces');
 });
+
+test('black runner is inset and conforms to the white duvet instead of crossing its corners',()=>{
+ const root=new T.Group();furniture(root);root.updateMatrixWorld(true);
+ const quilt=root.getObjectByName('quilt-ivory') as T.Mesh;
+ const runner=root.getObjectByName('quilt-burgundy-runner') as T.Mesh;
+ const sheet=root.getObjectByName('bedsheet-top') as T.Mesh;
+ const bed=root.getObjectByName('king-bed-frame') as T.Mesh;
+ const qb=new T.Box3().setFromObject(quilt),rb=new T.Box3().setFromObject(runner);
+ const sb=new T.Box3().setFromObject(sheet),bb=new T.Box3().setFromObject(bed);
+ assert.ok(rb.min.x>qb.min.x+.12&&rb.max.x<qb.max.x-.12,'black throw must leave white margins on both sides');
+ assert.ok(rb.max.z<qb.max.z-.04,'black throw must leave white margin at the foot');
+ assert.ok(sb.min.y>bb.max.y+.045,'sheet hem should not intersect wooden bed frame');
+ assert.ok(qb.min.y>bb.max.y+.025,'white quilt must not intersect wooden bed frame');
+ const qpos=quilt.geometry.getAttribute('position') as T.BufferAttribute;
+ const rpos=runner.geometry.getAttribute('position') as T.BufferAttribute;
+ for(let j=0;j<=28;j++)for(let i=0;i<=38;i++){
+  const k=j*39+i;
+  const localX=rpos.getX(k),localZ=rpos.getZ(k)+runner.position.z-quilt.position.z;
+  const qi=Math.round((localX/2.62+.5)*44);
+  const qj=Math.round((localZ/2.67+.5)*54);
+  const qk=Math.max(0,Math.min(54,qj))*45+Math.max(0,Math.min(44,qi));
+  assert.ok(rpos.getY(k)>=qpos.getY(qk)-.025,
+    'runner sinks into duvet near its edge at vertex '+k);
+ }
+});
