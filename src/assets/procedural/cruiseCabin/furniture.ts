@@ -44,7 +44,7 @@ export function furniture(root:T.Group){
  for(const x of [2.77,4.81])soft(g,"sofa-arm",[.28,.63,.91],[x,.61,.50],palette.ivory,.12);
  for(const x of [3.24,4.33]){
   soft(g,"sofa-seat-cushion",[1.02,.16,.72],[x,.61,.57],palette.ivory);
-  soft(g,"sofa-pillow",[.39,.34,.16],[x,.90,.40],palette.ivory);
+  soft(g,"sofa-pillow",[.46,.34,.18],[x,.90,.40],palette.ivory,.095);
  }
  cylinder(g,"cocktail-table-marble",.58,.085,[3.53,.57,1.94],palette.marble);
  cylinder(g,"cocktail-table-gold-rim",.60,.025,[3.53,.52,1.94],gold);
