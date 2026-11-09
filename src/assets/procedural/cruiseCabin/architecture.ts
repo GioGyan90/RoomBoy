@@ -36,7 +36,13 @@ export function architecture(root:T.Group){
  // Structural rhythm is provided by the dedicated luxury wall panels; no duplicate slats.
  for(const y of [.31,2.83])block(g,"rear-brass-rail",[7.22,.036,.10],[-2.12,y,p.back+.14],palette.gold);
  // Cutaway for the bathroom: the full-height exterior sidewall blocked the tub in isometric view.
- block(g,"left-bulkhead-bedroom",[.18,p.height,4.55],[p.left,p.height/2,-1.625],palette.shell);
+ // Subtract the 1.25m entrance opening from the left shell by segmenting it
+ // into four physical, watertight wall pieces (no opaque slab behind the door).
+ const entryWall=new T.Group();entryWall.name="left-bulkhead-bedroom";g.add(entryWall);
+ block(entryWall,"entry-wall-aft",[.18,p.height,1.045],[p.left,p.height/2,-3.3775],palette.shell);
+ block(entryWall,"entry-wall-forward",[.18,p.height,2.255],[p.left,p.height/2,-.4775],palette.shell);
+ block(entryWall,"entry-wall-header",[.18,.57,1.25],[p.left,2.865,-2.23],palette.shell);
+ block(entryWall,"entry-wall-threshold",[.18,.12,1.25],[p.left,.06,-2.23],palette.shell);
  block(g,"left-bulkhead-bath-cutaway",[.18,.62,3.25],[p.left,.31,2.275],palette.shell);
  block(g,"left-bath-sill",[.23,.07,3.25],[p.left,.65,2.275],palette.shell);
  block(g,"left-bath-gold-hairline",[.022,.012,3.20],[p.left+.12,.689,2.275],palette.gold);
