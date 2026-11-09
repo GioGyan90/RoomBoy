@@ -38,6 +38,11 @@ try{
   if(shot.length<15000)throw Error('Screenshot appears blank: '+station+' ('+shot.length+' bytes)');
   console.log('Captured',station,pixels);
  }
+ // Regular room visitors should never see internal QA camera names or buttons.
+ await page.goto(base+'?room=cruise&view=room',{waitUntil:'domcontentloaded',timeout:60000});
+ await page.locator('canvas').first().waitFor({state:'visible',timeout:20000});
+ if(await page.locator('#cruise-camera-review').count())throw Error('QA camera toolbar leaked into player UI');
+ if(await page.getByText('检查机位',{exact:true}).count())throw Error('Inspection label leaked into player UI');
  await writeFile(resolve(output,'report.json'),JSON.stringify({issues,stations:stations.length,commit:process.env.GITHUB_SHA??null},null,2));
  if(issues.length)throw Error('Browser console errors: '+issues.join('; '));
 }finally{
