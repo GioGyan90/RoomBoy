@@ -35,7 +35,7 @@ function stroke(p:Uint8Array,w:number,h:number,x0:number,y0:number,x1:number,y1:
  }
 }
 function texture(pixels:Uint8Array,w:number,h:number){
- const t=new T.DataTexture(pixels,w,h,T.RGBAFormat);
+ // Explicit ArrayBuffer-backed storage for DOM BufferSource TS compatibility.\n const upload=new Uint8Array(new ArrayBuffer(pixels.byteLength));\n upload.set(pixels);\n const t=new T.DataTexture(upload,w,h,T.RGBAFormat);
  t.colorSpace=T.SRGBColorSpace;
  t.magFilter=T.LinearFilter;t.minFilter=T.LinearMipmapLinearFilter;
  t.generateMipmaps=true;t.needsUpdate=true;
