@@ -17,7 +17,7 @@ function rounded(w:number,h:number,r:number){
 }
 function windowPane(g:T.Group,name:string,w:number,h:number,r:number,x:number,y:number,z:number,material:T.Material){
  const isRim=name.endsWith('brass-frame')||name.endsWith('gasket');
- const geo=isRim?createRoundedFrameGeometry(w,h,r,name.endsWith('gasket')?.045:.072,name.endsWith('brass-frame')?.235:.045):rounded(w,h,r);
+ const geo=isRim?createRoundedFrameGeometry(w,h,r,name.endsWith('gasket')?.045:.072,name.endsWith('brass-frame')?(name.includes('inner-')?.035:.235):.045):rounded(w,h,r);
  const mesh=new T.Mesh(geo,material);
  mesh.name=name;mesh.position.set(x,y,z);mesh.rotation.y=-Math.PI/2;
  g.add(mesh);return mesh;
