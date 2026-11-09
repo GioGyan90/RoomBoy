@@ -105,12 +105,12 @@ export function referenceArchitecture(root:T.Group){
  // Screen front faces -Z, toward the headboard, not the sea-facing side wall.
  const media=new T.Group();media.name='bed-foot-media-wall';g.add(media);
  block(media,'bed-foot-media-panel',[2.52,2.34,.11],[-.33,1.17,3.65],palette.wood);
- block(media,'bed-foot-media-inset',[2.40,2.23,.018],[-.33,1.17,3.58],palette.onyx);
+ block(media,'bed-foot-media-inset',[2.40,2.23,.018],[-.33,1.17,3.588],palette.onyx);
  const off=new T.MeshStandardMaterial({color:0x15161b,metalness:.35,roughness:.21,emissive:0x000000});
  const darkGlass=new T.MeshStandardMaterial({color:0x28272a,metalness:.48,roughness:.22});
- block(media,'wall-tv-brass-frame',[1.84,1.06,.064],[-.33,1.52,3.535],palette.gold);
- block(media,'wall-tv-screen',[1.75,.98,.070],[-.33,1.52,3.487],off);
- block(media,'wall-tv-black-glass-reflection',[.64,.025,.007],[-.78,1.77,3.447],darkGlass);
+ block(media,'wall-tv-brass-frame',[1.84,1.06,.064],[-.33,1.52,3.55],palette.gold);
+ block(media,'wall-tv-screen',[1.75,.98,.070],[-.33,1.52,3.51],off);
+ block(media,'wall-tv-black-glass-reflection',[.64,.025,.007],[-.78,1.77,3.469],darkGlass);
  block(media,'wall-tv-mount',[.36,.25,.035],[-.33,1.48,3.61],palette.wood);
  // Tall cream drapes and tiebacks, restrained rather than competing with the glazing.
  for(const z of [-2.82,1.42]){
