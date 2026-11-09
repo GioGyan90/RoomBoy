@@ -93,7 +93,7 @@ export function createFoldedCornerGeometry(
    const u=uvA[0]*base+uvB[0]*t+uvC[0]*s;
    const v=uvA[1]*base+uvB[1]*t+uvC[1]*s;
    const inside=Math.max(0,Math.min(1,t,s,base));
-   const crease=Math.sin(Math.PI*Math.min(1,inside*3))**1.4;
+   const crease=Math.sin(Math.PI*Math.min(1,inside*1.5))**1.4;
    const roll=.105*crease+.014*Math.sin(Math.PI*t);
    const y=drapeY(u,v,options)+.004+roll-(underside?.018:0);
    const x=(u-.5)*quiltWidth,z=(v-.5)*quiltLength;
