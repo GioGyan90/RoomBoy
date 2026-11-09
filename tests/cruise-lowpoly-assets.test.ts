@@ -123,7 +123,17 @@ test('finished bedding has high-resolution drape, two-sided turn-back and full p
  const quiltBox=new T.Box3().setFromObject(quilt),foldBox=new T.Box3().setFromObject(corner);
  assert.ok(foldBox.min.x>=quiltBox.min.x&&foldBox.max.x<=quiltBox.max.x+.005,'fold outside quilt');
  assert.ok(foldBox.min.z>=quiltBox.min.z&&foldBox.max.z<=quiltBox.max.z+.005,'fold outside quilt foot');
- assert.ok(foldBox.max.y>quiltBox.max.y-.10,'fold disappears into bed');
+ const foldPositions=corner.geometry.getAttribute('position') as T.BufferAttribute;
+ const duvetPositions=quilt.geometry.getAttribute('position') as T.BufferAttribute;
+ let peakLift=-Infinity;
+ for(let i=0;i<foldPositions.count/2;i++){
+  const u=foldPositions.getX(i)/2.62+.5,v=foldPositions.getZ(i)/2.67+.5;
+  const xi=Math.max(0,Math.min(44,Math.round(u*44)));
+  const zi=Math.max(0,Math.min(54,Math.round(v*54)));
+  const duvetY=duvetPositions.getY(zi*45+xi);
+  peakLift=Math.max(peakLift,foldPositions.getY(i)-duvetY);
+ }
+ assert.ok(peakLift>.055,'turned corner is not visibly folded above the local duvet');
  const pillows=root.getObjectsByProperty('name','sleeping-pillow') as T.Mesh[];
  assert.equal(pillows.length,2);
  for(const p of pillows)assert.ok(p.geometry.getAttribute('position').count>=1000,'pillow must have sufficient curvature faces');
