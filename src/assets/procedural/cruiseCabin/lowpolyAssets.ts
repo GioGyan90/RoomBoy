@@ -15,43 +15,128 @@ export const cruiseUvRegions={
 } as const;
 export type CruiseUvRegion=keyof typeof cruiseUvRegions;
 
-/** Room-oriented duvet: irregular 2.5D fabric surface with sewn hems and sagging folds.
- * The y upper surface is a deformable mesh, not a rigid extruded plate.
+/** High-density but controllable stylized cloth, with separate face loops for
+ * the underside and an uneven hem. The top has meaningful drape rather than
+ * simply adding subdivisions to a planar box.
  */
-export function createDuvetGeometry(width:number,length:number,thickness:number,region:CruiseUvRegion='ivoryCloth'){
- const nx=14,nz=18; const halfW=width/2,halfL=length/2;
+export type ClothOptions={
+ nx?:number;nz?:number;sideDrop?:number;footDrop?:number;
+ centerLift?:number;foldStrength?:number;seed?:number;
+};
+function drapeY(u:number,v:number,options:ClothOptions={}){
+ const edge=Math.pow(Math.abs(2*u-1),5);
+ const foot=Math.pow(Math.max(0,(v-.65)/.35),2);
+ const head=Math.pow(Math.max(0,(.14-v)/.14),2);
+ const middle=Math.max(0,1-Math.pow(2*u-1,2));
+ const undulate=(Math.sin(v*19+u*5.7+(options.seed??0))*.017
+   +Math.sin(v*31-u*9)*.010)*middle;
+ return (options.centerLift??.055)*Math.sin(Math.PI*u)*Math.sin(Math.PI*v)
+  - (options.sideDrop??.19)*edge
+  - (options.footDrop??.15)*foot*(.70+.30*edge)
+  - .032*head + undulate
+  + (options.foldStrength??.04)*Math.sin(v*Math.PI*3.5+u*2)*middle;
+}
+export function createDuvetGeometry(
+ width:number,length:number,thickness:number,
+ region:CruiseUvRegion='ivoryCloth',options:ClothOptions={}
+){
+ const nx=options.nx??32,nz=options.nz??40;
  const vertices:number[]=[],uv:number[]=[],indices:number[]=[];
- const uvBox=cruiseUvRegions[region];
- function surf(xi:number,zi:number,bottom=false){
-  const u=xi/nx,v=zi/nz;
+ const patch=cruiseUvRegions[region];
+ const add=(u:number,v:number,bottom:boolean)=>{
   const x=(u-.5)*width,z=(v-.5)*length;
-  const hem=Math.pow(Math.abs(u-.5)*2,6)*.055;
-  const fold=Math.sin(v*Math.PI*5+u*2.3)*.028*(.28+.72*Math.sin(Math.PI*u)**2);
-  const central=Math.sin(Math.PI*u)*Math.sin(Math.PI*v)*.052;
-  const edgeSag=-Math.pow(Math.abs(u-.5)*2,4)*.065;
-  const y=(bottom?-.11:0)+central+fold+edgeSag-hem;
+  const slope=drapeY(u,v,options);
+  const y=slope-(bottom?Math.max(.015,thickness):0);
   vertices.push(x,y,z);
-  uv.push(uvBox.u0+(uvBox.u1-uvBox.u0)*u,uvBox.v0+(uvBox.v1-uvBox.v0)*v);
- }
- for(let zi=0;zi<=nz;zi++)for(let xi=0;xi<=nx;xi++)surf(xi,zi);
+  uv.push(patch.u0+(patch.u1-patch.u0)*u,patch.v0+(patch.v1-patch.v0)*v);
+ };
+ for(const bottom of [false,true])for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++)add(i/nx,j/nz,bottom);
  const count=(nx+1)*(nz+1);
- for(let zi=0;zi<=nz;zi++)for(let xi=0;xi<=nx;xi++)surf(xi,zi,true);
- for(let zi=0;zi<nz;zi++)for(let xi=0;xi<nx;xi++){
-  const a=zi*(nx+1)+xi,b=a+1,c=a+nx+1,d=c+1;
-  indices.push(a,b,c,b,d,c, count+c,count+b,count+a,count+c,count+d,count+b);
+ for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){
+  const a=j*(nx+1)+i,b=a+1,c=a+nx+1,d=c+1;
+  indices.push(a,c,b,b,c,d);
+  indices.push(count+a,count+b,count+c,count+b,count+d,count+c);
  }
- const edge=(a:number,b:number)=>{indices.push(a,b,count+a,b,count+b,count+a)};
- for(let xi=0;xi<nx;xi++){
-  edge(xi,xi+1);
-  edge(nz*(nx+1)+xi+1,nz*(nx+1)+xi);
+ const stitch=(a:number,b:number)=>indices.push(a,b,count+a,b,count+b,count+a);
+ for(let i=0;i<nx;i++){
+  stitch(i+1,i);
+  stitch(nz*(nx+1)+i,nz*(nx+1)+i+1);
  }
- for(let zi=0;zi<nz;zi++){
-  edge((zi+1)*(nx+1),zi*(nx+1));
-  edge(zi*(nx+1)+nx,(zi+1)*(nx+1)+nx);
+ for(let j=0;j<nz;j++){
+  stitch(j*(nx+1),(j+1)*(nx+1));
+  stitch((j+1)*(nx+1)+nx,j*(nx+1)+nx);
  }
  const geometry=new T.BufferGeometry();
  geometry.setAttribute('position',new T.Float32BufferAttribute(vertices,3));
  geometry.setAttribute('uv',new T.Float32BufferAttribute(uv,2));
+ geometry.setIndex(indices);geometry.computeVertexNormals();
+ return geometry;
+}
+
+/** An overlapping, sewn-back turned corner at the right foot of the quilt.
+ * It shares the duvet's height function at the edges, avoiding floating flaps.
+ */
+export function createFoldedCornerGeometry(
+ quiltWidth:number,quiltLength:number,options:ClothOptions={}
+){
+ const n=12,positions:number[]=[],uvs:number[]=[],indices:number[]=[];
+ // Triangle: A & B along the foot-side edge, C raised inward.
+ const A:[number,number]=[.35,.32],B:[number,number]=[.485,.47],C:[number,number]=[.18,.46];
+ const atlas=cruiseUvRegions.ivoryCloth;
+ const ix=(row:number,k:number)=>row*(n+1)-row*(row-1)/2+k;
+ for(let row=0;row<=n;row++){
+  const t=row/n;
+  for(let k=0;k<=n-row;k++){
+   const s=k/n;
+   const u=A[0]*(1-t-s)+B[0]*t+C[0]*s+.5;
+   const v=A[1]*(1-t-s)+B[1]*t+C[1]*s+.5;
+   const edgeFactor=Math.max(0,1-Math.pow(1-3*Math.min(t,s,Math.max(0,1-t-s)),2));
+   const h=drapeY(u,v,options)+.006+.09*edgeFactor;
+   positions.push((u-.5)*quiltWidth,h,(v-.5)*quiltLength);
+   uvs.push(atlas.u0+u*(atlas.u1-atlas.u0),atlas.v0+v*(atlas.v1-atlas.v0));
+  }
+ }
+ for(let row=0;row<n;row++)for(let k=0;k<n-row;k++){
+  const p=ix(row,k),q=ix(row+1,k),r=ix(row,k+1);
+  indices.push(p,q,r);
+  if(k<n-row-1)indices.push(q,ix(row+1,k+1),r);
+ }
+ const geometry=new T.BufferGeometry();
+ geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+ geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));
+ geometry.setIndex(indices);geometry.computeVertexNormals();
+ return geometry;
+}
+
+/** Independent filled cloth pillow with sewn perimeter, soft crown, pinched
+ * corners and local UVs. The same grid resolution is used for top and bottom.
+ */
+export function createPillowGeometry(width:number,depth:number,height:number,variant=0){
+ const nx=16,nz=12,positions:number[]=[],uvs:number[]=[],indices:number[]=[];
+ const atlas=cruiseUvRegions.ivoryCloth;
+ for(const underside of [false,true])for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++){
+  const u=i/nx,v=j/nz,ax=Math.abs(2*u-1),az=Math.abs(2*v-1);
+  const corner=ax*ax*az*az;
+  const x=(u-.5)*width*(1-.15*corner),z=(v-.5)*depth*(1-.15*corner);
+  const inflate=Math.pow(Math.max(0,1-ax*ax),.75)*Math.pow(Math.max(0,1-az*az),.75);
+  const scrunch=.009*Math.sin((u*2.7+v*1.9+variant)*Math.PI*2)*inflate;
+  const y=underside?-.30*height+.022*inflate:
+   .42*height+.55*height*inflate-.10*height*corner+scrunch;
+  positions.push(x,y,z);
+  uvs.push(atlas.u0+u*(atlas.u1-atlas.u0),atlas.v0+v*(atlas.v1-atlas.v0));
+ }
+ const size=(nx+1)*(nz+1);
+ for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){
+  const p=j*(nx+1)+i,q=p+1,r=p+nx+1;
+  indices.push(p,r,q,q,r,r+1);
+  indices.push(size+p,size+q,size+r,size+q,size+r+1,size+r);
+ }
+ const rim=(a:number,b:number)=>indices.push(a,b,size+a,b,size+b,size+a);
+ for(let i=0;i<nx;i++){rim(i+1,i);rim(nz*(nx+1)+i,nz*(nx+1)+i+1);}
+ for(let j=0;j<nz;j++){rim(j*(nx+1),(j+1)*(nx+1));rim((j+1)*(nx+1)+nx,j*(nx+1)+nx);}
+ const geometry=new T.BufferGeometry();
+ geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+ geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));
  geometry.setIndex(indices);geometry.computeVertexNormals();
  return geometry;
 }
