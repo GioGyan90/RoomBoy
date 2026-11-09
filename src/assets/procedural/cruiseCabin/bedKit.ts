@@ -69,9 +69,9 @@ export function buildCruiseSleepingKit(bedZone:T.Group){
  cushion(mattress,'pillowtop-mattress',2.42,.26,3.43,-1.05,.65,-1.585,linen);
  const bedding=assembly(bedZone,'bed-kit-duvet-and-pillows');
  const sheet=assembly(bedding,'bedsheet-and-tucked-hem');
- const sheetOptions:ClothOptions={nx:34,nz:42,sideDrop:.038,footDrop:.065,centerLift:.022,foldStrength:.015,seed:.2};
- const bottomSheet=new T.Mesh(createDuvetGeometry(2.36,3.29,.025,'ivoryCloth',sheetOptions),prints.ivory);
- bottomSheet.name='bedsheet-top';bottomSheet.position.set(-1.05,.840,-1.585);
+ const sheetOptions:ClothOptions={nx:34,nz:42,sideDrop:.035,footDrop:.035,centerLift:.022,foldStrength:.015,seed:.2};
+ const bottomSheet=new T.Mesh(createDuvetGeometry(2.34,3.10,.021,'ivoryCloth',sheetOptions),prints.ivory);
+ bottomSheet.name='bedsheet-top';bottomSheet.position.set(-1.05,.828,-1.625);
  bottomSheet.castShadow=true;bottomSheet.receiveShadow=true;sheet.add(bottomSheet);
  const cover=assembly(bedding,'quilt-shell-and-turned-corner');
  const quiltOptions:ClothOptions={nx:44,nz:54,sideDrop:.105,footDrop:.09,centerLift:.082,foldStrength:.048,seed:.7};
@@ -85,7 +85,7 @@ export function buildCruiseSleepingKit(bedZone:T.Group){
  const throwGroup=assembly(bedding,'bed-runner-draped-hem');
  // Keep black embroidered throw inside the white duvet and bind its height to
  // the duvet's drape. Neither edge can dive through the underlying cloth.
- const runnerWidth=2.24,runnerLength=.64,runnerZ=-.23;
+ const runnerWidth=2.15,runnerLength=.60,runnerZ=-.25;
  const runner=new T.Mesh(
   createConformingRunnerGeometry(runnerWidth,runnerLength,quiltWidth,quiltLength,quiltZ,runnerZ,quiltOptions,38,28),
   prints.dark
