@@ -393,3 +393,19 @@ test('tub fill plumbing connects wall riser to bathtub edge and has no hovering 
  assert.ok(flange.intersectsBox(rim),'flange does not seat on bathtub rim');
  assert.ok(spout.max.z>rim.min.z,'fill pipe does not extend over tub');
 });
+
+test('wider sofa pillows remain clear of the armrests',()=>{
+ const root=new T.Group();furniture(root);root.updateMatrixWorld(true);
+ const pillows=root.getObjectsByProperty('name','sofa-pillow') as T.Mesh[];
+ const arms=root.getObjectsByProperty('name','sofa-arm') as T.Mesh[];
+ assert.equal(pillows.length,2);
+ assert.equal(arms.length,2);
+ for(const pillow of pillows){
+  const b=new T.Box3().setFromObject(pillow);
+  assert.ok(b.max.x-b.min.x>=.45,'sofa cushion should be visibly wider');
+  for(const arm of arms){
+   const a=new T.Box3().setFromObject(arm);
+   assert.ok(!b.intersectsBox(a),'widened sofa cushion intersects armrest');
+  }
+ }
+});
