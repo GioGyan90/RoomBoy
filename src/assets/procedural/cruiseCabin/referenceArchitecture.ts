@@ -35,7 +35,7 @@ export function referenceArchitecture(root:T.Group){
  windowPane(g,'side-window-brass-frame',2.56,2.14,.40,5.94,1.62,-1.55,palette.gold);
  windowPane(g,'side-window-black-gasket',2.46,2.035,.36,5.915,1.62,-1.55,marine);
  windowPane(g,'side-window-inner-brass-frame',2.56,2.14,.40,5.705,1.62,-1.55,palette.gold);
- windowPane(g,'side-window-sea',2.365,1.945,.31,5.83,1.62,-1.55,sea);
+ windowPane(g,'side-window-sea',2.365,1.92,.31,5.83,1.62,-1.55,sea);
  windowPane(g,'side-window-sky',2.32,.87,.24,5.836,2.14,-1.55,sky);
  // Painted horizon and distant sea streaks sit directly on the glazing plane.
  block(g,'window-horizon',[.009,.018,2.29],[5.844,1.705,-1.55],pale);
