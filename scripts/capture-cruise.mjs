@@ -18,7 +18,7 @@ try{
  const page=await browser.newPage({viewport:{width:1120,height:700},deviceScaleFactor:1});
  page.on('pageerror',e=>issues.push('pageerror: '+e.message));
  page.on('console',m=>{if(m.type()==='error')issues.push('console: '+m.text())});
- const stations=['overview','bed','bath','ocean','top','table','toilet','side','bed-left','bed-right','service-bar','balcony-door'];
+ const stations=['overview','bed','bath','ocean','top','table','toilet','side','bed-left','bed-right','service-bar','balcony-door','exterior-starboard','exterior-window-front','exterior-window-oblique','exterior-window-low','exterior-door-front','exterior-door-jamb','exterior-hull-top','exterior-entry'];
  // Boot WebGL once. Repeated full-page reloads made SwiftShader capture flaky and slow.
  await page.goto(base+'?room=cruise&view=room&capture=1&station=overview',{waitUntil:'networkidle',timeout:60000});
  await page.waitForTimeout(1000);
