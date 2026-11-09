@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {block,cylinder,palette} from './architecture';
+import {createCruiseMarblePrint} from './surfacePatterns';
 const mirrorGlass=new T.MeshStandardMaterial({color:0xb5b2a9,metalness:.72,roughness:.19});
 const bathWater=new T.MeshStandardMaterial({color:0xc8e3e9,roughness:.17,metalness:.06,transparent:true,opacity:.30});
 
@@ -13,18 +14,11 @@ function ellipseRing(outerX:number,outerZ:number,innerX:number,innerZ:number,dep
  geo.rotateX(-Math.PI/2);
  return geo;
 }
-function vein(g:T.Group,name:string,positions:[number,number][],z:number){
- const mesh=new T.Line(new T.BufferGeometry().setFromPoints(positions.map(([x,y])=>new T.Vector3(x,y,z))),new T.LineBasicMaterial({color:0x986a40,transparent:true,opacity:.75}));
- mesh.name=name;g.add(mesh);
-}
+const marbleVeinMaterial=new T.MeshStandardMaterial({map:createCruiseMarblePrint(),roughness:.4,color:0xffffff});
 export function serviceRooms(root:T.Group){
  const g=new T.Group();g.name='cruise-marble-bathroom';root.add(g);
- block(g,'bath-marble-floor',[3.15,.035,3.02],[-4.17,.025,2.27],palette.marble);
- for(const x of [-5.60,-2.74])block(g,'bath-floor-brass-inlay',[.017,.006,2.90],[x,.047,2.27],palette.gold);
- block(g,'bath-back-marble-panel',[3.08,1.96,.035],[-4.16,1.20,.805],palette.marble);
- for(const x of [-5.64,-2.69])block(g,'bath-panel-brass-edge',[.035,1.97,.046],[x,1.20,.838],palette.gold);
- vein(g,'bath-gold-marble-vein',[[-5.45,1.58],[-5.10,1.38],[-4.78,1.60],[-4.48,1.40],[-4.08,1.85]],.826);
- vein(g,'bath-gold-marble-vein',[[-5.52,2.06],[-5.11,1.93],[-4.84,2.16],[-4.61,2.07]],.828);
+ block(g,'bath-marble-floor',[3.15,.035,3.02],[-4.17,.025,2.27],marbleVeinMaterial);
+ block(g,'bath-back-marble-panel',[3.08,1.96,.035],[-4.16,1.20,.805],marbleVeinMaterial);
  // Freestanding rounded soaking tub with genuinely open interior.
  block(g,'tub-plinth',[1.46,.24,2.20],[-4.8,.22,2.57],palette.ivory);
  const tub=new T.Mesh(ellipseRing(.70,1.02,.54,.81,.43),palette.ivory);
