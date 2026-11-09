@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import {createDuvetGeometry,createRoundedFrameGeometry,cruiseUvRegions} from '../src/assets/procedural/cruiseCabin/lowpolyAssets';
 import {furniture} from '../src/assets/procedural/cruiseCabin/furniture';
+import {architecture} from '../src/assets/procedural/cruiseCabin/architecture';
+import {serviceRooms} from '../src/assets/procedural/cruiseCabin/serviceRooms';
+import {referenceFinish} from '../src/assets/procedural/cruiseCabin/referenceFinish';
+import {createCruiseFabricAtlas,createCruiseRugPrint,createCruiseFloorPrint,createCruiseMarblePrint} from '../src/assets/procedural/cruiseCabin/surfacePatterns';
 import {referenceArchitecture} from '../src/assets/procedural/cruiseCabin/referenceArchitecture';
 
 test('draped duvet has finite UVs, visible folds, low-poly vertex count and thickness',()=>{
@@ -40,4 +44,27 @@ test('scene uses UV-ready cloth shells instead of solid rectangular quilt pieces
   assert.ok(mesh.geometry.getAttribute('uv'));
  }
  assert.equal(Object.keys(cruiseUvRegions).length,6);
+});
+
+test('embroidery, carpet gold linework and marble veins are ink on surfaces, not raised objects',()=>{
+ const root=new T.Group();architecture(root);furniture(root);serviceRooms(root);referenceFinish(root);
+ const absent=['runner-gold-stitch','quilt-stitched-line','bed-rug-border','bed-rug-inner',
+  'carpet-gold-inlay','carpet-center','rug-gold-corner-a','rug-gold-corner-b',
+  'marble-floor-gold-border','bath-floor-brass-inlay','bath-panel-brass-edge','bath-gold-marble-vein'];
+ for(const name of absent)assert.equal(root.getObjectByName(name),undefined,name+' must not be a geometry decoration');
+ for(const name of ['quilt-ivory','quilt-burgundy-runner','bed-rug','lounge-carpet',
+  'cabin-floor','bath-marble-floor','bath-back-marble-panel']){
+  const mesh=root.getObjectByName(name) as T.Mesh;
+  assert.ok(mesh,name+' mesh missing');
+  const material=mesh.material as T.MeshStandardMaterial;
+  assert.ok(material.map instanceof T.DataTexture,name+' needs UV/pigment texture');
+ }
+});
+test('print atlas maintains flat texture pixel data and 6 UV regions',()=>{
+ for(const map of [createCruiseFabricAtlas(),createCruiseRugPrint(),createCruiseFloorPrint(),createCruiseMarblePrint()]){
+  assert.ok(map instanceof T.DataTexture);
+  assert.equal(map.image.width,256);
+  assert.equal(map.image.height,256);
+  assert.equal(map.image.data.length,256*256*4);
+ }
 });
