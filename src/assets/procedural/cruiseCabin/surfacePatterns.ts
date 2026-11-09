@@ -92,3 +92,16 @@ export function createCruiseFabricMaterials(){
   dark:new T.MeshStandardMaterial({map,color:0xffffff,roughness:.92,side:T.DoubleSide}),
  };
 }
+
+/** Veins belong to the marble pigment: no loose Line meshes around the basin. */
+export function createCruiseMarblePrint(){
+ const p=makePixels(256,256,colors.marble);
+ for(const pts of [
+  [[12,38],[51,63],[82,52],[119,90],[157,69],[231,121]],
+  [[9,200],[49,179],[78,192],[133,164],[170,184],[245,132]],
+  [[21,113],[44,127],[61,115],[92,149],[139,141],[183,166]]
+ ]){
+  for(let i=1;i<pts.length;i++)stroke(p,256,256,pts[i-1][0],pts[i-1][1],pts[i][0],pts[i][1],colors.brass,1);
+ }
+ return texture(p,256,256);
+}
