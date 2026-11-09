@@ -87,3 +87,28 @@ export function createRoundedFrameGeometry(width:number,height:number,radius:num
  geometry.computeVertexNormals();
  return geometry;
 }
+
+/** Boolean-style wall infill: rectangular construction opening MINUS rounded
+ * portal. The four resulting corner wedges have real wall thickness, closing
+ * visible triangular gaps around rounded window/door assemblies.
+ * All measurements use local XY (window width/height); extrude along +Z.
+ */
+export function createWallApertureCornerGeometry(rectW:number,rectH:number,cutW:number,cutH:number,r:number,depth:number){
+ if(cutW>rectW||cutH>rectH||r<=0||r>=Math.min(cutW,cutH)/2){
+  throw new Error('Invalid rounded aperture dimensions');
+ }
+ const outer=new T.Shape(),w=rectW/2,h=rectH/2;
+ outer.moveTo(-w,-h);outer.lineTo(w,-h);outer.lineTo(w,h);outer.lineTo(-w,h);outer.closePath();
+ const hole=new T.Path(),x=-cutW/2,y=-cutH/2;
+ hole.moveTo(x+r,y);hole.lineTo(x+cutW-r,y);
+ hole.quadraticCurveTo(x+cutW,y,x+cutW,y+r);
+ hole.lineTo(x+cutW,y+cutH-r);
+ hole.quadraticCurveTo(x+cutW,y+cutH,x+cutW-r,y+cutH);
+ hole.lineTo(x+r,y+cutH);
+ hole.quadraticCurveTo(x,y+cutH,x,y+cutH-r);
+ hole.lineTo(x,y+r);
+ hole.quadraticCurveTo(x,y,x+r,y);
+ hole.closePath();
+ outer.holes.push(hole);
+ return new T.ExtrudeGeometry(outer,{depth,steps:1,bevelEnabled:false,curveSegments:8});
+}
