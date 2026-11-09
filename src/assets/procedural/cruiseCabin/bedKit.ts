@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {block,cylinder,palette} from './architecture';
-import {createDuvetGeometry,createFoldedCornerGeometry,createPillowGeometry,type ClothOptions} from './lowpolyAssets';
+import {createDuvetGeometry,createConformingRunnerGeometry,createFoldedCornerGeometry,createPillowGeometry,type ClothOptions} from './lowpolyAssets';
 import {createCruiseFabricMaterials,createCruiseRugPrint,createCruiseMarblePrint} from './surfacePatterns';
 
 /**
@@ -69,12 +69,12 @@ export function buildCruiseSleepingKit(bedZone:T.Group){
  cushion(mattress,'pillowtop-mattress',2.42,.26,3.43,-1.05,.65,-1.585,linen);
  const bedding=assembly(bedZone,'bed-kit-duvet-and-pillows');
  const sheet=assembly(bedding,'bedsheet-and-tucked-hem');
- const sheetOptions:ClothOptions={nx:34,nz:42,sideDrop:.12,footDrop:.12,centerLift:.022,foldStrength:.015,seed:.2};
- const bottomSheet=new T.Mesh(createDuvetGeometry(2.49,3.34,.025,'ivoryCloth',sheetOptions),prints.ivory);
- bottomSheet.name='bedsheet-top';bottomSheet.position.set(-1.05,.813,-1.585);
+ const sheetOptions:ClothOptions={nx:34,nz:42,sideDrop:.038,footDrop:.065,centerLift:.022,foldStrength:.015,seed:.2};
+ const bottomSheet=new T.Mesh(createDuvetGeometry(2.36,3.29,.025,'ivoryCloth',sheetOptions),prints.ivory);
+ bottomSheet.name='bedsheet-top';bottomSheet.position.set(-1.05,.840,-1.585);
  bottomSheet.castShadow=true;bottomSheet.receiveShadow=true;sheet.add(bottomSheet);
  const cover=assembly(bedding,'quilt-shell-and-turned-corner');
- const quiltOptions:ClothOptions={nx:44,nz:54,sideDrop:.27,footDrop:.305,centerLift:.082,foldStrength:.048,seed:.7};
+ const quiltOptions:ClothOptions={nx:44,nz:54,sideDrop:.14,footDrop:.16,centerLift:.082,foldStrength:.048,seed:.7};
  const quiltWidth=2.62,quiltLength=2.67,quiltZ=-1.18,quiltY=.885;
  const quilt=new T.Mesh(createDuvetGeometry(quiltWidth,quiltLength,.085,'ivoryCloth',quiltOptions),prints.ivory);
  quilt.name='quilt-ivory';quilt.position.set(-1.05,quiltY,quiltZ);
@@ -83,9 +83,14 @@ export function buildCruiseSleepingKit(bedZone:T.Group){
  corner.name='quilt-folded-corner';corner.position.copy(quilt.position);
  corner.castShadow=true;corner.receiveShadow=true;cover.add(corner);
  const throwGroup=assembly(bedding,'bed-runner-draped-hem');
- const throwOptions:ClothOptions={nx:38,nz:28,sideDrop:.23,footDrop:.26,centerLift:.035,foldStrength:.025,seed:1.5};
- const runner=new T.Mesh(createDuvetGeometry(2.65,.80,.032,'midnightCloth',throwOptions),prints.dark);
- runner.name='quilt-burgundy-runner';runner.position.set(-1.05,.961,-.035);
+ // Keep black embroidered throw inside the white duvet and bind its height to
+ // the duvet's drape. Neither edge can dive through the underlying cloth.
+ const runnerWidth=2.24,runnerLength=.64,runnerZ=-.125;
+ const runner=new T.Mesh(
+  createConformingRunnerGeometry(runnerWidth,runnerLength,quiltWidth,quiltLength,quiltZ,runnerZ,quiltOptions,38,28),
+  prints.dark
+ );
+ runner.name='quilt-burgundy-runner';runner.position.set(-1.05,quiltY,runnerZ);
  runner.castShadow=true;runner.receiveShadow=true;throwGroup.add(runner);
  const pillows=assembly(bedding,'bed-pillows-sculpted-pair');
  for(const [index,x] of [-1.69,-.41].entries()){
