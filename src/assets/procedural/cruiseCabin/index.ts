@@ -20,7 +20,7 @@ export function createCruiseCabin(){
  const sun=new T.DirectionalLight(0xffe7bd,1.75);sun.position.set(-3,9,6);
  const ambient=new T.AmbientLight(0xffffff,.24);
  const bedside=new T.PointLight(0xffce91,.48,4.3,2);
- bedside.position.set(-1.05,2.20,-2.90);
+ bedside.position.set(-.33,2.20,-2.90);
  const bathroom=new T.PointLight(0xffe3b1,.37,3.4,2);
  bathroom.position.set(-3.50,2.18,1.82);
  root.add(hemi,sun,ambient,bedside,bathroom);
