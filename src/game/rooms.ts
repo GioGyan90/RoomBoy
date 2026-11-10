@@ -11,6 +11,9 @@ import { createRoomNavigation } from "../assets/procedural/roomV4/colliders";
 import { createRoomEffects } from "../assets/procedural/roomV4/effects";
 import { GAME_LAYOUT, roomFrameScale } from "../assets/procedural/roomV4/definitions";
 import { applyRoomOverrides } from "../assets/registry";
+import { createCueWorkshop, workshopLayout } from "../assets/procedural/cueWorkshop";
+import { workshopVariants, type WorkshopVariant } from "../assets/procedural/cueWorkshop/variants";
+import type { Seat } from "./types";
 
 type Spot = { x: number; y?: number; z: number; rot: number };
 type SeatedSpot = Spot & { bodyY: number };
@@ -19,9 +22,21 @@ type SeatLayout = { stand: Spot; sit: SeatedSpot };
 export interface RoomLayout {
   half: number;
   spawn: Spot;
+  availableSeats?: readonly Seat[];
   desk: SeatLayout;
   bed: SeatLayout & { lie: SeatedSpot };
   toilet: SeatLayout;
+}
+
+function workshopProfile(variant: WorkshopVariant) {
+  return {
+    label: workshopVariants[variant].label,
+    layout: workshopLayout,
+    defaultView: 'room' as const,
+    camera: { theta: .64, phi: .97, target: [.20, 1.02, -.17], gameRadius: 5.6, roomRadius: 4.35, orthographic: true },
+    frameScale: (aspect: number) => Math.max(1, 1.38 / aspect),
+    create: () => createCueWorkshop(variant),
+  };
 }
 
 export const rooms = {
@@ -64,6 +79,9 @@ export const rooms = {
     frameScale: (aspect: number) => Math.max(1, 1.45 / aspect),
     create: createCruiseCabin,
   },
+  'workshop-citrus': workshopProfile('citrus'),
+  'workshop-burgundy': workshopProfile('burgundy'),
+  'workshop-blackgold': workshopProfile('blackgold'),
 } as const;
 
 export type RoomId = keyof typeof rooms;

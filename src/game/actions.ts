@@ -16,6 +16,7 @@ export function createActions(
   const { charRoot } = character;
   const { st, HIP } = animation;
   const { desk, bed, toilet } = layout;
+  const availableSeats = layout.availableSeats ?? ['chair', 'bed', 'toilet'];
   const seatLayouts = {
     chair: { ...desk, posture: 'sitChair' },
     bed: { ...bed, posture: 'sitBed' },
@@ -246,6 +247,7 @@ export function createActions(
   }
 
   function sitAt(seat: Seat) {
+    if (!availableSeats.includes(seat)) return;
     runAction(ACTIONS.find(action => action.id === seatLayouts[seat].posture)!);
   }
 
@@ -278,7 +280,13 @@ export function createActions(
   }
 
   return {
-    ACTIONS: hasComputer ? ACTIONS : ACTIONS.filter(action => action.id !== 'computer'),
+    ACTIONS: ACTIONS.filter(action => {
+      if (action.id === 'computer') return hasComputer && availableSeats.includes('chair');
+      if (action.id === 'sitChair') return availableSeats.includes('chair');
+      if (action.id === 'sitBed' || action.id === 'nap') return availableSeats.includes('bed');
+      if (action.id === 'sitToilet') return availableSeats.includes('toilet');
+      return true;
+    }),
     runAction, sitAt, walkTo, updateRunner, updateMarker, cancel: finish,
   };
 }

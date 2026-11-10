@@ -6,6 +6,8 @@
 
 默认进入 Room v4。新增[船舱卧室](https://giogyan90.github.io/RoomBoy/?room=cruise)，采用酒店套房的交互基础与独立程序化船体、舷窗、甲板装饰；此房间仍在细化中。右上角「选择房间」可切换到[蓝灰公寓](https://giogyan90.github.io/RoomBoy/?room=apartment)、[米绿 Loft](https://giogyan90.github.io/RoomBoy/?room=loft)或[枣红酒店套房](https://giogyan90.github.io/RoomBoy/?room=hotel)。这些房间支持 Haru 行走、坐下和小睡。米绿 Loft 的左侧楼梯通往夹层卧室，底层设有书桌、厨房、客厅、浴室和窗边运动区。可直接打开[公寓剖面](https://giogyan90.github.io/RoomBoy/?room=apartment&view=room)、[Loft 剖面](https://giogyan90.github.io/RoomBoy/?room=loft&view=room)或[酒店剖面](https://giogyan90.github.io/RoomBoy/?room=hotel&view=room)。
 
+新增三个独立的球杆维修工作台空间：[橘黄绿基础款](https://giogyan90.github.io/RoomBoy/?room=workshop-citrus)、[酒红白进阶款](https://giogyan90.github.io/RoomBoy/?room=workshop-burgundy)、[黑金高级款](https://giogyan90.github.io/RoomBoy/?room=workshop-blackgold)。默认以正交轴测镜头观察模型，右键拖动或手机单指滑动旋转，滚轮或双指捏合缩放；点击「工作台」恢复初始镜头。右上角仍可切换所有房间，点击「行走」可查看人物尺度与工作台碰撞。三款均为程序化低面模型，复杂度依次递增；最高款保持已确认低面概念图的设备与收纳规模。详见 [球杆工坊建模与验证](docs/CUE_WORKSHOPS.md)。
+
 ## 本地运行（Windows / macOS / Linux）
 
 安装 Node.js 22 LTS，在项目文件夹运行：
@@ -40,6 +42,7 @@ npm run preview
 | `src/assets/procedural/blueApartment/` | 蓝灰公寓的剖面结构、家具、环境效果和动作锚点 |
 | `src/assets/procedural/gardenLoft/` | 米绿 Loft 的两层剖面、分区家具、照明和楼梯寻路 |
 | `src/assets/procedural/hotelSuite/` | 酒店套房的剖面、家具、黑纹大理石、布艺和交互 |
+| `src/assets/procedural/cueWorkshop/` | 三档球杆维修工作台的分组低面模型、独立空间与相机 |
 | `src/assets/procedural/character.ts` / `characterSurface.ts` | 结构研究截面、贴身服装裁切与骨骼蒙皮 |
 | `src/assets/procedural/materials.ts` / `textures.ts` | 材质与画布纹理 |
 | `src/assets/registry.ts` | 家具替换入口与默认回退 |

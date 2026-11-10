@@ -1,0 +1,48 @@
+name: Cue workshop visual review
+on:
+  push:
+    branches: [main, feat/cue-workshop-spaces]
+    paths:
+      - 'src/assets/procedural/cueWorkshop/**'
+      - 'src/game/rooms.ts'
+      - 'src/game/actions.ts'
+      - 'src/ui/review.ts'
+      - 'src/input/controls.ts'
+      - 'src/core/**'
+      - 'src/styles.css'
+      - 'tests/cue-workshop.test.ts'
+      - 'scripts/capture-workshops.mjs'
+      - '.github/workflows/workshop-visual-review.yml'
+      - 'package*.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cue-workshop-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Review three workbenches from six cameras and on mobile
+        run: node scripts/capture-workshops.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cue-workshop-review
+          path: artifacts/workshop-review/
+          retention-days: 7
+          if-no-files-found: warn

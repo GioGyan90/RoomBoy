@@ -4,8 +4,10 @@ import type {createCameraController} from '../core/camera';
 import type {Character} from '../assets/procedural/character';
 import {addLighting} from '../core/lighting';
 import {rooms,type RoomId,type RoomLayout} from '../game/rooms';
+import {workshopReviewStations} from '../assets/procedural/cueWorkshop/variants';
 export function createReview(scene:T.Scene,room:T.Group,character:Character,controller:ReturnType<typeof createCameraController>,actions:Actions,roomBackground:T.Color,roomTools:HTMLElement,roomId:RoomId){
  const profile=rooms[roomId];
+ const workshop=roomId.startsWith('workshop-');
  // Review-only camera stations. Never insert camera meshes into the playable scene.
  const reviewStations=[
   {id:'overview',label:'全景',theta:-.398,phi:1.062,zoom:1,target:[0,1.3,0]},
@@ -52,11 +54,18 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   {id:'exterior-hull-top',label:'外壳上缘衔接',theta:1.50,phi:.67,zoom:.56,target:[5.81,2.69,-.50]},
   {id:'exterior-entry',label:'入口门外侧',theta:-1.57,phi:1.22,zoom:.43,target:[-5.75,1.42,-2.23]},
  ] as const;
+ const stations=workshop?workshopReviewStations:reviewStations;
  let reviewStation=new URLSearchParams(location.search).get('station')??'overview';
- const query=new URLSearchParams(location.search);const requestedView=query.get('view')??'game';
+ const query=new URLSearchParams(location.search);const requestedView=query.get('view')??('defaultView' in profile?profile.defaultView:'game');
  let view=['room','character','face'].includes(requestedView)?requestedView:'game';let angle=query.get('angle')??'front';
  const ui=document.createElement('div');ui.id='review-controls';ui.innerHTML='<button data-view="game">游玩</button><button data-view="room">房间</button><button data-view="character">人物</button><button data-view="face">脸部</button><button id="compare-toggle">概念图对照</button>';
  const structureLink=document.createElement('a');structureLink.href='?view=structure';structureLink.textContent='结构研究 ↗';ui.append(structureLink);document.body.append(ui);
+ if(workshop){
+  ui.querySelector<HTMLButtonElement>('[data-view="room"]')!.textContent='工作台';
+  ui.querySelector<HTMLButtonElement>('[data-view="game"]')!.textContent='行走';
+  ui.querySelectorAll<HTMLButtonElement>('[data-view="character"],[data-view="face"]').forEach(button=>button.hidden=true);
+  structureLink.hidden=true;
+ }
  const selector=document.createElement('select');selector.setAttribute('aria-label','选择房间');
  for(const [id,room] of Object.entries(rooms))selector.add(new Option(room.label,id,id===roomId,id===roomId));
  selector.addEventListener('change',()=>{
@@ -68,12 +77,12 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
  roomTools.prepend(selector);
  // QA stations are internal DOM hooks for automated screenshots only.
  // They must NEVER display names, badges or buttons in the player interface.
- if(roomId==='cruise' && query.get('capture')==='1'){
+ if((roomId==='cruise'||workshop) && query.get('capture')==='1'){
   const toolbar=document.createElement('div');
-  toolbar.id='cruise-camera-review';
+  toolbar.id=workshop?'workshop-camera-review':'cruise-camera-review';
   toolbar.hidden=true;
   toolbar.style.setProperty('display','none','important');
-  for(const station of reviewStations){
+  for(const station of stations){
    const button=document.createElement('button');
    button.type='button';
    button.dataset.station=station.id;
@@ -92,11 +101,11 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
  function displayReference(){const src=references.get(referenceKey());if(src){image.src=src;image.hidden=false;}else{image.removeAttribute('src');image.hidden=true;}}
  picker.addEventListener('change',()=>{const file=picker.files?.[0];if(!file)return;const key=referenceKey(),old=references.get(key);if(old)URL.revokeObjectURL(old);references.set(key,URL.createObjectURL(file));displayReference();});
  // Dedicated mobile camera joystick: works independently of canvas pointer events.
- if(roomId==='cruise'){
+ if(roomId==='cruise'||workshop){
   const joystick=document.createElement('div');
   joystick.id='camera-joystick';
   joystick.innerHTML='<div class="camera-joystick-knob"></div><span>旋转视角</span>';
-  joystick.setAttribute('aria-label','拖动调整船舱视角');
+  joystick.setAttribute('aria-label',workshop?'拖动调整工作台视角':'拖动调整船舱视角');
   document.body.append(joystick);
   const knob=joystick.querySelector<HTMLElement>('.camera-joystick-knob')!;
   let pointer:number|null=null,originX=0,originY=0;
@@ -122,7 +131,7 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   controller.usePerspective(portrait);
   const framing=profile.camera;
   character.charRoot.position.set(portrait?0:spawn.x,portrait?0:spawn.y??0,portrait?0:spawn.z);character.charRoot.rotation.y=portrait?0:spawn.rot;
-  const station=roomId==='cruise'&&view==='room'&&query.get('capture')==='1'?reviewStations.find(s=>s.id===reviewStation):undefined;
+  const station=(roomId==='cruise'||workshop)&&view==='room'&&query.get('capture')==='1'?stations.find(s=>s.id===reviewStation):undefined;
   const state=portrait
     ? {theta:angle==='side'?Math.PI/2:angle==='back'?Math.PI:0,phi:close?1.46:1.52,radius:close?.49:2.72,target:new T.Vector3(0,close?1.65:.91,0)}
     : {theta:station?.theta??framing.theta,phi:station?.phi??framing.phi,radius:(view==='room'?framing.roomRadius:framing.gameRadius)*profile.frameScale(innerWidth/innerHeight)*(station?.zoom??1),target:new T.Vector3(...(station?.target??framing.target))};
@@ -133,6 +142,10 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
   displayReference();
   ui.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
   document.querySelector<HTMLElement>('#hint')!.style.display=(portrait||query.get('capture')==='1')?'none':'';
+  if(workshop){
+   document.querySelector<HTMLElement>('#hud')!.hidden=view!=='game'||query.get('capture')==='1';
+   document.querySelector<HTMLElement>('#hint')!.innerHTML='<span><b>右键拖动 / 单指滑动</b> · 旋转</span><span><b>滚轮 / 双指捏合</b> · 缩放</span><span><b>点击工作台按钮</b> · 重置视角</span>';
+  }
   if(query.get('capture')==='1'){ui.hidden=true;document.querySelector<HTMLElement>('#hud')!.hidden=true;document.querySelector<HTMLElement>('#hint')!.hidden=true;}
  }
  ui.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(b=>b.addEventListener('click',()=>apply(b.dataset.view!)));
