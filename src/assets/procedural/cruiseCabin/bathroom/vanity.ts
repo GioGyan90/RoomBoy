@@ -7,6 +7,12 @@ export function buildBathVanity(vanityZone:T.Group){
  const sink=new T.Group();sink.name='vanity-recessed-sink-assembly';vanityZone.add(sink);
  block(vanityZone,'vanity-cabinet',[.72,.13,.59],[-3.09,.36,1.24],palette.wood);
  for(const x of [-3.40,-2.78])block(vanityZone,'vanity-support',[.06,.62,.58],[x,.53,1.24],palette.wood);
+ // Open walnut shelf has a true void rather than a solid rectangular cabinet.
+ const storage=new T.Group();storage.name='vanity-open-storage';vanityZone.add(storage);
+ block(storage,'vanity-bottom-shelf',[.61,.050,.54],[-3.09,.204,1.24],palette.wood);
+ block(storage,'vanity-rear-panel',[.61,.62,.025],[-3.09,.51,.965],palette.wood);
+ for(const z of [.965,1.50])block(storage,'vanity-shelf-brass-foot',[.61,.019,.016],[-3.09,.170,z],palette.gold);
+
  const marble=palette.marble;
  block(sink,'vanity-marble-left',[.145,.07,.66],[-3.4275,.88,1.24],marble);
  block(sink,'vanity-marble-right',[.145,.07,.66],[-2.7525,.88,1.24],marble);
@@ -43,6 +49,14 @@ export function buildBathVanity(vanityZone:T.Group){
   cylinder(vanityZone,'vanity-wall-light',.07,.21,[x,1.83,.92],palette.gold);
   cylinder(vanityZone,'vanity-light-globe',.11,.14,[x,1.65,.92],palette.ivory);
  }
- for(const y of [.25,.35])block(vanityZone,'vanity-folded-towel',[.49,.065,.30],[-3.09,y,1.25],palette.ivory);
+ // Folded towels sit on the open shelf; their edges are kept inside the supports.
+ for(const [i,y] of [.27,.339].entries()){
+  const towel=block(storage,'vanity-folded-towel',[.44,.064,.29],[-3.09,y,1.24],palette.ivory);
+  towel.rotation.y=i===0?.025:-.025;
+ }
+ // Two small, real mixer dials sit on the rear countertop, outside the basin cut.
+ for(const x of [-3.28,-2.90]){
+  cylinder(sink,'vanity-faucet-control',.026,.045,[x,.984,.97],palette.gold);
+ }
 
 }
