@@ -61,3 +61,43 @@ test('round mirror is nested against the marble wall, not floating in bathroom',
  assert.ok(back.min.z<panel.max.z+.05,'mirror backing is detached from wall');
  assert.ok(glass.min.z>back.min.z,'glass must be in front of backing');
 });
+
+test('pocket bathroom door reads as wood joinery and still clears open passage',()=>{
+ const root=new T.Group();architecture(root);root.updateMatrixWorld(true);
+ const door=root.getObjectByName('bath-sliding-glass') as T.Mesh;
+ const recess=root.getObjectByName('bath-pocket-door-recess') as T.Mesh;
+ const track=bounds(root,'bath-door-pocket-track');
+ assert.ok(door&&recess,'wooden pocket door leaf and inset must exist');
+ assert.equal((door.material as T.MeshStandardMaterial).transparent,false,'door should not be floating glass');
+ assert.ok(bounds(root,'bath-sliding-glass').intersectsBox(track),'leaf must engage slide track');
+ const leaf=bounds(root,'bath-sliding-glass'),inset=bounds(root,'bath-pocket-door-recess');
+ assert.ok(inset.min.z>leaf.min.z&&inset.max.z<leaf.max.z,'door inlay must remain within panel width');
+ assert.ok(leaf.max.z<2.1,'parked leaf may not block bathroom passage');
+});
+test('gold handheld shower and flexible hose belong to wall-mounted plumbing',()=>{
+ const root=new T.Group();serviceRooms(root);root.updateMatrixWorld(true);
+ const mount=root.getObjectByName('wall-fixed-shower-mount')!;
+ const hand=mount.getObjectByName('shower-handheld-kit')!;
+ assert.ok(hand);
+ const hose=hand.getObjectByName('shower-flexible-hose') as T.Mesh;
+ assert.ok(hose.geometry instanceof T.TubeGeometry,'hose should follow a real curve');
+ const handle=bounds(root,'shower-handset-grip'),holder=bounds(root,'shower-handset-holder');
+ assert.ok(handle.intersectsBox(holder),'handset handle must rest in holder');
+ assert.ok(bounds(root,'shower-thermostat-bar').intersectsBox(bounds(root,'shower-gold-riser')),
+ 'thermostat must physically connect to shower riser');
+});
+test('vanity open shelf supports towels and bathroom has a flush floor drain',()=>{
+ const root=new T.Group();serviceRooms(root);root.updateMatrixWorld(true);
+ const storage=root.getObjectByName('vanity-open-storage')!;
+ assert.ok(storage);
+ const shelf=bounds(root,'vanity-bottom-shelf');
+ const towels=root.getObjectsByProperty('name','vanity-folded-towel');
+ assert.equal(towels.length,2);
+ for(const towel of towels)assert.ok(new T.Box3().setFromObject(towel).min.y>=shelf.max.y-.01,
+ 'towel sinks into wooden shelf');
+ const grating=root.getObjectByName('bathroom-floor-drain')!;
+ assert.equal(grating.getObjectsByProperty('name','bath-floor-drain-slat').length,4);
+ const floor=bounds(root,'bath-marble-floor'),recess=bounds(root,'bath-floor-drain-recess');
+ assert.ok(recess.min.y>=floor.max.y-.005&&recess.max.y<=floor.max.y+.012,
+ 'floor drain should be inset at floor level, not floating');
+});
