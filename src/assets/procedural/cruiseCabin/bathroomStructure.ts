@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {block,palette} from './architecture';
+import {bathMaterials} from './bathroom/materials';
 
 /** The bathroom shell is an independent architectural asset.
  * Coordinates preserve the existing walkable doorway at x=-2.5, z=2.2..3.5.
@@ -9,7 +10,7 @@ import {block,palette} from './architecture';
 export function bathroomStructure(root:T.Group){
  const shell=new T.Group();shell.name='cruise-bathroom-shell';root.add(shell);
  const walls=new T.Group();walls.name='bathroom-partitions';shell.add(walls);
- block(walls,'bath-rear-wall',[3.32,2.38,.13],[-4.16,1.19,.66],palette.marble);
+ block(walls,'bath-rear-wall',[3.32,2.38,.13],[-4.16,1.19,.66],bathMaterials.marble);
  // Cutaway partition: a solid lower section, not a random freestanding tall wall.
  block(walls,'bath-divider',[.13,1.12,1.53],[-2.5,.56,1.415],palette.shell);
  block(walls,'bath-end-return',[.13,1.12,.37],[-2.5,.56,3.715],palette.shell);
@@ -28,11 +29,20 @@ export function bathroomStructure(root:T.Group){
  // Door leaf is parked open along the short partition (sliding-door logic).
  // It does NOT occupy the passage or swing through the adjacent toilet.
  const panel=new T.Group();panel.name='bath-door-open-panel';doorway.add(panel);
- block(panel,'bath-sliding-glass',[.045,2.25,1.11],[-2.405,1.1925,1.40],new T.MeshStandardMaterial({
-  color:0xc5c7bf,roughness:.39,metalness:.18,transparent:true,opacity:.33,depthWrite:false,side:T.DoubleSide
- }));
+ // Retain the stable object name for navigation and QA, but give the cabin
+ // its concept-art walnut pocket door instead of a floating glass partition.
+ block(panel,'bath-sliding-glass',[.060,2.25,1.11],[-2.405,1.1925,1.40],palette.wood);
+ const face=new T.Group();face.name='bath-door-wood-inlay';panel.add(face);
+ // Real recessed panel silhouette: four rails surround a darker inset rather
+ // than placing a bright solid-gold slab across the face.
+ const inset=new T.MeshStandardMaterial({color:0x4b3029,roughness:.75});
+ block(face,'bath-pocket-door-recess',[.010,1.89,.90],[-2.366,1.20,1.40],inset);
+ for(const z of [.948,1.852])block(face,'bath-pocket-door-stile',[.021,1.96,.027],[-2.359,1.20,z],palette.wood);
+ for(const y of [.225,2.17])block(face,'bath-pocket-door-rail',[.021,.030,.93],[-2.359,y,1.40],palette.wood);
+ // The handle is attached to the outer face of the moving leaf.
+
  for(const z of [.84,1.96])block(panel,'bath-sliding-edge',[.07,2.25,.035],[-2.405,1.1925,z],palette.gold);
- block(panel,'bath-sliding-handle',[.085,.27,.035],[-2.35,1.05,1.89],palette.gold);
+ block(panel,'bath-sliding-handle',[.070,.25,.035],[-2.345,1.05,1.89],palette.gold);
  const cutaway=new T.Group();cutaway.name='bathroom-cutaway';shell.add(cutaway);
  block(cutaway,'bath-front-cutaway',[3.32,.27,.13],[-4.16,.135,3.9],palette.shell);
  return shell;
