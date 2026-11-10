@@ -17,3 +17,13 @@ export function ovalOpening(outerX:number,outerZ:number,innerX:number,innerZ:num
  geo.rotateX(-Math.PI/2);
  return geo;
 }
+
+/** Beveled low-poly mirror / service plate with an actual rounded perimeter. */
+export function roundedPanelGeometry(width:number,height:number,radius:number,thickness=.018){
+ const s=new T.Shape(),x=-width/2,y=-height/2,w=width,h=height,r=Math.min(radius,width*.48,height*.48);
+ s.moveTo(x+r,y);s.lineTo(x+w-r,y);s.quadraticCurveTo(x+w,y,x+w,y+r);
+ s.lineTo(x+w,y+h-r);s.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+ s.lineTo(x+r,y+h);s.quadraticCurveTo(x,y+h,x,y+h-r);
+ s.lineTo(x,y+r);s.quadraticCurveTo(x,y,x+r,y);s.closePath();
+ return new T.ExtrudeGeometry(s,{depth:thickness,bevelEnabled:true,bevelThickness:.006,bevelSize:.006,bevelSegments:2,curveSegments:7});
+}
