@@ -1,0 +1,41 @@
+{
+  "commit": "a936605fd79ed7f9e788eb4ed5e3e338367ca225",
+  "variants": [
+    "citrus",
+    "burgundy",
+    "blackgold"
+  ],
+  "stations": [
+    "overview",
+    "front",
+    "back",
+    "top",
+    "lathe",
+    "rack"
+  ],
+  "captures": [
+    "citrus-overview",
+    "citrus-front",
+    "citrus-back",
+    "citrus-top",
+    "citrus-lathe",
+    "citrus-rack",
+    "burgundy-overview",
+    "burgundy-front",
+    "burgundy-back",
+    "burgundy-top",
+    "burgundy-lathe",
+    "burgundy-rack",
+    "blackgold-overview",
+    "blackgold-front",
+    "blackgold-back",
+    "blackgold-top",
+    "blackgold-lathe",
+    "blackgold-rack",
+    "blackgold-night-ui",
+    "citrus-mobile",
+    "burgundy-mobile",
+    "blackgold-mobile"
+  ],
+  "issues": []
+}
