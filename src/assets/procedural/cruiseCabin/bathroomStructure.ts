@@ -36,9 +36,9 @@ export function bathroomStructure(root:T.Group){
  // Real recessed panel silhouette: four rails surround a darker inset rather
  // than placing a bright solid-gold slab across the face.
  const inset=new T.MeshStandardMaterial({color:0x4b3029,roughness:.75});
- block(face,'bath-pocket-door-recess',[.010,1.89,.90],[-2.366,1.20,1.40],inset);
- for(const z of [.948,1.852])block(face,'bath-pocket-door-stile',[.021,1.96,.027],[-2.359,1.20,z],palette.wood);
- for(const y of [.225,2.17])block(face,'bath-pocket-door-rail',[.021,.030,.93],[-2.359,y,1.40],palette.wood);
+ block(face,'bath-pocket-door-recess',[.010,1.89,.90],[-2.377,1.20,1.40],inset);
+ for(const z of [.948,1.852])block(face,'bath-pocket-door-stile',[.021,1.96,.027],[-2.376,1.20,z],palette.wood);
+ for(const y of [.225,2.17])block(face,'bath-pocket-door-rail',[.021,.030,.93],[-2.376,y,1.40],palette.wood);
  // The handle is attached to the outer face of the moving leaf.
 
  for(const z of [.84,1.96])block(panel,'bath-sliding-edge',[.07,2.25,.035],[-2.405,1.1925,z],palette.gold);
