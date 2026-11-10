@@ -5,6 +5,7 @@ import { createCueWorkbench } from '../src/assets/procedural/cueWorkshop/workben
 import { createCueWorkshop, workshopLayout } from '../src/assets/procedural/cueWorkshop';
 import { benchSize, workshopVariants, type WorkshopVariant } from '../src/assets/procedural/cueWorkshop/variants';
 import { modelStats } from '../src/assets/procedural/cueWorkshop/geometry';
+import { rooms } from '../src/game/rooms';
 
 const variants: WorkshopVariant[] = ['citrus', 'burgundy', 'blackgold'];
 const bounds = (object: T.Object3D) => new T.Box3().setFromObject(object);
@@ -116,5 +117,31 @@ test('each workshop has floor bounds, furniture collision and a route around the
     effects.toggle('night'); effects.update(1, 1);
     assert.equal(effects.state.night, true);
     assert.ok(Number.isFinite(effects.background.r));
+  }
+});
+
+test('initial desktop and phone cameras keep every workbench vertex inside the viewport', () => {
+  for (const variant of variants) {
+    const profile = rooms[`workshop-${variant}`];
+    const bench = profile.create().root.getObjectByName(`cue-workbench-${variant}`)!;
+    bench.updateWorldMatrix(true, true);
+    for (const aspect of [1280 / 900, 390 / 844]) {
+      const radius = profile.camera.roomRadius * profile.frameScale(aspect);
+      const halfY = radius * Math.tan(Math.PI / 8);
+      const camera = new T.OrthographicCamera(-halfY * aspect, halfY * aspect, halfY, -halfY, .05, 120);
+      const target = new T.Vector3(...profile.camera.target);
+      camera.position.setFromSpherical(new T.Spherical(radius, profile.camera.phi, profile.camera.theta)).add(target);
+      camera.lookAt(target);
+      camera.updateMatrixWorld(true);
+      bench.traverse(object => {
+        if (!(object instanceof T.Mesh)) return;
+        const positions = object.geometry.getAttribute('position');
+        for (let i = 0; i < positions.count; i++) {
+          const point = new T.Vector3().fromBufferAttribute(positions, i).applyMatrix4(object.matrixWorld).project(camera);
+          assert.ok(Math.abs(point.x) < .96 && Math.abs(point.y) < .96,
+            `${variant}: initial camera crops ${object.name} at aspect ${aspect}`);
+        }
+      });
+    }
   }
 });

@@ -67,7 +67,7 @@ export const benchSize = {
 
 // Hidden camera stations used by the visual-review workflow, never scene props.
 export const workshopReviewStations = [
-  { id: 'overview', theta: .64, phi: .97, zoom: 1, target: [.20, 1.02, -.17] },
+  { id: 'overview', theta: .64, phi: .97, zoom: 1, target: [.20, 1.20, -.17] },
   { id: 'front', theta: 0, phi: 1.16, zoom: 1, target: [.20, 1.10, -.17] },
   { id: 'back', theta: 3.78, phi: 1.02, zoom: 1, target: [.20, 1.02, -.17] },
   { id: 'top', theta: .12, phi: .24, zoom: 1, target: [.20, .5, -.17] },

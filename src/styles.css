@@ -93,3 +93,9 @@
 #camera-joystick .camera-joystick-knob{width:44px;height:44px;border-radius:50%;background:#d9e9f4c9;border:2px solid #fff9;box-shadow:0 3px 12px #0007;pointer-events:none;will-change:transform}
 #camera-joystick span{position:absolute;top:116px;white-space:nowrap;font-size:11px;color:white;text-shadow:0 1px 4px #000;pointer-events:none}
 @media(pointer:coarse){#camera-joystick{display:flex}}
+@media(max-width:650px){
+  .workshop-space #review-controls{bottom:84px}
+  .workshop-space #camera-joystick{bottom:156px;width:96px;height:96px}
+  .workshop-space #camera-joystick span{top:100px}
+  .workshop-space #hint{bottom:12px;max-width:calc(100vw - 20px);box-sizing:border-box;padding:8px 10px;gap:4px 10px;line-height:1.7}
+}

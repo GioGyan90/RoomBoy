@@ -8,6 +8,7 @@ import {workshopReviewStations} from '../assets/procedural/cueWorkshop/variants'
 export function createReview(scene:T.Scene,room:T.Group,character:Character,controller:ReturnType<typeof createCameraController>,actions:Actions,roomBackground:T.Color,roomTools:HTMLElement,roomId:RoomId){
  const profile=rooms[roomId];
  const workshop=roomId.startsWith('workshop-');
+ if(workshop)document.body.classList.add('workshop-space');
  // Review-only camera stations. Never insert camera meshes into the playable scene.
  const reviewStations=[
   {id:'overview',label:'全景',theta:-.398,phi:1.062,zoom:1,target:[0,1.3,0]},

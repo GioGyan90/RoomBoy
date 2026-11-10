@@ -80,6 +80,13 @@ try {
     await mobile.goto(base + '?room=workshop-' + variant, { waitUntil: 'networkidle' });
     await mobile.locator('#loader').waitFor({ state: 'detached' });
     if (!await mobile.locator('#camera-joystick').isVisible()) throw Error('Mobile orbit control missing');
+    const footerClear = await mobile.evaluate(() => {
+      const menu = document.querySelector('#review-controls').getBoundingClientRect();
+      const hint = document.querySelector('#hint').getBoundingClientRect();
+      const caption = document.querySelector('#camera-joystick span').getBoundingClientRect();
+      return menu.bottom + 6 <= hint.top && caption.bottom + 6 <= menu.top;
+    });
+    if (!footerClear) throw Error('Mobile orbit caption, view buttons or hint overlap');
     await capture(mobile, variant + '-mobile');
   }
   await writeFile(resolve(output, 'report.json'), JSON.stringify({

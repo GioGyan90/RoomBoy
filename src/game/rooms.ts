@@ -33,8 +33,8 @@ function workshopProfile(variant: WorkshopVariant) {
     label: workshopVariants[variant].label,
     layout: workshopLayout,
     defaultView: 'room' as const,
-    camera: { theta: .64, phi: .97, target: [.20, 1.02, -.17], gameRadius: 5.6, roomRadius: 4.35, orthographic: true },
-    frameScale: (aspect: number) => Math.max(1, 1.38 / aspect),
+    camera: { theta: .64, phi: .97, target: [.20, 1.20, -.17], gameRadius: 5.6, roomRadius: 4.60, orthographic: true },
+    frameScale: (aspect: number) => Math.max(1, 1.18 / aspect),
     create: () => createCueWorkshop(variant),
   };
 }
