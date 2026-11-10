@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {block,cylinder,palette} from '../architecture';
-import {bathMaterials} from './materials';
+import {bathMaterials,roundedPanelGeometry} from './materials';
 
 export function buildBathVanity(vanityZone:T.Group){
  // One integrated vanity: four countertop pieces surround an actual recessed sink.
@@ -28,11 +28,17 @@ export function buildBathVanity(vanityZone:T.Group){
  cylinder(faucet,'washbasin-tap',.036,.24,[-3.09,1.07,.99],palette.gold);
  block(faucet,'washbasin-faucet-spout',[.052,.048,.26],[-3.09,1.19,1.11],palette.gold);
  cylinder(faucet,'washbasin-faucet-aerator',.023,.06,[-3.09,1.151,1.23],palette.gold);
- // The backlit mirror is offset from the marble wall, not embedded inside it.
- block(vanityZone,'mirror-halo',[.89,1.04,.016],[-3.09,1.76,.838],palette.gold);
- block(vanityZone,'mirror',[.76,.90,.035],[-3.09,1.76,.87],bathMaterials.mirror);
- block(vanityZone,'mirror-gold-top',[.81,.035,.045],[-3.09,2.22,.87],palette.gold);
- for(const x of [-3.51,-2.67])block(vanityZone,'mirror-brass-frame',[.035,.92,.055],[x,1.76,.90],palette.gold);
+ // Rounded illuminated mirror is an inset metal-backed asset, not four floating rods.
+ const mirrorKit=new T.Group();mirrorKit.name='bath-mirror-and-light-assembly';vanityZone.add(mirrorKit);
+ const halo=new T.Mesh(roundedPanelGeometry(.89,1.06,.14,.019),bathMaterials.brass);
+ halo.name='mirror-halo';halo.position.set(-3.09,1.76,.827);mirrorKit.add(halo);
+ const glass=new T.Mesh(roundedPanelGeometry(.77,.94,.12,.023),bathMaterials.mirror);
+ glass.name='mirror';glass.position.set(-3.09,1.76,.866);mirrorKit.add(glass);
+ // A single continuous low-power warm border, supported by the backing plate.
+ const glow=new T.Mesh(roundedPanelGeometry(.835,1.00,.13,.010),
+  new T.MeshStandardMaterial({color:0xffd29b,emissive:0xffa851,emissiveIntensity:.68,roughness:.48}));
+ glow.name='mirror-gold-top';glow.position.set(-3.09,1.76,.847);mirrorKit.add(glow);
+ // The mirror stays on the front side of the marble wall (z > .82).
  for(const x of [-3.56,-2.62]){
   cylinder(vanityZone,'vanity-wall-light',.07,.21,[x,1.83,.92],palette.gold);
   cylinder(vanityZone,'vanity-light-globe',.11,.14,[x,1.65,.92],palette.ivory);
