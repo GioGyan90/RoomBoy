@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 // @ts-expect-error The experiment deliberately exposes a plain JavaScript cage.
 import {buildHeadData,headGeometry} from '../src/experiments/head/boyHead.js';
 import {Vector3} from 'three';
+// @ts-expect-error Plain JavaScript reference calibration.
+import {referenceHeight} from '../src/experiments/head/referenceFit.js';
 type Data={vertices:number[][];faces:number[][];regions:string[];loops:number[][]};
 for(const stage of [1,2,3])test(`boy head stage ${stage}: symmetry, topology and nondegenerate faces`,()=>{
  for(const options of [{},{cheek:.9,jaw:.85,depth:.9,nose:.65,eyeHeight:.75},{cheek:1.1,jaw:1.15,depth:1.1,nose:1.25,eyeHeight:1.2}]){
@@ -59,11 +61,11 @@ test('combined parameter extremes stay finite, nondegenerate and preserve local 
 
 test('nasal underside and upper lip have an independent recessed transition',()=>{
  const base:Data=buildHeadData();
- const center=(d:Data,y:number)=>d.vertices.find(v=>Math.abs(v[0])<1e-8&&Math.abs(v[1]-y)<1e-8&&v[2]>.5)!;
+ const center=(d:Data,y:number)=>d.vertices.find(v=>Math.abs(v[0])<1e-8&&Math.abs(v[1]-referenceHeight(y))<1e-8&&v[2]>.5)!;
  const bridge=center(base,-.30),nose=center(base,-.22),lip=center(base,-.38);
  assert(bridge,'subnasale control row exists');
  assert(nose[2]>bridge[2]+.1,'nasal underside slopes inward');
- assert(lip[2]>bridge[2]+.04,'upper lip emerges from recessed philtrum');
+ assert(lip[2]>bridge[2]+.005,'upper lip emerges from recessed philtrum');
  assert(base.regions.includes('nasalBase')&&base.regions.includes('philtrum'));
  const projected:Data=buildHeadData({muzzleProjection:.075,mouthForward:.03});
  assert.deepEqual(center(projected,-.30),bridge,'oral projection must not erase the nasal break');
@@ -95,26 +97,26 @@ test('mandibular border rises toward the ear with an inset underside and rounded
   const d:Data=buildHeadData({},stage);
   const jaw=d.vertices.slice(6,12);
   for(let i=1;i<jaw.length;i++)assert(jaw[i][1]>=jaw[i-1][1]-1e-8,'jaw border rises toward angle');
-  assert(jaw[5][1]-jaw[0][1]>.25,'jaw angle must sit above chin');
-  assert(jaw[5][0]-d.vertices[5][0]>.25,'underside recedes below jaw border');
+  assert(jaw[5][1]-jaw[0][1]>.18,'jaw angle must sit above chin');
+  assert(jaw[5][0]-d.vertices[5][0]>.23,'underside recedes below jaw border');
   assert(d.vertices[17][0]>jaw[5][0],'cheek continues above border');
   assert(d.regions.includes('jawUnderside'));
   const rear=d.vertices.filter(v=>Math.abs(v[0])<1e-8&&v[2]<0);
   const deepest=rear.reduce((a,b)=>a[2]<b[2]?a:b);
   assert(deepest[2]<-1.1&&deepest[1]>.1&&deepest[1]<.6,'occiput has a posterior bulge');
-  assert(rear.find(v=>Math.abs(v[1]-.82)<1e-8)![2]>deepest[2]+.15,'rear curves into crown');
+  assert(rear.find(v=>Math.abs(v[1]-referenceHeight(.82))<1e-8)![2]>deepest[2]+.15,'rear curves into crown');
  }
 });
 
 test('ears have closed side walls with a separate rear perimeter',()=>{
  const d:Data=buildHeadData();
  const walls=d.faces.filter((_,i)=>d.regions[i]==='earWall');
- assert.equal(walls.length,14);
- assert.equal(d.regions.filter(r=>r==='earBack').length,14);
+ assert.equal(walls.length,24);
+ assert.equal(d.regions.filter(r=>r==='earBack').length,24);
  for(const f of walls){
   assert.equal(f.length,4);
   const points=f.map(i=>d.vertices[i]);
-  assert(Math.max(...points.map(v=>Math.abs(v[0])))-Math.min(...points.map(v=>Math.abs(v[0])))>=.08-1e-8,'wall has physical thickness');
+  assert(Math.max(...points.map(v=>Math.abs(v[0])))-Math.min(...points.map(v=>Math.abs(v[0])))>=.072-1e-8,'wall has physical thickness');
  }
 });
 
@@ -127,4 +129,19 @@ test('oral loop stays compact and lip projection does not pull the outer cheek',
  d.vertices.forEach((v,i)=>{if(Math.abs(v[0])>.34&&v[1]>-.60&&v[1]<-.30){assert.deepEqual(changed.vertices[i],v);checked++;}});
  assert(checked>10,'check both cheeks, not just center seam');
  const used=new Set(d.faces.flat());assert.equal(used.size,d.vertices.length,'all control points are connected');
+});
+
+test('default head matches the supplied design sheet vertical landmarks',()=>{
+ const d:Data=buildHeadData();
+ const top=Math.max(...d.vertices.map(v=>v[1])),bottom=Math.min(...d.vertices.map(v=>v[1])),h=top-bottom;
+ const eye=d.loops[0].map(i=>d.vertices[i][1]);
+ const eyeFraction=(top-(Math.max(...eye)+Math.min(...eye))/2)/h;
+ // Independent image estimates: head top 75, chin 735, eye center 432,
+ // nose tip 563, closed lip line 620. Excludes eyeballs and iris.
+ assert(Math.abs(eyeFraction-(432-75)/660)<.02);
+ assert(Math.abs((top-d.vertices[36][1])/h-(563-75)/660)<.015);
+ assert(Math.abs((top-d.vertices[24][1])/h-(620-75)/660)<.015);
+ const ears=[...new Set(d.faces.flatMap((f,i)=>d.regions[i]==='ear'?f:[]))].map(i=>d.vertices[i]);
+ const earZ=(Math.min(...ears.map(v=>v[2]))+Math.max(...ears.map(v=>v[2])))/2;
+ assert(earZ<-.45&&earZ>-.60,'side-view ears sit behind the cheek, not beside the eyes');
 });

@@ -7,14 +7,14 @@ import './headLab.css';
 
 export function startHeadLab(){
  document.title='少年头部 · RoomBoy 建模实验';
- document.body.innerHTML=`<main class="head-lab"><aside><a class="back" href="?view=structure">← 人体结构研究</a><small>ROOMBOY / FORM STUDY 02</small><h1>少年头部<span>形体 · 布线实验</span></h1><p class="intro">从颅骨体块到面部结构。<br>无头发 · 无颈部 · 暂不添加眼球</p><section><h2>01 / 建模阶段</h2><div class="stages"><button data-stage="1">基础形体 <em>颅骨 / 下颌</em></button><button data-stage="2">五官平面 <em>鼻 / 口 / 耳</em></button><button class="selected" data-stage="3">眼眶布线 <em>开口 / 眼睑厚度</em></button></div></section><section><h2>02 / 观察视角</h2><div class="views"><button data-view="front">正面</button><button data-view="quarter" class="selected">45°</button><button data-view="side">侧面</button><button data-view="back">背面</button></div><div class="toggles"><label><input id="wire" type="checkbox" checked> 逻辑布线</label><label><input id="regions" type="checkbox"> 结构分区</label></div></section><section><h2>03 / 形体参数</h2><div id="sliders"></div><button id="reset">恢复初始形体</button></section><p class="note">当前是静态造型实验。眼眶保留真实开口；耳部独立分块，尚未进入表情绑定。</p><output id="stats"></output></aside><div class="head-stage"><header><span>低面灰模 <b> / 03</b></span><a href="?">返回房间 ↗</a></header><div id="head-canvas"></div><footer><span>单指拖动旋转 · 双指缩放</span><span id="view-label">45° / 正交投影</span></footer></div></main>`;
+ document.body.innerHTML=`<main class="head-lab"><aside><a class="back" href="?view=structure">← 人体结构研究</a><small>ROOMBOY / FORM STUDY 02</small><h1>少年头部<span>形体 · 布线实验</span></h1><p class="intro">设定图校准版 · 正侧轮廓与五官对齐。<br>无头发 · 无颈部 · 暂不添加眼球</p><section><h2>01 / 建模阶段</h2><div class="stages"><button data-stage="1">基础形体 <em>颅骨 / 下颌</em></button><button data-stage="2">五官平面 <em>鼻 / 口 / 耳</em></button><button class="selected" data-stage="3">眼眶布线 <em>开口 / 眼睑厚度</em></button></div></section><section><h2>02 / 观察视角</h2><div class="views"><button data-view="front">正面</button><button data-view="quarter" class="selected">45°</button><button data-view="side">侧面</button><button data-view="back">背面</button></div><div class="toggles"><label><input id="wire" type="checkbox"> 逻辑布线</label><label><input id="regions" type="checkbox"> 结构分区</label></div></section><section><h2>03 / 形体参数</h2><div id="sliders"></div><button id="reset">恢复设定图头型</button></section><p class="note">当前是静态造型实验。眼眶保留真实开口；耳部独立分块，尚未进入表情绑定。</p><output id="stats"></output></aside><div class="head-stage"><header><span>低面灰模 <b> / 03</b></span><a href="?">返回房间 ↗</a></header><div id="head-canvas"></div><footer><span>单指拖动旋转 · 双指缩放</span><span id="view-label">45° / 正交投影</span></footer></div></main>`;
  const holder=document.querySelector('#head-canvas');
  const scene=new T.Scene();scene.background=new T.Color('#ecece6');
  const camera=new T.OrthographicCamera(-2,2,1.65,-1.65,.1,50);
  let renderer;try{renderer=new T.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=T.SRGBColorSpace;}catch{renderer=new SVGRenderer();renderer.setQuality('high');document.querySelector('.head-stage header span').insertAdjacentHTML('beforeend',' <small>兼容预览</small>');}holder.append(renderer.domElement);renderer.domElement.style.touchAction='none';
- scene.add(new T.AmbientLight(0xffffff,.38));
- const light=new T.DirectionalLight(0xfff4e3,.55);light.position.set(-3,5,6);scene.add(light);
- const fill=new T.DirectionalLight(0xd9e6ff,.18);fill.position.set(4,1,-3);scene.add(fill);
+ scene.add(new T.AmbientLight(0xffffff,.65));
+ const light=new T.DirectionalLight(0xffffff,.85);light.position.set(-3,5,6);scene.add(light);
+ const fill=new T.DirectionalLight(0xffffff,.25);fill.position.set(4,1,-3);scene.add(fill);
  const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,.08,0);controls.enablePan=false;controls.enableDamping=true;controls.minZoom=.65;controls.maxZoom=2.8;
  const group=new T.Group();scene.add(group);
  let stage=3,params={...defaults};
@@ -36,6 +36,6 @@ export function startHeadLab(){
  const parameterUI=createParameterPanel(document.querySelector('#sliders'),next=>{params=next;rebuild();});
  document.querySelector('#reset').onclick=()=>parameterUI.reset();
  function resize(){const w=holder.clientWidth,h=holder.clientHeight;renderer.setSize(w,h);camera.left=-1.5*w/h;camera.right=1.5*w/h;camera.top=1.5;camera.bottom=-1.5;camera.updateProjectionMatrix();}
- new ResizeObserver(resize).observe(holder);view('quarter');rebuild();resize();
+ new ResizeObserver(resize).observe(holder);view('front');rebuild();resize();
  function frame(){controls.update();renderer.render(scene,camera);requestAnimationFrame(frame);}frame();
 }

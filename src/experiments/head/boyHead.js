@@ -2,12 +2,13 @@ import * as THREE from 'three';
 
 // Logical cage, +Z front, +Y up. No subdivision / CSG / imported head.
 import {normalizeParameters} from './parameters.js';
+import {fitReferenceVertex} from './referenceFit.js';
 export {defaults} from './parameters.js';
 // y, half width, facial depth, rear depth. Anatomical stations, not a sphere.
 const stations = [
-  [-1.02,.30,.49,.42],[-.91,.43,.60,.74],[-.72,.55,.60,.91],
+  [-1.02,.30,.54,.42],[-.91,.43,.55,.74],[-.72,.55,.58,.91],
   [-.55,.66,.61,1.00],[-.46,.69,.62,1.04],[-.38,.72,.64,1.07],
-  [-.22,.77,.66,1.09],[-.04,.81,.67,1.10],[.17,.83,.66,1.15],
+  [-.22,.77,.66,1.09],[-.04,.81,.64,1.10],[.17,.83,.63,1.15],
   [.36,.82,.67,1.16],[.57,.81,.64,1.10],[.82,.76,.56,.96],
   [1.03,.63,.42,.75],[1.17,.40,.24,.47],
 ];
@@ -31,16 +32,17 @@ export function buildHeadData(options = {}, stage = 3) {
     const lateral=smooth(.32,1,u);
     const sideWidth=r<7?w+(jawSideWidth[r]-w)*lateral:w;
     const width=sideWidth*(1+(p.jaw-1)*jw+(p.cheek-1)*cw);
-    const height=r<7?y+(jawSideY[r]-y)*lateral:y;
+    let height=r<7?y+(jawSideY[r]-y)*lateral:y;
     let front=z*(1-.53*Math.pow(u,2.4));
     if(stage>=2) {
       // Connected wedge nose: narrow bridge and deliberate alar base.
-      const nose=[0,0,0,0,0,.025,.16,.10,.045,.015,0,0,0,0][r];
+      const nose=[0,0,0,0,0,0,.16,.01,0,.015,0,0,0,0][r];
       front+=nose*Math.max(0,1-u/.32)*p.nose;
+      if(r===9)front+=.005*Math.sin(Math.PI*u);
       // Upper / lower lips are shallow planes, never separate floating objects.
       if(r===3) front+=.015*Math.max(0,1-u/.4);
       if(r===4) front-=.008*Math.max(0,1-u/.4);
-      if(r===5) front+=.015*Math.max(0,1-u/.4);
+      if(r===5) front+=.010*Math.max(0,1-u/.4);
     }
     if(c===5)front=.03;
     return [width*u,height,front*p.depth];
@@ -75,7 +77,7 @@ export function buildHeadData(options = {}, stage = 3) {
     // Half oral ring: surrounding cheek transitions converge at the mouth corner.
     // Upper/lower lip surfaces use the existing central seam; no open mouth or bag.
     const boundary=[front[3][0],front[3][1],front[3][2],front[4][2],front[5][2],front[5][1],front[5][0]];
-    const shape=[[0,-.515],[.10,-.51],[.185,-.49],[.235,-.46],[.185,-.425],[.10,-.405],[0,-.405]];
+    const shape=[[0,-.525],[.10,-.51],[.185,-.49],[.235,-.46],[.185,-.425],[.10,-.405],[0,-.42]];
     const oral=shape.map(([x,y])=>add([x*p.cheek,y,(.648-.12*x)*p.depth]));
     for(let i=0;i<6;i++)face([boundary[i],boundary[i+1],oral[i+1],oral[i]],'muzzle');
     const mid0=front[4][0],mid1=front[4][1];
@@ -87,10 +89,15 @@ export function buildHeadData(options = {}, stage = 3) {
   if(stage===3) {
     const outer=[front[8][1],front[9][1],front[9][2],front[9][3],front[9][4],front[8][4],front[7][4],front[7][3],front[7][2],front[7][1]];
     // Inner corner -> upper lid -> outer corner -> lower lid, clockwise front view.
-    const shape=[[.15,.13],[.22,.23],[.34,.27],[.49,.27],[.61,.23],[.65,.15],[.57,.065],[.44,.035],[.30,.045],[.20,.08]];
+    const shape=[[.15,.12],[.22,.20],[.34,.225],[.49,.235],[.61,.23],[.65,.20],[.57,.075],[.44,.055],[.30,.055],[.20,.08]];
     const eye=shape.map(([x,y])=>add([x*p.cheek,.14+(y-.14)*p.eyeHeight,(.635-.16*x)*p.depth]));
     const rim=shape.map(([x,y])=>add([(.4+(x-.4)*.97)*p.cheek,.14+(y-.14)*p.eyeHeight*.92,(.59-.16*x)*p.depth]));
-    for(let i=0;i<10;i++){const j=(i+1)%10;face([outer[i],eye[i],eye[j],outer[j]],'orbit');face([eye[i],rim[i],rim[j],eye[j]],'lid');}
+    const support=shape.map(([x,y])=>add([(.4+(x-.4)*1.04)*p.cheek,.14+(y-.14)*p.eyeHeight*1.20,(.65-.16*x)*p.depth]));
+    for(let i=0;i<10;i++){const j=(i+1)%10;
+      face([outer[i],support[i],support[j],outer[j]],'orbit');
+      face([support[i],eye[i],eye[j],support[j]],'lid');
+      face([eye[i],rim[i],rim[j],eye[j]],'lid');
+    }
     loops.push(eye,rim);
   }
   // Back shell from temple to sagittal rear. Shares temple vertices with face.
@@ -126,7 +133,7 @@ export function buildHeadData(options = {}, stage = 3) {
     const cheekWeight=bump(-.15,.45,y)*bump(.51,.35,x)*frontWeight;
     v[2]+=(p.cheekFullness+.038)*cheekWeight;
     // Broad mental pad and shallow masseter support, not a pointed chin or carved fibers.
-    v[2]+=.025*bump(-.85,.18,y)*(1-smooth(.13,.36,x))*frontWeight;
+    v[2]+=.015*bump(-.85,.18,y)*(1-smooth(.13,.36,x))*frontWeight;
     v[0]+=.018*bump(-.40,.28,y)*bump(.69,.20,x)*frontWeight;
     v[2]+=.015*bump(-.40,.28,y)*bump(.65,.23,x)*frontWeight;
     v[1]+=p.cheekHeight*cheekWeight;
@@ -166,16 +173,25 @@ export function buildHeadData(options = {}, stage = 3) {
       if(rimSet.has(i))v[2]-=.045*(p.lidDepth-1)*p.depth;
     }
   }
+  // Thin geometric eyebrow ridge from the design sheet; no hair cards or textures.
+  if(stage>=2){
+    const browShape=[[.15,.285,.665],[.25,.355,.685],[.47,.405,.630],[.64,.395,.555],[.47,.365,.635],[.25,.315,.680]];
+    const browFront=browShape.map(([x,y,z])=>add([x*p.cheek,y,(z+p.browProjection)*p.depth]));
+    const browBack=browShape.map(([x,y,z])=>add([x*p.cheek,y,(z-.018+p.browProjection)*p.depth]));
+    face(reverseWinding(browFront),'eyebrow');face(browBack,'eyebrow');
+    for(let i=0;i<6;i++){const j=(i+1)%6;face([browFront[i],browFront[j],browBack[j],browBack[i]],'eyebrow');}
+  }
   // Mirror topology and preserve the fan anchor: reversing the whole array changes
   // quad diagonals, causing asymmetric faceting even with symmetric vertices.
   const count=vertices.length, originalFaces=faces.length;
   const mirror=Array.from({length:count},(_,i)=>Math.abs(vertices[i][0])<1e-8?i:add([-vertices[i][0],vertices[i][1],vertices[i][2]]));
   for(let i=0;i<originalFaces;i++)face(reverseWinding(faces[i].map(v=>mirror[v])),regions[i]);
   loops.push(...loops.map(l=>l.map(i=>mirror[i]).reverse()));
+  const headVertexCount=vertices.length;
   // Small polygon ears, a separate inspectable study part. Attached by overlap.
   if(stage>=2)for(const sign of [-1,1]){
     const earStart=vertices.length;
-    const outline=[[.86,.30,-.06],[.96,.23,-.19],[.99,.06,-.22],[.91,-.18,-.12],[.83,-.19,.08],[.84,-.04,.14],[.82,.18,.13]];
+    const outline=[[.82,.29,.09],[.88,.31,.02],[.94,.27,-.10],[.97,.20,-.18],[.99,.10,-.22],[.97,-.01,-.21],[.93,-.12,-.16],[.88,-.20,-.07],[.83,-.23,.04],[.81,-.17,.10],[.80,-.02,.13],[.80,.15,.14]];
     const ear=outline.map(v=>add([v[0]*p.cheek*sign,v[1],v[2]*p.depth]));
     const inset=outline.map(v=>add([(.85+(v[0]-.90)*.45)*p.cheek*sign,.05+(v[1]-.05)*.65,(-.035+(v[2]+.035)*.6)*p.depth]));
     const center=add([.82*p.cheek*sign,.05,-.035*p.depth]);
@@ -199,14 +215,14 @@ export function buildHeadData(options = {}, stage = 3) {
   }
   // Discard original cage points replaced by the eye patch; keep exported topology clean.
   const used=new Set(faces.flat()),remap=new Map(),compact=[];
-  vertices.forEach((v,i)=>{if(used.has(i)){remap.set(i,compact.length);compact.push(v);}});
+  vertices.forEach((v,i)=>{if(used.has(i)){remap.set(i,compact.length);compact.push(fitReferenceVertex(v,i>=headVertexCount));}});
   return {vertices:compact,faces:faces.map(f=>f.map(i=>remap.get(i))),regions,loops:loops.map(l=>l.map(i=>remap.get(i)))};
 }
 export function headGeometry(data, colored=false) {
-  const palette={skull:0xe5ddce,face:0xe4c9b3,jaw:0xc6d4c7,jawUnderside:0x8baca6,brow:0xd7c8ad,orbit:0x9ebbb8,lid:0x779998,ear:0xccb6a1,earWall:0xb69b83,earBack:0xc0a991,muzzle:0xe5ac88,lip:0xd9a68e,muzzleSide:0xc48668,philtrum:0xc8ac91,nasalBase:0xaaa0b8,chinTransition:0xb9b6a5};
+  const palette={skull:0xe5ddce,face:0xe4c9b3,jaw:0xc6d4c7,jawUnderside:0x8baca6,brow:0xd7c8ad,eyebrow:0x9d9e9b,orbit:0x9ebbb8,lid:0x779998,ear:0xccb6a1,earWall:0xb69b83,earBack:0xc0a991,muzzle:0xe5ac88,lip:0xd9a68e,muzzleSide:0xc48668,philtrum:0xc8ac91,nasalBase:0xaaa0b8,chinTransition:0xb9b6a5};
   const positions=[],colors=[];
   data.faces.forEach((f,fi)=>{
-    const color=new THREE.Color(colored?palette[data.regions[fi]]:0xe4dfd4);
+    const color=new THREE.Color(colored?palette[data.regions[fi]]:0xbfc1c0);
     for(let i=1;i<f.length-1;i++)for(const idx of [f[0],f[i],f[i+1]]){positions.push(...data.vertices[idx]);colors.push(color.r,color.g,color.b);}
   });
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.computeVertexNormals();return g;
