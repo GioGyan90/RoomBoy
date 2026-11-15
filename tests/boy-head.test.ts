@@ -56,3 +56,20 @@ test('combined parameter extremes stay finite, nondegenerate and preserve local 
   normals(d).forEach((normal,i)=>{assert(normal.length()>1e-8,'degenerate '+i);assert(normal.dot(reference[i])>0,'local fold '+i+' '+JSON.stringify(p));});
  }
 });
+
+test('nasal underside and upper lip have an independent recessed transition',()=>{
+ const base:Data=buildHeadData();
+ const center=(d:Data,y:number)=>d.vertices.find(v=>Math.abs(v[0])<1e-8&&Math.abs(v[1]-y)<1e-8&&v[2]>.5)!;
+ const bridge=center(base,-.30),nose=center(base,-.22),lip=center(base,-.38);
+ assert(bridge,'subnasale control row exists');
+ assert(nose[2]>bridge[2]+.1,'nasal underside slopes inward');
+ assert(lip[2]>bridge[2]+.04,'upper lip emerges from recessed philtrum');
+ assert(base.regions.includes('nasalBase')&&base.regions.includes('philtrum'));
+ const projected:Data=buildHeadData({muzzleProjection:.075,mouthForward:.03});
+ assert.deepEqual(center(projected,-.30),bridge,'oral projection must not erase the nasal break');
+ assert.deepEqual(center(projected,-.22),nose,'nose tip stays independent');
+ assert(center(projected,-.38)[2]>lip[2]);
+ const inset:Data=buildHeadData({philtrumInset:.03});
+ assert(center(inset,-.30)[2]<bridge[2]);
+ assert.deepEqual(center(inset,-.38),lip,'inset must not retract the upper lip');
+});

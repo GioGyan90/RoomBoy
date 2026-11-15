@@ -38,9 +38,24 @@ export function buildHeadData(options = {}, stage = 3) {
     return [width*u,y,front*p.depth];
   }
   const front=stations.map((_,r)=>xs.map((_,c)=>add(point(r,c))));
+  // A local subnasale row separates the nasal underside from the oral mound.
+  // End it on a five-sided cheek transition; no added skull/back rings or cracks.
+  const subnasale=stage>=2 ? xs.slice(0,4).map((u,c)=>{
+    const a=vertices[front[5][c]],b=vertices[front[6][c]];
+    return add([(a[0]+b[0])/2,-.30,(.67*(1-.53*Math.pow(u,2.4)))*p.depth]);
+  }):[];
   for(let r=0;r<stations.length-1;r++)for(let c=0;c<xs.length-1;c++) {
     // Reserve a rectangular patch; replace it with a concentric almond loop.
     if(stage===3 && r>=7 && r<9 && c>=1 && c<4)continue;
+    if(stage>=2 && r===5 && c<3){
+      face([front[r][c],front[r][c+1],subnasale[c+1],subnasale[c]],'philtrum');
+      face([subnasale[c],subnasale[c+1],front[r+1][c+1],front[r+1][c]],'nasalBase');
+      continue;
+    }
+    if(stage>=2 && r===5 && c===3){
+      face([front[r][c],front[r][c+1],front[r+1][c+1],front[r+1][c],subnasale[c]],'face');
+      continue;
+    }
     const region=stage>=2 && r>=2 && r<6 && c<3
       ? (r===2?'chinTransition':c===2?'muzzleSide':r===5?'philtrum':'muzzle')
       : r<3?'jaw':r<7?'face':r<10?'brow':'skull';
@@ -96,14 +111,15 @@ export function buildHeadData(options = {}, stage = 3) {
       v[0]*=1+(p.alarWidth-1)*bump(-.38,.15,y)*(1-smooth(.14,.30,x))*frontWeight;
       // Broad oral mound: a front plane, bevel into cheeks, and a lower chin break.
       // Evaluate against the original cage, so mouth controls do not drag its boundary.
-      const muzzleY=smooth(-.72,-.55,y)*(1-smooth(-.38,-.22,y));
+      const muzzleY=smooth(-.72,-.55,y)*(1-smooth(-.38,-.30,y));
       const muzzleX=1-smooth(.20,.40,x);
       const muzzleWeight=muzzleY*muzzleX*frontWeight;
       v[2]+=p.muzzleProjection*muzzleWeight;
       v[0]*=1+(p.muzzleWidth-1)*muzzleWeight;
       v[1]+=(y+.46)*(p.muzzleHeight-1)*muzzleWeight;
       v[2]-=p.labiomentalFold*bump(-.72,.17,y)*(1-smooth(.18,.38,x))*frontWeight;
-      const mouthWeight=bump(-.46,.20,y)*(1-smooth(.29,.53,x))*frontWeight;
+      v[2]-=p.philtrumInset*bump(-.30,.075,y)*(1-smooth(.12,.40,x))*frontWeight;
+      const mouthWeight=bump(-.46,.20,y)*(1-smooth(-.38,-.30,y))*(1-smooth(.29,.53,x))*frontWeight;
       v[0]*=1+(p.mouthWidth-1)*mouthWeight;
       v[1]+=p.mouthY*mouthWeight;
       v[2]+=p.mouthForward*mouthWeight;
@@ -147,7 +163,7 @@ export function buildHeadData(options = {}, stage = 3) {
   return {vertices,faces,regions,loops};
 }
 export function headGeometry(data, colored=false) {
-  const palette={skull:0xe5ddce,face:0xe4c9b3,jaw:0xc6d4c7,brow:0xd7c8ad,orbit:0x9ebbb8,lid:0x779998,ear:0xccb6a1,muzzle:0xe5ac88,muzzleSide:0xc48668,philtrum:0xe9c09a,chinTransition:0xb9b6a5};
+  const palette={skull:0xe5ddce,face:0xe4c9b3,jaw:0xc6d4c7,brow:0xd7c8ad,orbit:0x9ebbb8,lid:0x779998,ear:0xccb6a1,muzzle:0xe5ac88,muzzleSide:0xc48668,philtrum:0xc8ac91,nasalBase:0xaaa0b8,chinTransition:0xb9b6a5};
   const positions=[],colors=[];
   data.faces.forEach((f,fi)=>{
     const color=new THREE.Color(colored?palette[data.regions[fi]]:0xe4dfd4);
