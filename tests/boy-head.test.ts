@@ -117,3 +117,14 @@ test('ears have closed side walls with a separate rear perimeter',()=>{
   assert(Math.max(...points.map(v=>Math.abs(v[0])))-Math.min(...points.map(v=>Math.abs(v[0])))>=.08-1e-8,'wall has physical thickness');
  }
 });
+
+test('oral loop stays compact and lip projection does not pull the outer cheek',()=>{
+ const d:Data=buildHeadData(),changed:Data=buildHeadData({mouthForward:.03});
+ const lips=d.faces.filter((_,i)=>d.regions[i]==='lip');
+ assert.equal(lips.length,8,'paired upper/lower lip patches');
+ for(const f of lips)for(const i of f)assert(Math.abs(d.vertices[i][0])<.30,'lip loop terminates at mouth corner');
+ let checked=0;
+ d.vertices.forEach((v,i)=>{if(Math.abs(v[0])>.34&&v[1]>-.60&&v[1]<-.30){assert.deepEqual(changed.vertices[i],v);checked++;}});
+ assert(checked>10,'check both cheeks, not just center seam');
+ const used=new Set(d.faces.flat());assert.equal(used.size,d.vertices.length,'all control points are connected');
+});
