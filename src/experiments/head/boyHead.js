@@ -41,7 +41,10 @@ export function buildHeadData(options = {}, stage = 3) {
   for(let r=0;r<stations.length-1;r++)for(let c=0;c<xs.length-1;c++) {
     // Reserve a rectangular patch; replace it with a concentric almond loop.
     if(stage===3 && r>=7 && r<9 && c>=1 && c<4)continue;
-    face([front[r][c],front[r][c+1],front[r+1][c+1],front[r+1][c]],r<3?'jaw':r<7?'face':r<10?'brow':'skull');
+    const region=stage>=2 && r>=2 && r<6 && c<3
+      ? (r===2?'chinTransition':c===2?'muzzleSide':r===5?'philtrum':'muzzle')
+      : r<3?'jaw':r<7?'face':r<10?'brow':'skull';
+    face([front[r][c],front[r][c+1],front[r+1][c+1],front[r+1][c]],region);
   }
   if(stage===3) {
     const outer=[front[8][1],front[9][1],front[9][2],front[9][3],front[9][4],front[8][4],front[7][4],front[7][3],front[7][2],front[7][1]];
@@ -91,6 +94,15 @@ export function buildHeadData(options = {}, stage = 3) {
       v[2]+=p.noseBridge*bump(.13,.28,y)*(1-smooth(.05,.26,x))*frontWeight;
       v[1]+=p.noseY*bump(-.22,.24,y)*(1-smooth(.12,.30,x))*frontWeight;
       v[0]*=1+(p.alarWidth-1)*bump(-.38,.15,y)*(1-smooth(.14,.30,x))*frontWeight;
+      // Broad oral mound: a front plane, bevel into cheeks, and a lower chin break.
+      // Evaluate against the original cage, so mouth controls do not drag its boundary.
+      const muzzleY=smooth(-.72,-.55,y)*(1-smooth(-.38,-.22,y));
+      const muzzleX=1-smooth(.20,.40,x);
+      const muzzleWeight=muzzleY*muzzleX*frontWeight;
+      v[2]+=p.muzzleProjection*muzzleWeight;
+      v[0]*=1+(p.muzzleWidth-1)*muzzleWeight;
+      v[1]+=(y+.46)*(p.muzzleHeight-1)*muzzleWeight;
+      v[2]-=p.labiomentalFold*bump(-.72,.17,y)*(1-smooth(.18,.38,x))*frontWeight;
       const mouthWeight=bump(-.46,.20,y)*(1-smooth(.29,.53,x))*frontWeight;
       v[0]*=1+(p.mouthWidth-1)*mouthWeight;
       v[1]+=p.mouthY*mouthWeight;
@@ -135,7 +147,7 @@ export function buildHeadData(options = {}, stage = 3) {
   return {vertices,faces,regions,loops};
 }
 export function headGeometry(data, colored=false) {
-  const palette={skull:0xe5ddce,face:0xe4c9b3,jaw:0xc6d4c7,brow:0xd7c8ad,orbit:0x9ebbb8,lid:0x779998,ear:0xccb6a1};
+  const palette={skull:0xe5ddce,face:0xe4c9b3,jaw:0xc6d4c7,brow:0xd7c8ad,orbit:0x9ebbb8,lid:0x779998,ear:0xccb6a1,muzzle:0xe5ac88,muzzleSide:0xc48668,philtrum:0xe9c09a,chinTransition:0xb9b6a5};
   const positions=[],colors=[];
   data.faces.forEach((f,fi)=>{
     const color=new THREE.Color(colored?palette[data.regions[fi]]:0xe4dfd4);

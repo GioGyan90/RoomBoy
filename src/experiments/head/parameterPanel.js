@@ -15,7 +15,7 @@ export function createParameterPanel(root,onChange){
   if(params[id]!==value)notify(`${s[1]}已限制在 ${s[2]}～${s[3]}。`);else notify(`${s[1]}：${params[id].toFixed(3)}`);
  }
  for(const group of parameterGroups){
-  const details=document.createElement('details');details.className='parameter-group';details.open=group.name==='眉弓与眼眶';
+  const details=document.createElement('details');details.className='parameter-group';details.open=group.name==='吻部体块';
   details.innerHTML=`<summary>${group.name}<span>${group.items.length} 项</span></summary><p>${group.hint}</p><div class="parameter-fields"></div><button class="group-reset">重置本组</button>`;
   for(const s of group.items){
    const [id,name,min,max,value,step,first,hint]=s;
