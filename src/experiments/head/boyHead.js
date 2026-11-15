@@ -162,8 +162,15 @@ export function buildHeadData(options = {}, stage = 3) {
     const center=add([.82*p.cheek*sign,.05,-.035*p.depth]);
     const reverse=ids=>sign===1?reverseWinding(ids):ids;
     for(let i=0;i<ear.length;i++){const j=(i+1)%ear.length;face(reverse([ear[i],ear[j],inset[j],inset[i]]),'ear');face(reverse([inset[i],inset[j],center]),'ear');}
-    const rear=add([.77*p.cheek*sign,.05,-.035*p.depth]);
-    for(let i=0;i<ear.length;i++)face(reverse([ear[(i+1)%ear.length],ear[i],rear]),'ear');
+    // A real rear perimeter creates a solid helix wall rather than a thin rim
+    // collapsing directly into one rear apex. Keep the back behind the bowl floor.
+    const rearRing=outline.map(v=>add([Math.min(v[0]-.08,.80)*p.cheek*sign,v[1],v[2]*p.depth]));
+    const rear=add([.75*p.cheek*sign,.05,-.035*p.depth]);
+    for(let i=0;i<ear.length;i++){
+      const j=(i+1)%ear.length;
+      face(reverse([ear[j],ear[i],rearRing[i],rearRing[j]]),'earWall');
+      face(reverse([rearRing[j],rearRing[i],rear]),'earBack');
+    }
     for(let i=earStart;i<vertices.length;i++){
       const v=vertices[i],root=.78*p.cheek*sign;
       v[0]=root+(v[0]-root)*p.earOut;
@@ -174,7 +181,7 @@ export function buildHeadData(options = {}, stage = 3) {
   return {vertices,faces,regions,loops};
 }
 export function headGeometry(data, colored=false) {
-  const palette={skull:0xe5ddce,face:0xe4c9b3,jaw:0xc6d4c7,jawUnderside:0x8baca6,brow:0xd7c8ad,orbit:0x9ebbb8,lid:0x779998,ear:0xccb6a1,muzzle:0xe5ac88,muzzleSide:0xc48668,philtrum:0xc8ac91,nasalBase:0xaaa0b8,chinTransition:0xb9b6a5};
+  const palette={skull:0xe5ddce,face:0xe4c9b3,jaw:0xc6d4c7,jawUnderside:0x8baca6,brow:0xd7c8ad,orbit:0x9ebbb8,lid:0x779998,ear:0xccb6a1,earWall:0xb69b83,earBack:0xc0a991,muzzle:0xe5ac88,muzzleSide:0xc48668,philtrum:0xc8ac91,nasalBase:0xaaa0b8,chinTransition:0xb9b6a5};
   const positions=[],colors=[];
   data.faces.forEach((f,fi)=>{
     const color=new THREE.Color(colored?palette[data.regions[fi]]:0xe4dfd4);

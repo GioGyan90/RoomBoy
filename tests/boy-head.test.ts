@@ -105,3 +105,15 @@ test('mandibular border rises toward the ear with an inset underside and rounded
   assert(rear.find(v=>Math.abs(v[1]-.82)<1e-8)![2]>deepest[2]+.15,'rear curves into crown');
  }
 });
+
+test('ears have closed side walls with a separate rear perimeter',()=>{
+ const d:Data=buildHeadData();
+ const walls=d.faces.filter((_,i)=>d.regions[i]==='earWall');
+ assert.equal(walls.length,14);
+ assert.equal(d.regions.filter(r=>r==='earBack').length,14);
+ for(const f of walls){
+  assert.equal(f.length,4);
+  const points=f.map(i=>d.vertices[i]);
+  assert(Math.max(...points.map(v=>Math.abs(v[0])))-Math.min(...points.map(v=>Math.abs(v[0])))>=.08-1e-8,'wall has physical thickness');
+ }
+});
