@@ -13,6 +13,7 @@ const stations = [
 ];
 const xs = [0,.15,.32,.55,.79,1];
 const smooth=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
+const reverseWinding=ids=>[ids[0],...ids.slice(1).reverse()];
 const bump=(center,radius,x)=>{const t=Math.max(0,1-Math.abs(x-center)/radius);return t*t*(3-2*t);};
 
 export function buildHeadData(options = {}, stage = 3) {
@@ -39,7 +40,7 @@ export function buildHeadData(options = {}, stage = 3) {
   }
   const front=stations.map((_,r)=>xs.map((_,c)=>add(point(r,c))));
   // A local subnasale row separates the nasal underside from the oral mound.
-  // End it on a five-sided cheek transition; no added skull/back rings or cracks.
+  // End it with three explicit cheek triangles; no concave polygon fan or cracks.
   const subnasale=stage>=2 ? xs.slice(0,4).map((u,c)=>{
     const a=vertices[front[5][c]],b=vertices[front[6][c]];
     return add([(a[0]+b[0])/2,-.30,(.67*(1-.53*Math.pow(u,2.4)))*p.depth]);
@@ -53,7 +54,8 @@ export function buildHeadData(options = {}, stage = 3) {
       continue;
     }
     if(stage>=2 && r===5 && c===3){
-      face([front[r][c],front[r][c+1],front[r+1][c+1],front[r+1][c],subnasale[c]],'face');
+      const a=front[r][c],b=front[r][c+1],d=front[r+1][c],e=front[r+1][c+1],m=subnasale[c];
+      face([a,b,m],'face');face([b,e,m],'face');face([e,d,m],'face');
       continue;
     }
     const region=stage>=2 && r>=2 && r<6 && c<3
@@ -137,10 +139,11 @@ export function buildHeadData(options = {}, stage = 3) {
       if(rimSet.has(i))v[2]-=.045*(p.lidDepth-1)*p.depth;
     }
   }
-  // Mirror topology, welding center plane. Winding is reversed on reflected side.
+  // Mirror topology and preserve the fan anchor: reversing the whole array changes
+  // quad diagonals, causing asymmetric faceting even with symmetric vertices.
   const count=vertices.length, originalFaces=faces.length;
   const mirror=Array.from({length:count},(_,i)=>Math.abs(vertices[i][0])<1e-8?i:add([-vertices[i][0],vertices[i][1],vertices[i][2]]));
-  for(let i=0;i<originalFaces;i++)face(faces[i].map(v=>mirror[v]).reverse(),regions[i]);
+  for(let i=0;i<originalFaces;i++)face(reverseWinding(faces[i].map(v=>mirror[v])),regions[i]);
   loops.push(...loops.map(l=>l.map(i=>mirror[i]).reverse()));
   // Small polygon ears, a separate inspectable study part. Attached by overlap.
   if(stage>=2)for(const sign of [-1,1]){
@@ -149,7 +152,7 @@ export function buildHeadData(options = {}, stage = 3) {
     const ear=outline.map(v=>add([v[0]*p.cheek*sign,v[1],v[2]*p.depth]));
     const inset=outline.map(v=>add([(.85+(v[0]-.90)*.45)*p.cheek*sign,.05+(v[1]-.05)*.65,(-.035+(v[2]+.035)*.6)*p.depth]));
     const center=add([.82*p.cheek*sign,.05,-.035*p.depth]);
-    const reverse=ids=>sign===1?ids.reverse():ids;
+    const reverse=ids=>sign===1?reverseWinding(ids):ids;
     for(let i=0;i<ear.length;i++){const j=(i+1)%ear.length;face(reverse([ear[i],ear[j],inset[j],inset[i]]),'ear');face(reverse([inset[i],inset[j],center]),'ear');}
     const rear=add([.77*p.cheek*sign,.05,-.035*p.depth]);
     for(let i=0;i<ear.length;i++)face(reverse([ear[(i+1)%ear.length],ear[i],rear]),'ear');

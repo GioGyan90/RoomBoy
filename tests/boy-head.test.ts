@@ -73,3 +73,19 @@ test('nasal underside and upper lip have an independent recessed transition',()=
  assert(center(inset,-.30)[2]<bridge[2]);
  assert.deepEqual(center(inset,-.38),lip,'inset must not retract the upper lip');
 });
+
+test('rendered triangles mirror exactly, including diagonals and normals',()=>{
+ for(const stage of [1,2,3])for(const params of [{},{muzzleProjection:.075,philtrumInset:.03,cheekFullness:.04}]){
+  const data:Data=buildHeadData(params,stage);
+  const key=(points:number[][])=>points.map(p=>p.map(v=>(Math.abs(v)<1e-8?0:v).toFixed(6)).join(',')).sort().join('|');
+  const triangles=data.faces.flatMap(f=>f.slice(1,-1).map((_,i)=>[f[0],f[i+1],f[i+2]].map(id=>data.vertices[id])));
+  const lookup=new Map(triangles.map(t=>[key(t),t]));
+  for(const t of triangles){
+   const reflected=t.map(([x,y,z])=>[-x,y,z]);
+   const pair=lookup.get(key(reflected));
+   assert(pair,'every rendered triangle must have the same reflected diagonal');
+   const normal=(a:number[][])=>new Vector3(...a[1]).sub(new Vector3(...a[0])).cross(new Vector3(...a[2]).sub(new Vector3(...a[0]))).normalize();
+   const n=normal(t),m=normal(pair);assert(m.distanceTo(new Vector3(-n.x,n.y,n.z))<1e-6,'reflected normal must match');
+  }
+ }
+});
