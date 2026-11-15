@@ -5,12 +5,16 @@ import {normalizeParameters} from './parameters.js';
 export {defaults} from './parameters.js';
 // y, half width, facial depth, rear depth. Anatomical stations, not a sphere.
 const stations = [
-  [-1.02,.23,.43,.17],[-.91,.39,.57,.32],[-.72,.55,.60,.48],
-  [-.55,.66,.61,.60],[-.46,.69,.62,.65],[-.38,.72,.64,.70],
-  [-.22,.77,.66,.76],[-.04,.81,.67,.80],[.17,.83,.66,.83],
-  [.36,.82,.67,.85],[.57,.81,.64,.86],[.82,.76,.56,.82],
-  [1.03,.63,.42,.70],[1.17,.40,.24,.47],
+  [-1.02,.23,.43,.42],[-.91,.39,.57,.74],[-.72,.55,.60,.91],
+  [-.55,.66,.61,1.00],[-.46,.69,.62,1.04],[-.38,.72,.64,1.07],
+  [-.22,.77,.66,1.09],[-.04,.81,.67,1.10],[.17,.83,.66,1.15],
+  [.36,.82,.67,1.16],[.57,.81,.64,1.10],[.82,.76,.56,.96],
+  [1.03,.63,.42,.75],[1.17,.40,.24,.47],
 ];
+// Mandibular border is row 1: chin -> jaw body -> angle below ear.
+const jawSideY=[-.78,-.62,-.56,-.46,-.39,-.32,-.20];
+const rearBaseY=[-.72,-.57,-.46,-.35,-.28,-.20,-.12];
+const jawSideWidth=[.32,.64,.67,.70,.72,.74,.78];
 const xs = [0,.15,.32,.55,.79,1];
 const smooth=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
 const reverseWinding=ids=>[ids[0],...ids.slice(1).reverse()];
@@ -24,7 +28,10 @@ export function buildHeadData(options = {}, stage = 3) {
     const [y,w,z,back] = stations[r];
     const u=xs[c];
     const jw=smooth(-.40,-.85,y),cw=(1-jw)*(1-smooth(.20,.57,y));
-    const width=w*(1+(p.jaw-1)*jw+(p.cheek-1)*cw);
+    const lateral=smooth(.32,1,u);
+    const sideWidth=r<7?w+(jawSideWidth[r]-w)*lateral:w;
+    const width=sideWidth*(1+(p.jaw-1)*jw+(p.cheek-1)*cw);
+    const height=r<7?y+(jawSideY[r]-y)*lateral:y;
     let front=z*(1-.53*Math.pow(u,2.4));
     if(stage>=2) {
       // Connected wedge nose: narrow bridge and deliberate alar base.
@@ -36,7 +43,7 @@ export function buildHeadData(options = {}, stage = 3) {
       if(r===5) front+=.015*Math.max(0,1-u/.4);
     }
     if(c===5)front=.03;
-    return [width*u,y,front*p.depth];
+    return [width*u,height,front*p.depth];
   }
   const front=stations.map((_,r)=>xs.map((_,c)=>add(point(r,c))));
   // A local subnasale row separates the nasal underside from the oral mound.
@@ -60,7 +67,7 @@ export function buildHeadData(options = {}, stage = 3) {
     }
     const region=stage>=2 && r>=2 && r<6 && c<3
       ? (r===2?'chinTransition':c===2?'muzzleSide':r===5?'philtrum':'muzzle')
-      : r<3?'jaw':r<7?'face':r<10?'brow':'skull';
+      : r===0?'jawUnderside':r<3?'jaw':r<7?'face':r<10?'brow':'skull';
     face([front[r][c],front[r][c+1],front[r+1][c+1],front[r+1][c]],region);
   }
   if(stage===3) {
@@ -75,13 +82,14 @@ export function buildHeadData(options = {}, stage = 3) {
   // Back shell from temple to sagittal rear. Shares temple vertices with face.
   const back=stations.map(([y,w,z,d],r)=>[front[r][5],...Array.from({length:8},(_,i)=>{
     const a=(i+1)*Math.PI/16;
-    return add([Math.cos(a)*vertices[front[r][5]][0],y,(.03*Math.cos(a)-d*Math.sin(a))*p.depth]);
+    const height=r<7?jawSideY[r]+(rearBaseY[r]-jawSideY[r])*Math.sin(a):y;
+    return add([Math.cos(a)*vertices[front[r][5]][0],height,(.03*Math.cos(a)-d*Math.sin(a))*p.depth]);
   })]);
-  for(let r=0;r<stations.length-1;r++)for(let c=0;c<8;c++)face([back[r][c],back[r][c+1],back[r+1][c+1],back[r+1][c]],'skull');
-  const top=add([0,1.23,-.08*p.depth]),bottom=add([0,-1.035,.05]);
+  for(let r=0;r<stations.length-1;r++)for(let c=0;c<8;c++)face([back[r][c],back[r][c+1],back[r+1][c+1],back[r+1][c]],r===0?'jawUnderside':r<3?'jaw':'skull');
+  const top=add([0,1.23,-.08*p.depth]),bottom=add([0,-.83,.05]);
   for(const [r,apex,flip] of [[13,top,false],[0,bottom,true]]){
     const ring=[...front[r],...back[r].slice(1)];
-    for(let i=0;i<ring.length-1;i++)face(flip?[ring[i+1],ring[i],apex]:[ring[i],ring[i+1],apex],r===0?'jaw':'skull');
+    for(let i=0;i<ring.length-1;i++)face(flip?[ring[i+1],ring[i],apex]:[ring[i],ring[i+1],apex],r===0?'jawUnderside':'skull');
   }
   // Local semantic shape fields. Every shared vertex is moved once; no topology edits.
   // Eye rings share the support field with the surrounding face to avoid detached sockets.
@@ -166,7 +174,7 @@ export function buildHeadData(options = {}, stage = 3) {
   return {vertices,faces,regions,loops};
 }
 export function headGeometry(data, colored=false) {
-  const palette={skull:0xe5ddce,face:0xe4c9b3,jaw:0xc6d4c7,brow:0xd7c8ad,orbit:0x9ebbb8,lid:0x779998,ear:0xccb6a1,muzzle:0xe5ac88,muzzleSide:0xc48668,philtrum:0xc8ac91,nasalBase:0xaaa0b8,chinTransition:0xb9b6a5};
+  const palette={skull:0xe5ddce,face:0xe4c9b3,jaw:0xc6d4c7,jawUnderside:0x8baca6,brow:0xd7c8ad,orbit:0x9ebbb8,lid:0x779998,ear:0xccb6a1,muzzle:0xe5ac88,muzzleSide:0xc48668,philtrum:0xc8ac91,nasalBase:0xaaa0b8,chinTransition:0xb9b6a5};
   const positions=[],colors=[];
   data.faces.forEach((f,fi)=>{
     const color=new THREE.Color(colored?palette[data.regions[fi]]:0xe4dfd4);

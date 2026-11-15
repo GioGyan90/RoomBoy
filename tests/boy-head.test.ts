@@ -89,3 +89,19 @@ test('rendered triangles mirror exactly, including diagonals and normals',()=>{
   }
  }
 });
+
+test('mandibular border rises toward the ear with an inset underside and rounded occiput',()=>{
+ for(const stage of [1,2,3]){
+  const d:Data=buildHeadData({},stage);
+  const jaw=d.vertices.slice(6,12);
+  for(let i=1;i<jaw.length;i++)assert(jaw[i][1]>=jaw[i-1][1]-1e-8,'jaw border rises toward angle');
+  assert(jaw[5][1]-jaw[0][1]>.25,'jaw angle must sit above chin');
+  assert(jaw[5][0]-d.vertices[5][0]>.25,'underside recedes below jaw border');
+  assert(d.vertices[17][0]>jaw[5][0],'cheek continues above border');
+  assert(d.regions.includes('jawUnderside'));
+  const rear=d.vertices.filter(v=>Math.abs(v[0])<1e-8&&v[2]<0);
+  const deepest=rear.reduce((a,b)=>a[2]<b[2]?a:b);
+  assert(deepest[2]<-1.1&&deepest[1]>.1&&deepest[1]<.6,'occiput has a posterior bulge');
+  assert(rear.find(v=>Math.abs(v[1]-.82)<1e-8)![2]>deepest[2]+.15,'rear curves into crown');
+ }
+});
