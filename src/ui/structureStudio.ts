@@ -61,7 +61,7 @@ export function startStructureStudio() {
   ui.id = 'structure-ui';
   ui.innerHTML = `<header><div><small>CHARACTER STUDY · 01</small><h1>${female ? '女性人体 · 低模临摹' : '先把结构做准'}</h1>
     <p>${female ? '正侧背面对齐截面，半侧面复核体块。' : '可检查全身结构与髋腿衔接。<a href="?view=pelvis">审阅独立臀块 ↗</a>'}</p></div><a href="?view=character">查看游戏人物 ↗</a></header>
-  <nav aria-label="建模对象"><a href="?view=structure" ${female ? '' : 'aria-current="page"'}>男性结构</a><a href="?view=structure&body=female" ${female ? 'aria-current="page"' : ''}>女性结构</a></nav>
+  <nav aria-label="建模对象"><a href="?view=head">少年头部实验 ↗</a><a href="?view=structure" ${female ? '' : 'aria-current="page"'}>男性结构</a><a href="?view=structure&body=female" ${female ? 'aria-current="page"' : ''}>女性结构</a></nav>
   <nav aria-label="建模阶段"><button class="active" data-stage="blockout">01 几何体块</button><button data-stage="planes" disabled title="完成简化体块对齐后再进入低面细化">02 低面结构</button></nav>
   <nav aria-label="检查视角">${angles.map(value => `<button data-angle="${value}">${value === 'three' ? '三视同屏' : value === 'four' ? '四视同屏' : names[value]}</button>`).join('')}</nav>
   <nav aria-label="局部放大"><button data-focus="body">全身</button><button data-focus="neck">颈胸放大</button><button data-focus="hips">臀腿放大</button>

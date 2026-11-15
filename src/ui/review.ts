@@ -60,7 +60,7 @@ export function createReview(scene:T.Scene,room:T.Group,character:Character,cont
  const query=new URLSearchParams(location.search);const requestedView=query.get('view')??('defaultView' in profile?profile.defaultView:'game');
  let view=['room','character','face'].includes(requestedView)?requestedView:'game';let angle=query.get('angle')??'front';
  const ui=document.createElement('div');ui.id='review-controls';ui.innerHTML='<button data-view="game">游玩</button><button data-view="room">房间</button><button data-view="character">人物</button><button data-view="face">脸部</button><button id="compare-toggle">概念图对照</button>';
- const structureLink=document.createElement('a');structureLink.href='?view=structure';structureLink.textContent='结构研究 ↗';ui.append(structureLink);document.body.append(ui);
+ const structureLink=document.createElement('a');structureLink.href='?view=structure';structureLink.textContent='结构研究 ↗';ui.append(structureLink);const headLink=document.createElement('a');headLink.href='?view=head';headLink.textContent='少年头部实验 ↗';ui.append(headLink);document.body.append(ui);
  if(workshop){
   ui.querySelector<HTMLButtonElement>('[data-view="room"]')!.textContent='工作台';
   ui.querySelector<HTMLButtonElement>('[data-view="game"]')!.textContent='行走';
