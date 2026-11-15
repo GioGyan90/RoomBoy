@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 
 // Logical cage, +Z front, +Y up. No subdivision / CSG / imported head.
-export const defaults = { cheek: 1, jaw: 1, depth: 1, nose: 1, eyeHeight: 1 };
+import {normalizeParameters} from './parameters.js';
+export {defaults} from './parameters.js';
 // y, half width, facial depth, rear depth. Anatomical stations, not a sphere.
 const stations = [
   [-1.02,.23,.43,.17],[-.91,.39,.57,.32],[-.72,.55,.60,.48],
@@ -11,14 +12,18 @@ const stations = [
   [1.03,.63,.42,.70],[1.17,.40,.24,.47],
 ];
 const xs = [0,.15,.32,.55,.79,1];
+const smooth=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
+const bump=(center,radius,x)=>{const t=Math.max(0,1-Math.abs(x-center)/radius);return t*t*(3-2*t);};
+
 export function buildHeadData(options = {}, stage = 3) {
-  const p = {...defaults,...options}, vertices=[], faces=[], regions=[], loops=[];
+  const p = normalizeParameters(options), vertices=[], faces=[], regions=[], loops=[];
   const add=v=>{ vertices.push(v); return vertices.length-1; };
   const face=(ids,region='skull')=>{ faces.push(ids); regions.push(region); };
   function point(r,c) {
     const [y,w,z,back] = stations[r];
     const u=xs[c];
-    const width=w*(y<-.55?p.jaw:y<.36?p.cheek:1);
+    const jw=smooth(-.40,-.85,y),cw=(1-jw)*(1-smooth(.20,.57,y));
+    const width=w*(1+(p.jaw-1)*jw+(p.cheek-1)*cw);
     let front=z*(1-.53*Math.pow(u,2.4));
     if(stage>=2) {
       // Connected wedge nose: narrow bridge and deliberate alar base.
@@ -58,6 +63,52 @@ export function buildHeadData(options = {}, stage = 3) {
     const ring=[...front[r],...back[r].slice(1)];
     for(let i=0;i<ring.length-1;i++)face(flip?[ring[i+1],ring[i],apex]:[ring[i],ring[i+1],apex],r===0?'jaw':'skull');
   }
+  // Local semantic shape fields. Every shared vertex is moved once; no topology edits.
+  // Eye rings share the support field with the surrounding face to avoid detached sockets.
+  const upperSet=new Set(loops.flatMap(l=>l.slice(1,5)));
+  const lowerSet=new Set(loops.flatMap(l=>l.slice(6,10)));
+  const rimSet=new Set(loops[1]||[]);
+  for(let i=0;i<vertices.length;i++){
+    const v=vertices[i], [x,y,z]=v;
+    const frontWeight=smooth(.03,.35,z), forehead=smooth(.32,.90,y);
+    const chin=smooth(-.70,-1.02,y);
+    v[0]*=1+(p.foreheadWidth-1)*forehead;
+    v[0]*=1+(p.templeWidth-1)*bump(.38,.40,y)*smooth(.45,.8,x);
+    v[1]+=p.skullHeight*smooth(.36,1.23,y);
+    v[2]+=p.foreheadSlope*forehead*frontWeight;
+    if(z<0)v[2]*=p.backDepth;
+    v[0]*=1+(p.chinWidth-1)*chin;
+    v[1]-=p.chinLength*chin;
+    v[2]+=p.chinForward*chin*frontWeight;
+    v[0]+=p.jawAngle*bump(-.72,.25,y)*smooth(.24,.55,x);
+    const cheekWeight=bump(-.15,.45,y)*bump(.51,.35,x)*frontWeight;
+    v[2]+=p.cheekFullness*cheekWeight;
+    v[1]+=p.cheekHeight*cheekWeight;
+    if(stage>=2){
+      v[2]+=p.browProjection*bump(.36,.22,y)*bump(.4,.32,x)*frontWeight;
+      const noseWeight=bump(-.13,.49,y)*(1-smooth(.15,.34,x))*frontWeight;
+      v[0]*=1+(p.noseWidth-1)*noseWeight;
+      v[2]+=p.noseBridge*bump(.13,.28,y)*(1-smooth(.05,.26,x))*frontWeight;
+      v[1]+=p.noseY*bump(-.22,.24,y)*(1-smooth(.12,.30,x))*frontWeight;
+      v[0]*=1+(p.alarWidth-1)*bump(-.38,.15,y)*(1-smooth(.14,.30,x))*frontWeight;
+      const mouthWeight=bump(-.46,.20,y)*(1-smooth(.29,.53,x))*frontWeight;
+      v[0]*=1+(p.mouthWidth-1)*mouthWeight;
+      v[1]+=p.mouthY*mouthWeight;
+      v[2]+=p.mouthForward*mouthWeight;
+      v[1]+=p.mouthCorner*bump(.23,.18,x)*bump(-.46,.12,y)*frontWeight;
+      v[2]+=.045*(p.lipFullness-1)*(bump(-.55,.07,y)+bump(-.38,.06,y))*(1-smooth(.18,.36,x))*frontWeight;
+    }
+    if(stage===3){
+      const ax=x/p.cheek;
+      const support=smooth(.025,.115,ax)*(1-smooth(.67,.81,ax))*smooth(-.22,-.04,y)*(1-smooth(.36,.57,y))*frontWeight;
+      v[0]+=(p.eyeGap+(ax-.4)*(p.eyeWidth-1))*support*p.cheek;
+      v[1]+=(p.eyeY+p.eyeTilt*(ax-.4)/.5)*support;
+      v[2]+=p.eyeDepth*support;
+      if(upperSet.has(i))v[1]+=p.upperLid*Math.sin(Math.PI*Math.max(0,Math.min(1,(ax-.15)/.5)));
+      if(lowerSet.has(i))v[1]+=p.lowerLid*Math.sin(Math.PI*Math.max(0,Math.min(1,(ax-.15)/.5)));
+      if(rimSet.has(i))v[2]-=.045*(p.lidDepth-1)*p.depth;
+    }
+  }
   // Mirror topology, welding center plane. Winding is reversed on reflected side.
   const count=vertices.length, originalFaces=faces.length;
   const mirror=Array.from({length:count},(_,i)=>Math.abs(vertices[i][0])<1e-8?i:add([-vertices[i][0],vertices[i][1],vertices[i][2]]));
@@ -65,6 +116,7 @@ export function buildHeadData(options = {}, stage = 3) {
   loops.push(...loops.map(l=>l.map(i=>mirror[i]).reverse()));
   // Small polygon ears, a separate inspectable study part. Attached by overlap.
   if(stage>=2)for(const sign of [-1,1]){
+    const earStart=vertices.length;
     const outline=[[.86,.30,-.06],[.96,.23,-.19],[.99,.06,-.22],[.91,-.18,-.12],[.83,-.19,.08],[.84,-.04,.14],[.82,.18,.13]];
     const ear=outline.map(v=>add([v[0]*p.cheek*sign,v[1],v[2]*p.depth]));
     const inset=outline.map(v=>add([(.85+(v[0]-.90)*.45)*p.cheek*sign,.05+(v[1]-.05)*.65,(-.035+(v[2]+.035)*.6)*p.depth]));
@@ -73,6 +125,12 @@ export function buildHeadData(options = {}, stage = 3) {
     for(let i=0;i<ear.length;i++){const j=(i+1)%ear.length;face(reverse([ear[i],ear[j],inset[j],inset[i]]),'ear');face(reverse([inset[i],inset[j],center]),'ear');}
     const rear=add([.77*p.cheek*sign,.05,-.035*p.depth]);
     for(let i=0;i<ear.length;i++)face(reverse([ear[(i+1)%ear.length],ear[i],rear]),'ear');
+    for(let i=earStart;i<vertices.length;i++){
+      const v=vertices[i],root=.78*p.cheek*sign;
+      v[0]=root+(v[0]-root)*p.earOut;
+      v[1]=.05+(v[1]-.05)*p.earSize+p.earY;
+      v[2]=-.035*p.depth+(v[2]+.035*p.depth)*p.earSize;
+    }
   }
   return {vertices,faces,regions,loops};
 }

@@ -2,6 +2,7 @@ import * as T from 'three';
 import {SVGRenderer} from 'three/examples/jsm/renderers/SVGRenderer.js';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import {buildHeadData,headGeometry,cageGeometry,defaults} from './boyHead.js';
+import {createParameterPanel} from './parameterPanel.js';
 import './headLab.css';
 
 export function startHeadLab(){
@@ -23,19 +24,17 @@ export function startHeadLab(){
   const mesh=new T.Mesh(g,new T.MeshLambertMaterial({vertexColors:true,flatShading:true,side:T.FrontSide,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1}));group.add(mesh);
   // Interior surface only, not an eyeball or a cap over the eye opening.
   group.add(new T.Mesh(headGeometry({...data,faces:data.faces.map(f=>[...f].reverse())}),new T.MeshBasicMaterial({color:0x777c78,side:T.FrontSide})));
-  const wire=new T.LineSegments(cageGeometry(data),new T.LineBasicMaterial({color:0x485e63,transparent:true,opacity:.28}));wire.visible=document.querySelector('#wire').checked;group.add(wire);
+  const wire=new T.LineSegments(cageGeometry(data),new T.LineBasicMaterial({color:0x485e63,transparent:true,opacity:.4}));wire.visible=document.querySelector('#wire').checked;group.add(wire);
   document.querySelector('#stats').textContent=`${data.vertices.length} 控制点 · ${g.attributes.position.count/3} 三角面 · 无细分`;
   document.querySelector('.head-stage header b').textContent=' / 0'+stage;
  }
  const positions={front:[0,.08,6],quarter:[3,.45,5],side:[6,.08,0],back:[0,.08,-6]};
  function view(name){camera.position.set(...positions[name]);controls.target.set(0,.08,0);camera.zoom=1;camera.updateProjectionMatrix();controls.update();document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('selected',b.dataset.view===name));document.querySelector('#view-label').textContent=({front:'正面',quarter:'45°',side:'侧面',back:'背面'})[name]+' / 正交投影';}
  document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>view(b.dataset.view));
- document.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>{stage=Number(b.dataset.stage);document.querySelectorAll('[data-stage]').forEach(x=>x.classList.toggle('selected',x===b));rebuild();});
+ document.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>{stage=Number(b.dataset.stage);parameterUI.setStage(stage);document.querySelectorAll('[data-stage]').forEach(x=>x.classList.toggle('selected',x===b));rebuild();});
  for(const id of ['wire','regions'])document.getElementById(id).onchange=rebuild;
- for(const [id,name,min,max] of [['cheek','颧颊宽度',.9,1.1],['jaw','下颌宽度',.85,1.15],['depth','头部厚度',.9,1.1],['nose','鼻尖前凸',.65,1.25],['eyeHeight','眼裂高度',.75,1.2]]){
-  const label=document.createElement('label');label.className='parameter';label.innerHTML=`<span>${name}<output>1.00</output></span><input aria-label="${name}" type="range" min="${min}" max="${max}" value="1" step="0.01">`;const input=label.querySelector('input');input.oninput=()=>{params[id]=Number(input.value);label.querySelector('output').textContent=Number(input.value).toFixed(2);rebuild();};document.querySelector('#sliders').append(label);
- }
- document.querySelector('#reset').onclick=()=>{params={...defaults};document.querySelectorAll('.parameter input').forEach(i=>{i.value='1';i.parentElement.querySelector('output').textContent='1.00';});rebuild();};
+ const parameterUI=createParameterPanel(document.querySelector('#sliders'),next=>{params=next;rebuild();});
+ document.querySelector('#reset').onclick=()=>parameterUI.reset();
  function resize(){const w=holder.clientWidth,h=holder.clientHeight;renderer.setSize(w,h);camera.left=-1.5*w/h;camera.right=1.5*w/h;camera.top=1.5;camera.bottom=-1.5;camera.updateProjectionMatrix();}
  new ResizeObserver(resize).observe(holder);view('quarter');rebuild();resize();
  function frame(){controls.update();renderer.render(scene,camera);requestAnimationFrame(frame);}frame();

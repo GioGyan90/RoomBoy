@@ -24,3 +24,35 @@ for(const stage of [1,2,3])test(`boy head stage ${stage}: symmetry, topology and
   const geometry=headGeometry(d);assert(geometry.attributes.position.count/3<1200);geometry.dispose();
  }
 });
+
+// @ts-expect-error Plain JavaScript parameter contract shared by UI and generator.
+import {specs,defaults,normalizeParameters,serializeParameters,parseParameters} from '../src/experiments/head/parameters.js';
+const entries=Object.values(specs) as [string,string,number,number,number,number,number,string][];
+function normals(d:Data){return d.faces.flatMap(f=>f.slice(1,-1).map((_,i)=>{const a=new Vector3(...d.vertices[f[0]]),b=new Vector3(...d.vertices[f[i+1]]),c=new Vector3(...d.vertices[f[i+2]]);return b.sub(a).cross(c.sub(a));}));}
+test('every parameter changes its intended stage and preserves existing topology',()=>{
+ for(const [id,,min,max,def,,first]of entries){
+  const base:Data=buildHeadData({},first),changed:Data=buildHeadData({[id]:max},first);
+  assert.deepEqual(changed.faces,base.faces);
+  assert(changed.vertices.some((v,i)=>v.some((n,j)=>Math.abs(n-base.vertices[i][j])>1e-7)),id+' must deform real vertices');
+  if(first>1)assert.deepEqual(buildHeadData({[id]:max},first-1).vertices,buildHeadData({},first-1).vertices,id+' stage gating');
+  assert.equal(normalizeParameters({[id]:-Infinity})[id],def);
+  assert.equal(normalizeParameters({[id]:min-99})[id],min);
+  assert.equal(normalizeParameters({[id]:max+99})[id],max);
+ }
+});
+test('parameter presets round trip and reject corrupt input',()=>{
+ const p=normalizeParameters({eyeGap:.02,mouthWidth:1.1,chinLength:.04});
+ assert.deepEqual(parseParameters(serializeParameters(p)),p);
+ for(const text of ['null','{}','{"schema":"roomboy-boy-head","version":2,"parameters":{"evil":0}}','{"schema":"roomboy-boy-head","version":2,"parameters":{"nose":"1"}}'])assert.throws(()=>parseParameters(text));
+ assert.deepEqual(normalizeParameters({nose:NaN}),defaults);
+});
+test('combined parameter extremes stay finite, nondegenerate and preserve local winding',()=>{
+ const base:Data=buildHeadData();const reference=normals(base);
+ const candidates=[Object.fromEntries(entries.map(s=>[s[0],s[2]])),Object.fromEntries(entries.map(s=>[s[0],s[3]]))];
+ let seed=68192;const rand=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};
+ for(let n=0;n<150;n++)candidates.push(Object.fromEntries(entries.map(s=>[s[0],s[2]+rand()*(s[3]-s[2])])));
+ for(const p of candidates){
+  const d:Data=buildHeadData(p);assert(d.vertices.flat().every(Number.isFinite));
+  normals(d).forEach((normal,i)=>{assert(normal.length()>1e-8,'degenerate '+i);assert(normal.dot(reference[i])>0,'local fold '+i+' '+JSON.stringify(p));});
+ }
+});
