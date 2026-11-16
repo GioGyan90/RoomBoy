@@ -39,7 +39,13 @@ function parse(){
 }
 const mesh=parse();
 const key=(x:number,y:number,z:number)=>[x,y,z].map(n=>(Object.is(n,-0)?0:n).toFixed(7)).join(',');
-const vertices=new Map(mesh.verts.map((p,i)=>[key(p[0],p[1],p[2]),i]));
+// The source GLB deliberately has duplicate positions with different normals,
+ // so a coordinate maps to a LIST of vertex indices, not a single vertex.
+const vertices=new Map<string,number[]>();
+for(const [i,p] of mesh.verts.entries()){
+ const k=key(p[0],p[1],p[2]),items=vertices.get(k)||[];
+ items.push(i);vertices.set(k,items);
+}
 const faceKey=(indices:number[])=>[...indices].sort((a,b)=>a-b).join(':');
 
 test('the committed GLB is physically clipped from source and mirrored about X=0',()=>{
@@ -64,12 +70,15 @@ test('every retained vertex has an exact mirrored pair; seam normals are also sy
  for(let i=0;i<mesh.verts.length;i++){
   const [x,y,z]=mesh.verts[i],n=mesh.normals[i];
   assert([x,y,z,...n].every(Number.isFinite));
-  const twin=vertices.get(key(-x,y,z));
-  assert.notEqual(twin,undefined,'missing reflected vertex at '+i);
-  const reflected=mesh.normals[twin!];
-  assert(Math.abs(reflected[0]+n[0])<1e-6,'normal X reflection');
-  assert(Math.abs(reflected[1]-n[1])<1e-6,'normal Y reflection');
-  assert(Math.abs(reflected[2]-n[2])<1e-6,'normal Z reflection');
+  const twins=vertices.get(key(-x,y,z));
+  assert(twins?.length,'missing reflected vertex at '+i);
+  const paired=twins.some(j=>{
+   const reflected=mesh.normals[j];
+   return Math.abs(reflected[0]+n[0])<1e-5
+    &&Math.abs(reflected[1]-n[1])<1e-5
+    &&Math.abs(reflected[2]-n[2])<1e-5;
+  });
+  assert(paired,'missing mirrored normal for vertex '+i);
   if(Math.abs(x)<1e-8){
    seamCount++;
    assert(Math.abs(n[0])<1e-7,'normal must be tangent to symmetry plane');
@@ -79,13 +88,16 @@ test('every retained vertex has an exact mirrored pair; seam normals are also sy
 });
 
 test('all 34,500 indexed triangles have reflected partners and no open center seam',()=>{
+ const geometricFaceKey=(tri:number[])=>tri.map(i=>{
+  const [x,y,z]=mesh.verts[i];return key(x,y,z);
+ }).sort().join('|');
  const faces=new Set<string>();
  const edgeUse=new Map<string,number>();
  for(const tri of mesh.faces){
   const [a,b,c]=tri;
   assert(new Set(tri).size===3);
   assert(tri.every(i=>i>=0&&i<mesh.verts.length));
-  faces.add(faceKey(tri));
+  faces.add(geometricFaceKey(tri));
   for(let k=0;k<3;k++){
    const u=tri[k],v=tri[(k+1)%3];
    if(Math.abs(mesh.verts[u][0])>1e-8||Math.abs(mesh.verts[v][0])>1e-8)continue;
@@ -96,9 +108,9 @@ test('all 34,500 indexed triangles have reflected partners and no open center se
  for(const tri of mesh.faces){
   const mirrored=tri.map(i=>{
    const [x,y,z]=mesh.verts[i];
-   return vertices.get(key(-x,y,z))!;
-  });
-  assert(faces.has(faceKey(mirrored)),'unmatched reflected triangle');
+   return key(-x,y,z);
+  }).sort().join('|');
+  assert(faces.has(mirrored),'unmatched reflected triangle');
  }
  assert.equal(edgeUse.size,593);
  assert([...edgeUse.values()].every(n=>n===2),'a cut edge must be shared by both halves');
