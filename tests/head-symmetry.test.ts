@@ -31,9 +31,11 @@ function parse(){
    throw new Error('Unexpected GLB accessor type');
   }));
  }
+ const indices=accessor(prim.indices).map(a=>a[0]);
+ assert.equal(indices.length%3,0);
  return {json,verts:accessor(prim.attributes.POSITION) as number[][],
    normals:accessor(prim.attributes.NORMAL) as number[][],
-   faces:accessor(prim.indices) as number[][]};
+   faces:Array.from({length:indices.length/3},(_,i)=>indices.slice(i*3,i*3+3))};
 }
 const mesh=parse();
 const key=(x:number,y:number,z:number)=>[x,y,z].map(n=>(Object.is(n,-0)?0:n).toFixed(7)).join(',');
