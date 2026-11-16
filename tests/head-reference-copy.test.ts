@@ -76,7 +76,7 @@ test('geometry-only GLB removes KTX2 material dependencies without touching geom
  buffer.writeUInt32LE(jsonLength,12);buffer.write('JSON',16,'ascii');
  data.copy(buffer,20);
  const binOffset=20+jsonLength;
- buffer.writeUInt32LE(4,binOffset);buffer.write('BIN',binOffset+4,'ascii');
+ buffer.writeUInt32LE(4,binOffset);buffer.writeUInt32LE(0x004e4942,binOffset+4);
  buffer.set([12,34,56,78],binOffset+8);
  const stripped=Buffer.from(geometryOnlyGlb(buffer.buffer.slice(buffer.byteOffset,buffer.byteOffset+buffer.length)));
  const len=stripped.readUInt32LE(12);
