@@ -13,7 +13,7 @@ export const compressedHeadAsset = Object.freeze({
  sourceSha256:'cc1500ea406241ce7f43e5c1873ebceb42cce5f9e8390347cfb6943e33751817',
  sourceVertices:797528,sourceFaces:1424998,
  baseFaces:30000,vertices:31357,faces:34500,halfFaces:17250,
- seamVertices:655,bytes:791136
+ seamVertices:655,bytes:1167696
 });
 
 function countsFromModel(root){
@@ -44,7 +44,7 @@ export function startHeadLab(){
     <div><dt>中心线焊接点</dt><dd>655</dd></div>
    </dl>
    <p class="ratio">沿 X ≈ 0 对称切割 · 每侧 17,250 面 · 中线 593 条边全部焊合 · 相对 142.5 万面原模减少约 97.58%</p>
-   <a class="head-download" id="head-model-download" href="./heads/grey-head-qem-symmetric.glb" download>下载对称 GLB · 773 KB</a>
+   <a class="head-download" id="head-model-download" href="./heads/grey-head-qem-symmetric.glb" download>下载对称 GLB · 1.11 MB</a>
    <a class="head-original-link" href="./heads/grey-head-qem-30000.glb" download>保留的原始 30K 减面版（未对称）</a>
   </section>
   <section><h2>02 / 观察视角</h2>
