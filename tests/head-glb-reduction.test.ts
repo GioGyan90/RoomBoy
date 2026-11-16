@@ -25,7 +25,7 @@ function inspectGlb(){
  const positions=json.accessors[prim.attributes.POSITION];
  const normals=json.accessors[prim.attributes.NORMAL];
  const indices=json.accessors[prim.indices];
- const at=(accessor,index,component)=>{
+ const at=(accessor:{bufferView:number,type:string,componentType:number,byteOffset?:number},index:number,component:number)=>{
   const view=json.bufferViews[accessor.bufferView];
   const stride=view.byteStride||((accessor.type==='VEC3'?3:1)*4);
   const offset=binBase+(view.byteOffset||0)+(accessor.byteOffset||0)+index*stride+component*4;
