@@ -55,3 +55,30 @@ npm run build
 原始文件需用户自行放到本地，仓库不附带源 GLB。使用不同 VTK / Trimesh 版本时具体顶点顺序与文件 SHA 可能变化，新导出后应更新测试中的预期哈希和计数，并重新完成正面、45°、侧面、背面的视觉检查。
 
 校验：`tests/head-glb-reduction.test.ts` 确认 GLB 头、压缩后真实面数、顶点/法线/索引与文件指纹；`tests/head-reference-copy.test.ts` 校验用于本地高模对照的几何副本。
+
+
+## 2026-11-16：真实 GLB 中线切割和左右镜像
+
+**当前默认显示的模型**：`public/heads/grey-head-qem-symmetric.glb`，**31,357 顶点 / 34,500 面 / 1,167,696 字节**。对称前的原模型 `public/heads/grey-head-qem-30000.glb` 保留作备份。相较最初 1,424,998 面的上传高模，对称版仍减少约 97.58% 面数。
+
+算法来源：`scripts/symmetrize-head.py` 直接解析原 30K GLB 的实际网格位置、法线和三角面索引。根据头部包围盒计算 X 中线：输入坐标 `X=+0.000042945146560668945`；平移后在 `X=0` 做三角面裁切。保留负 X 半边，镜像到正 X 半边，镜像面反转绕序。
+
+- 实际跨中线原三角面：593 个；保留负 X 半边：17,250 面。
+- 对称后合计 34,500 面；中线共享 655 个顶点、593 条边。
+- 每条中线边均被恰好两片面共用，**0 条未焊接的单侧中线边**。没有用额外平面封住切口。
+- 真实源网格部分顶点位置相同但法线不同，保留这种分离，不盲目全局焊接；中心线顶点则真正复用同一个顶点索引。
+- 保留来源半边的原始顶点法线，正 X 侧镜像法线，中线法线 X 分量设置为 0，防止中心光影接缝。
+- 两侧顶点与面索引严格成对镜像。对称化不等于修复原眼窝、耳廓等所有造型细节。
+
+`.github/workflows/head-symmetry.yml` 可重新生成、验证并提交实际 GLB 二进制与 JSON 报告；`tests/head-symmetry.test.ts` 从仓库提交的 GLB 中逐项验证顶点位置、法线、面配对、无断裂中线边。网页头部实验室新增 **X=0 对称轴**和**左右半边分开观察**开关；分开展示仅临时平移预览，不改最终焊接的模型。
+
+本地重新生成：
+
+```bash
+python -m pip install "numpy>=1.26,<3" "trimesh>=4.5,<5"
+python scripts/symmetrize-head.py public/heads/grey-head-qem-30000.glb public/heads/grey-head-qem-symmetric.glb --report public/heads/grey-head-qem-symmetric.report.json
+npm test
+npm run build
+```
+
+可用 `--side positive` 选择相反母版侧；默认保留负 X 半边。Haru 游戏角色现用骨骼头部没有改动。
