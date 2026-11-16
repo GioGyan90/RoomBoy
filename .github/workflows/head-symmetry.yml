@@ -6,6 +6,8 @@ on:
       - '.github/workflows/head-symmetry.yml'
       - 'scripts/symmetrize-head.py'
       - 'public/heads/grey-head-qem-30000.glb'
+      - 'scripts/bake-head-regions.mjs'
+      - 'src/experiments/head/headRegions.js'
   workflow_dispatch:
 permissions:
   contents: write
@@ -20,6 +22,9 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -47,14 +52,30 @@ jobs:
           assert all(tuple((-x,y,z)) in mirror for x,y,z in vertices)
           print('Mesh is exactly symmetric:',len(vertices),'vertices',len(mesh.faces),'faces')
           PY
-      - name: Commit the actual GLB binary and symmetry report to main
+      - name: Bake the 23 editable head meshes with exact provenance
+        run: |
+          node scripts/bake-head-regions.mjs
+          node --input-type=module - <<'JS'
+          import {readFileSync} from 'node:fs';
+          const manifest=JSON.parse(readFileSync('public/heads/grey-head-qem-symmetric.parts.json'));
+          const audit=JSON.parse(readFileSync('public/heads/grey-head-qem-symmetric.parts.audit.json'));
+          if(manifest.groups.length!==23||audit.unassignedFaces!==0||
+              audit.sourceFaces!==34500||!audit.allMirroredFaceCountsEqual)
+            throw new Error('Partition audit failed');
+          JS
+      - name: Commit symmetric GLB and independent semantic part binaries to main
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/heads/grey-head-qem-symmetric.glb public/heads/grey-head-qem-symmetric.report.json
+          git add public/heads/grey-head-qem-symmetric.parts.glb
+          git add public/heads/grey-head-qem-symmetric.parts.json
+          git add public/heads/grey-head-qem-symmetric.parts.audit.json
           if ! git diff --cached --quiet; then
-            git commit -m "asset(head): commit welded symmetric GLB cut from source QEM mesh [skip ci]"
+            git commit -m "asset(head): store 23 independent GLB part meshes and exact index maps [skip ci]"
+            git fetch origin main
+            git rebase origin/main
             git push origin HEAD:main
           else
-            echo "Symmetric GLB is already current."
+            echo "Symmetric GLB and all 23 independent region assets are current."
           fi
