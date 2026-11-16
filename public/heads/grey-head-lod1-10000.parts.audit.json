@@ -1,0 +1,58 @@
+{
+  "sourceFaces": 10000,
+  "sourceVertices": 7710,
+  "regionCount": 23,
+  "unassignedFaces": 0,
+  "mirrorPairs": [
+    {
+      "left": "temple_L",
+      "right": "temple_R",
+      "leftFaces": 247,
+      "rightFaces": 247,
+      "balanced": true
+    },
+    {
+      "left": "lateral_L",
+      "right": "lateral_R",
+      "leftFaces": 50,
+      "rightFaces": 50,
+      "balanced": true
+    },
+    {
+      "left": "brow_L",
+      "right": "brow_R",
+      "leftFaces": 255,
+      "rightFaces": 255,
+      "balanced": true
+    },
+    {
+      "left": "orbit_L",
+      "right": "orbit_R",
+      "leftFaces": 569,
+      "rightFaces": 569,
+      "balanced": true
+    },
+    {
+      "left": "cheek_L",
+      "right": "cheek_R",
+      "leftFaces": 144,
+      "rightFaces": 144,
+      "balanced": true
+    },
+    {
+      "left": "jaw_L",
+      "right": "jaw_R",
+      "leftFaces": 212,
+      "rightFaces": 212,
+      "balanced": true
+    },
+    {
+      "left": "ear_L",
+      "right": "ear_R",
+      "leftFaces": 1013,
+      "rightFaces": 1013,
+      "balanced": true
+    }
+  ],
+  "allMirroredFaceCountsEqual": true
+}

@@ -1,0 +1,47 @@
+{
+  "schema": "roomboy.head-lod.v1",
+  "source": "grey-head-qem-symmetric.glb",
+  "lod": "grey-head-lod1-10000.glb",
+  "targetFaces": 10000,
+  "sourceFaces": 34500,
+  "resultFaces": 10000,
+  "resultVertices": 7710,
+  "shellFaces": 5600,
+  "patches": [
+    {
+      "name": "ear",
+      "sourceHalfFaces": 2238,
+      "lodHalfFaces": 900,
+      "lodFaces": 1800,
+      "algorithm": "source triangle QEM; nearest source normal transfer"
+    },
+    {
+      "name": "eye",
+      "sourceHalfFaces": 1896,
+      "lodHalfFaces": 900,
+      "lodFaces": 1800,
+      "algorithm": "source triangle QEM; nearest source normal transfer"
+    },
+    {
+      "name": "nose",
+      "sourceHalfFaces": 782,
+      "lodHalfFaces": 250,
+      "lodFaces": 500,
+      "algorithm": "source triangle QEM; nearest source normal transfer"
+    },
+    {
+      "name": "lip",
+      "sourceHalfFaces": 376,
+      "lodHalfFaces": 150,
+      "lodFaces": 300,
+      "algorithm": "source triangle QEM; nearest source normal transfer"
+    }
+  ],
+  "symmetry": "negative X source patches mirrored; base radial sampling mirrored",
+  "limitations": [
+    "First-pass hybrid LOD: a watertight radial base is overlapped by real source feature patches.",
+    "Not a single welded manifold at feature boundaries; further retopology is required.",
+    "Original source face IDs do not survive QEM or radial sampling.",
+    "Preserved source normals on patches; scalar ray surface approximates the cranial shell."
+  ]
+}
