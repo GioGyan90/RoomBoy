@@ -1,0 +1,20 @@
+{
+  "source": "actual QEM-reduced GLB vertex/index buffers",
+  "source_faces": 30000,
+  "source_vertices": 27463,
+  "plane": {
+    "axis": "X",
+    "worldX": 4.2945146560668945e-05,
+    "localX": 0.0
+  },
+  "preserved_half": "negative",
+  "crossing_source_triangles": 593,
+  "seam_vertices": 655,
+  "seam_edges": 593,
+  "seam_boundary_edges": 0,
+  "half_faces": 17250,
+  "result_faces": 34500,
+  "result_vertices": 31357,
+  "exact_mirrored_vertices_and_triangles": true,
+  "source_vertex_normals_preserved_except_symmetry_seam": true
+}
