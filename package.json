@@ -9,9 +9,10 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --import tsx --test tests/*.test.ts",
     "assets:convert": "node --import tsx tools/glb-to-vertices.ts",
-    "assets:parts": "node scripts/bake-head-regions.mjs",
+    "assets:parts": "node scripts/bake-head-regions.mjs && node scripts/bake-head-regions.mjs public/heads/grey-head-lod1-10000.glb public/heads/grey-head-lod1-10000",
     "pretest": "npm run assets:parts",
-    "prebuild": "npm run assets:parts"
+    "prebuild": "npm run assets:parts",
+    "assets:lod1": "python scripts/build-head-lod1.py"
   },
   "keywords": [],
   "author": "",
