@@ -49,7 +49,15 @@ export function startHeadLab(){
    <a class="head-download" id="head-model-download" href="./heads/grey-head-qem-symmetric.glb" download>下载对称 GLB · 1.11 MB</a>
    <a class="head-original-link" href="./heads/grey-head-qem-30000.glb" download>保留的原始 30K 减面版（未对称）</a>
   </section>
-  <section><h2>02 / 观察视角</h2>
+  <section class="head-lod-panel"><h2>02 / 第一轮简化 · LOD1</h2>
+   <p>从对称 34,500 面母版复制生成独立 10,000 面版本。颅骨使用连续低密度支撑壳；眼眶、鼻口、耳廓继续使用源面片分别简化，母版不受影响。</p>
+   <label><input id="head-use-lod1" type="checkbox"> 查看 LOD1 · 10,000 面</label>
+   <label><input id="head-lod-compare" type="checkbox"> 左右并排：母版 / LOD1</label>
+   <div class="head-lod-stats"><span id="head-lod-status">LOD1 正在加载…</span></div>
+   <a class="head-download" href="./heads/grey-head-lod1-10000.glb" download>下载独立 LOD1 GLB</a>
+   <a class="head-original-link" href="./heads/grey-head-lod1-10000.parts.glb" download>下载 LOD1 的 23 结构分块</a>
+  </section>
+  <section><h2>03 / 观察视角</h2>
    <div class="views"><button data-view="front">正面</button><button data-view="quarter" class="selected">45°</button><button data-view="side">侧面</button><button data-view="back">背面</button></div>
    <div class="toggles">
     <label><input id="head-wire" type="checkbox"> 显示原网格边线</label>
@@ -58,13 +66,13 @@ export function startHeadLab(){
     <label><input id="head-split" type="checkbox"> 分开展示左右半边</label>
    </div>
   </section>
-  <section><h2>03 / 和原模型对比</h2>
+  <section><h2>04 / 和原模型对比</h2>
    <p>可导入本机原始 GLB，并排检查同视角的眼眶、鼻口、耳廓和颅骨。原始文件不会上传。</p>
    <label class="head-file-label">选择原始高模 GLB<input type="file" id="head-source-file" accept=".glb,model/gltf-binary"></label>
    <label class="head-compare-toggle"><input id="head-compare" type="checkbox" disabled> 并排对照原模型</label>
    <p id="head-status" role="status">正在加载仓库内的精确镜像对称 GLB…</p>
   </section>
-  <section class="head-regions"><h2>04 / 逆向工程 · 结构分块</h2>
+  <section class="head-regions"><h2>05 / 逆向工程 · 结构分块（母版）</h2>
    <p>以对称 GLB 的真实面片为依据，拆成可单独编辑的 23 个网格。每个部件保留母版的顶点和三角面索引映射。</p>
    <label class="head-part-switch"><input id="head-parts-mode" type="checkbox"> 显示结构分块（不修改母版）</label>
    <label class="head-part-range">分离距离 <input id="head-parts-distance" type="range" min="0" max="80" value="0" step="1">
@@ -89,6 +97,9 @@ export function startHeadLab(){
  const wireToggle=document.querySelector('#head-wire'),flatToggle=document.querySelector('#head-flat');
  const axisToggle=document.querySelector('#head-axis'),splitToggle=document.querySelector('#head-split');
  const compareToggle=document.querySelector('#head-compare');
+ const lodToggle=document.querySelector('#head-use-lod1');
+ const lodCompareToggle=document.querySelector('#head-lod-compare');
+ const lodStatus=document.querySelector('#head-lod-status');
  const partsToggle=document.querySelector('#head-parts-mode');
  const distanceSlider=document.querySelector('#head-parts-distance');
  const outlineToggle=document.querySelector('#head-parts-outline');
@@ -119,7 +130,7 @@ export function startHeadLab(){
  const controls=new OrbitControls(camera,renderer.domElement);
  controls.target.set(0,.07,0);controls.enablePan=false;controls.enableDamping=true;
  controls.minZoom=.48;controls.maxZoom=3;
- let reducedGroup=null,splitGroup=null,referenceGroup=null,referenceParts=null,viewName='quarter';
+ let reducedGroup=null,splitGroup=null,lod1Group=null,referenceGroup=null,referenceParts=null,viewName='quarter';
  const heads=new T.Group();scene.add(heads);
  const symmetryAxis=new T.Line(
   new T.BufferGeometry().setFromPoints([new T.Vector3(0,-1.05,.93),new T.Vector3(0,1.25,.93)]),
@@ -158,23 +169,45 @@ export function startHeadLab(){
  }
 
  function setCompare(){
-  const enabled=Boolean(reducedGroup&&referenceGroup&&compareToggle.checked);
-  const segmented=Boolean(partsGroup&&partsToggle.checked);
-  const separated=Boolean(splitGroup&&splitToggle.checked&&!segmented);
-  if(reducedGroup){reducedGroup.position.x=enabled?-1.25:0;reducedGroup.visible=!segmented&&!separated;}
-  if(splitGroup){splitGroup.position.x=enabled?-1.25:0;splitGroup.visible=separated;}
-  if(partsGroup){partsGroup.position.x=enabled?-1.25:0;partsGroup.visible=segmented;}
-  if(referenceGroup){referenceGroup.position.x=1.25;referenceGroup.visible=enabled;}
-  symmetryAxis.visible=axisToggle.checked&&(viewName==='front'||viewName==='quarter')&&!enabled;
-  camera.zoom=enabled?.78:segmented&&Number(distanceSlider.value)>0?.84:separated?.84:1;
+  const sourceEnabled=Boolean(referenceGroup&&compareToggle.checked);
+  const sideBySide=Boolean(reducedGroup&&lod1Group&&lodCompareToggle.checked&&!sourceEnabled);
+  const lodSelected=Boolean(lod1Group&&lodToggle.checked);
+  const segmented=Boolean(partsGroup&&partsToggle.checked&&!sideBySide);
+  const separated=Boolean(splitGroup&&splitToggle.checked&&!segmented&&!sideBySide);
+  // Source-highpoly compare takes precedence, otherwise compare 34.5K vs LOD1.
+  if(reducedGroup){
+   reducedGroup.position.x=(sideBySide||sourceEnabled)?-1.25:0;
+   reducedGroup.visible=sideBySide||(!lodSelected&&!segmented&&!separated);
+  }
+  if(lod1Group){
+   lod1Group.position.x=sideBySide?1.25:sourceEnabled?-1.25:0;
+   lod1Group.visible=sideBySide||(!segmented&&!separated&&lodSelected);
+  }
+  if(splitGroup){splitGroup.position.x=sourceEnabled?-1.25:0;splitGroup.visible=separated;}
+  if(partsGroup){partsGroup.position.x=sourceEnabled?-1.25:0;partsGroup.visible=segmented;}
+  if(referenceGroup){referenceGroup.position.x=1.25;referenceGroup.visible=sourceEnabled;}
+  symmetryAxis.visible=axisToggle.checked&&(viewName==='front'||viewName==='quarter')&&!sideBySide&&!sourceEnabled;
+  camera.zoom=(sideBySide||sourceEnabled)?.78:segmented&&Number(distanceSlider.value)>0?.84:separated?.84:1;
   camera.updateProjectionMatrix();
-  document.querySelector('.head-stage').classList.toggle('is-comparing',enabled);
-  document.querySelector('.head-stage').classList.toggle('is-split',separated&&!enabled);
-  document.querySelector('.head-stage').classList.toggle('is-parts',segmented&&!enabled);
+  const stage=document.querySelector('.head-stage');
+  stage.classList.toggle('is-comparing',sourceEnabled);
+  stage.classList.toggle('is-lod-comparing',sideBySide);
+  stage.classList.toggle('is-split',separated&&!sourceEnabled);
+  stage.classList.toggle('is-parts',segmented&&!sourceEnabled);
+  const selected=lodSelected?lod1Group:reducedGroup;
+  if(selected){
+   const c=countsFromModel(selected);
+   document.querySelector('#head-face-count').textContent=c.faces.toLocaleString();
+   document.querySelector('#head-vertex-count').textContent=c.vertices.toLocaleString();
+   document.querySelector('#head-model-download').href=import.meta.env.BASE_URL+
+    (lodSelected?'heads/grey-head-lod1-10000.glb':compressedHeadAsset.path);
+   document.querySelector('#head-model-download').textContent=lodSelected?
+    '下载 LOD1 · 10,000 面':'下载对称母版 · 34,500 面';
+  }
  }
  function syncWire(){
   if(!reducedGroup)return;
-  for(const root of [reducedGroup,splitGroup,partsGroup]){
+  for(const root of [reducedGroup,splitGroup,lod1Group,partsGroup]){
    if(!root)continue;
    root.traverse(o=>{
    if(!o.isMesh)return;
@@ -201,10 +234,20 @@ export function startHeadLab(){
   document.querySelector('#view-label').textContent=({front:'正面',quarter:'45°',side:'侧面',back:'背面'})[name]+' · 正交投影';
  }
  document.querySelectorAll('[data-view]').forEach(btn=>btn.onclick=()=>changeView(btn.dataset.view));
- wireToggle.onchange=syncWire;flatToggle.onchange=syncWire;compareToggle.onchange=setCompare;
+ wireToggle.onchange=syncWire;flatToggle.onchange=syncWire;
+ compareToggle.onchange=()=>{if(compareToggle.checked)lodCompareToggle.checked=false;setCompare();};
+ lodCompareToggle.onchange=()=>{
+  if(lodCompareToggle.checked){compareToggle.checked=false;partsToggle.checked=false;splitToggle.checked=false;}
+  setCompare();
+ };
+ lodToggle.checked=new URLSearchParams(location.search).get('lod')==='1';
+ lodToggle.onchange=()=>{
+  if(lodToggle.checked){partsToggle.checked=false;splitToggle.checked=false;}
+  setCompare();
+ };
  axisToggle.onchange=setCompare;
  splitToggle.onchange=()=>{
-  if(splitToggle.checked)partsToggle.checked=false;
+  if(splitToggle.checked){partsToggle.checked=false;lodToggle.checked=false;lodCompareToggle.checked=false;}
   setCompare();
  };
  function updatePartMeshes(){
@@ -256,14 +299,14 @@ export function startHeadLab(){
  }
  partsToggle.checked=new URLSearchParams(location.search).get('mode')==='parts';
  partsToggle.onchange=()=>{
-  if(partsToggle.checked)splitToggle.checked=false;
+  if(partsToggle.checked){splitToggle.checked=false;lodToggle.checked=false;lodCompareToggle.checked=false;}
   setCompare();
  };
  distanceSlider.oninput=()=>updatePartMeshes();
  outlineToggle.onchange=()=>updatePartMeshes();
  isolateToggle.onchange=()=>updatePartMeshes();
  targetSelect.onchange=()=>{
-  if(targetSelect.value)partsToggle.checked=true;
+  if(targetSelect.value){partsToggle.checked=true;lodToggle.checked=false;lodCompareToggle.checked=false;}
   updatePartMeshes();
  };
  exportPartButton.onclick=()=>{
@@ -309,7 +352,28 @@ export function startHeadLab(){
   }
  };
 
+
  const loader=new GLTFLoader();
+ loader.load(import.meta.env.BASE_URL+'heads/grey-head-lod1-10000.glb',gltf=>{
+  lod1Group=gltf.scene;
+  lod1Group.name='RoomBoy LOD1 10,000 triangles; source preserved';
+  lod1Group.traverse(mesh=>{
+   if(!mesh.isMesh)return;
+   const old=mesh.material;
+   mesh.material=new T.MeshLambertMaterial({color:0xc2c4c1,side:T.DoubleSide});
+   if(old)for(const m of Array.isArray(old)?old:[old])m.dispose();
+  });
+  const c=countsFromModel(lod1Group);
+  if(c.faces>10000||c.faces<9700){
+   lodStatus.textContent='LOD1 面数异常：'+c.faces+'；请检查构建产物。';return;
+  }
+  heads.add(lod1Group);
+  lodStatus.textContent=c.faces.toLocaleString()+' 面 / '+c.vertices.toLocaleString()+' 顶点。母版仍为 34,500 面。';
+  syncWire();setCompare();
+ },undefined,error=>{
+  console.error(error);
+  lodStatus.textContent='LOD1 加载失败：'+(error?.message||String(error));
+ });
  const partUrl=import.meta.env.BASE_URL+'heads/grey-head-qem-symmetric.parts.glb';
  loader.load(partUrl,gltf=>{
   partsGroup=gltf.scene;
