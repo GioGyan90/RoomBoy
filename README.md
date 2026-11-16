@@ -123,3 +123,12 @@ node --import tsx --experimental-loader ../3D_AItool/experiments/prompt2rig/test
 实验室默认加载新的对称版，可查看正、侧、45°和背面、显示对称轴、分开展示左右半边、开启线框及导入原始高模并排观察。**原来的 541 顶点程序化头型已删除**；30K 源网格作为未对称的备份继续保留。源码生成脚本 `scripts/symmetrize-head.py` 和 GitHub Actions 工作流可重复生成这份真实 GLB。
 
 当前使用中性灰材质，没有迁移原高模的贴图及 UV，也没有替换 Haru 的骨骼绑定头部。制作及验证细节见 [少年头部 GLB 减面与镜像记录](docs/BOY_HEAD_LAB.md)。
+
+
+### 少年头部逆向结构分块（23 个可独立编辑 Mesh）
+
+[打开分块爆炸图和逐块检查](https://giogyan90.github.io/RoomBoy/?view=head&mode=parts) · [23 分块 GLB](https://giogyan90.github.io/RoomBoy/heads/grey-head-qem-symmetric.parts.glb) · [母版顶点/面编号映射 JSON](https://giogyan90.github.io/RoomBoy/heads/grey-head-qem-symmetric.parts.json)
+
+以已经完成对称化的 34,500 面真实 GLB 为母版，按颅骨、眼眶、鼻部、面颊、口唇、下颌和耳部划分 **23 个独立模型部件**；每块有自己紧凑的顶点及三角面缓冲，同时记录全部 `sourceVertexIds` 和 `faceIds`，便于以后分别简化、恢复原始索引和保持拼接边界。34,500 个母版三角面全部保留、恰好分配一次，7 对左右部位面数相同。页面支持独立显示隐藏、颜色区分、分离距离、聚焦检查与选中部件单独导出 GLB。
+
+**第一版为可编辑的逆向语义标注，不是经过人工确认的最终解剖布线**。目前未进一步减面，下一步先修整区域边界、标记关键五官/耳部保护边，再针对颅顶与后脑等低敏感区域重点减面。可重复运行 `npm run assets:parts`；完整分区方法、统计、精度保障及 LOD 预算见 [头部逆向结构分块记录](docs/HEAD_REVERSE_ENGINEERING.md)。
