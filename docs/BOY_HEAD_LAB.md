@@ -272,3 +272,25 @@
 右侧仍可导入原 GLB 并排对照；左侧是经过轮廓拟合、保留可编辑拓扑的低模。
 
 **质量边界：** 对齐数据包含 57 层外壳宽度和前后包络，但并非高模的所有轮廓边、曲率或内部几何。低面 JS 模型包含约 1,046 三角面，但不能声称拥有原始高模的每个眼睑或耳廓微结构。正式美术验收应继续对照真实 GLB 的正、侧、45° 视图，并在面部主要转折处手调节点。
+
+
+## 仓库内可复用头部资产
+
+**主程序中的模型工厂**：`src/assets/procedural/boyHeadLowpoly.js`。
+独立建模页面的左侧头部现在直接使用此工厂渲染，确保预览几何与日后游戏复用的是同一份实现。并未自动替换游戏人物 Haru 的头部或更改已有骨骼绑定。
+
+```js
+import {createBoyHeadLowpolyMesh} from './src/assets/procedural/boyHeadLowpoly.js';
+
+const head = createBoyHeadLowpolyMesh({
+  stage:3, // 1 颅骨 / 2 鼻口耳 / 3 眼眶
+  regionColors:false,
+  parameters:{chinWidth:1,cheek:1,jaw:1},
+});
+scene.add(head);
+// 自行调整 head.position / rotation / scale 接入角色场景。
+```
+
+资产工厂输出独立 `THREE.Mesh`，三角面、法线与颜色来自相同的 GLB 边缘约束笼架；另有 `createBoyHeadLowpolyWire(data)` 供逻辑边线查看。每次调用产生独立的 Geometry/Material，方便按角色定制和安全释放，不会在运行时加载原始高模。
+
+对应测试位于 `tests/boy-head-asset.test.ts`，检查 541 个逻辑顶点、1,046 个三角面、完整的渲染属性、两侧开放眼眶及各实例独立性。
