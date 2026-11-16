@@ -46,7 +46,6 @@ for(const [i,p] of mesh.verts.entries()){
  const k=key(p[0],p[1],p[2]),items=vertices.get(k)||[];
  items.push(i);vertices.set(k,items);
 }
-const faceKey=(indices:number[])=>[...indices].sort((a,b)=>a-b).join(':');
 
 test('the committed GLB is physically clipped from source and mirrored about X=0',()=>{
  assert.equal(report.source_faces,30000);
