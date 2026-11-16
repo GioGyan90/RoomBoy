@@ -19,11 +19,10 @@ const p3=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
 // Intersection with the true *low-poly* triangle surface at the sampled y-level.
 // Its error is measured against the saved 57 source GLB silhouette stations.
 export function headContourError(data) {
- const tris=triFaces(data),rows=[];
+ const tris=data.faces.flatMap((f,i)=>data.regions[i]?.startsWith('ear')?[]:f.slice(1,-1).map((_,k)=>[f[0],f[k+1],f[k+2]])),rows=[];
  for(const [y,targetWidth,targetFront,targetBack] of glbSections) {
   let width=0,front=-Infinity,back=Infinity,count=0;
   for(const [i,j,k] of tris) {
-   if(data.regions[data.faces.findIndex(f=>f.includes(i)&&f.includes(j)&&f.includes(k))]?.startsWith('ear'))continue;
    for(const [a,b] of [[i,j],[j,k],[k,i]]) {
     const p=data.vertices[a],q=data.vertices[b];
     if((p[1]-y)*(q[1]-y)>=0)continue;
