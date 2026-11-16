@@ -3,6 +3,8 @@ import * as THREE from 'three';
 // Logical cage, +Z front, +Y up. No subdivision / CSG / imported head.
 import {normalizeParameters} from './parameters.js';
 import {fitReferenceVertex} from './referenceFit.js';
+import {fitGlbOutline} from './glbOutline.js';
+const glbRestCages=new Map();
 export {defaults} from './parameters.js';
 // y, half width, facial depth, rear depth. Anatomical stations, not a sphere.
 const stations = [
@@ -21,7 +23,7 @@ const smooth=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3
 const reverseWinding=ids=>[ids[0],...ids.slice(1).reverse()];
 const bump=(center,radius,x)=>{const t=Math.max(0,1-Math.abs(x-center)/radius);return t*t*(3-2*t);};
 
-export function buildHeadData(options = {}, stage = 3) {
+export function buildHeadData(options = {}, stage = 3, fitGLB = true) {
   const p = normalizeParameters(options), vertices=[], faces=[], regions=[], loops=[];
   const add=v=>{ vertices.push(v); return vertices.length-1; };
   const face=(ids,region='skull')=>{ faces.push(ids); regions.push(region); };
@@ -214,8 +216,19 @@ export function buildHeadData(options = {}, stage = 3) {
     }
   }
   // Discard original cage points replaced by the eye patch; keep exported topology clean.
-  const used=new Set(faces.flat()),remap=new Map(),compact=[];
-  vertices.forEach((v,i)=>{if(used.has(i)){remap.set(i,compact.length);compact.push(fitReferenceVertex(v,i>=headVertexCount));}});
+  const used=new Set(faces.flat()),remap=new Map(),compact=[],earFlags=[];
+  vertices.forEach((v,i)=>{if(used.has(i)){remap.set(i,compact.length);compact.push(fitReferenceVertex(v,i>=headVertexCount));earFlags.push(i>=headVertexCount);}});
+  if(fitGLB){
+    if(!glbRestCages.has(stage))glbRestCages.set(stage,buildHeadData({},stage,false).vertices);
+    const rest=glbRestCages.get(stage);
+    for(let i=0;i<compact.length;i++){
+      const target=fitGlbOutline(rest[i],earFlags[i]);
+      // Apply edit deltas around a fixed fitted cage. Do not re-sample slices when
+      // a slider moves a vertex across the chin/occiput transition.
+      const gain=rest[i][1]<-.80?.5:1;
+      compact[i]=target.map((n,j)=>n+(compact[i][j]-rest[i][j])*gain);
+    }
+  }
   return {vertices:compact,faces:faces.map(f=>f.map(i=>remap.get(i))),regions,loops:loops.map(l=>l.map(i=>remap.get(i)))};
 }
 export function headGeometry(data, colored=false) {

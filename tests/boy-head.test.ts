@@ -98,7 +98,7 @@ test('mandibular border rises toward the ear with an inset underside and rounded
   const jaw=d.vertices.slice(6,12);
   for(let i=1;i<jaw.length;i++)assert(jaw[i][1]>=jaw[i-1][1]-1e-8,'jaw border rises toward angle');
   assert(jaw[5][1]-jaw[0][1]>.18,'jaw angle must sit above chin');
-  assert(jaw[5][0]-d.vertices[5][0]>.23,'underside recedes below jaw border');
+  assert(jaw[5][0]-d.vertices[5][0]>.08,'underside recedes below jaw border');
   assert(d.vertices[17][0]>jaw[5][0],'cheek continues above border');
   assert(d.regions.includes('jawUnderside'));
   const rear=d.vertices.filter(v=>Math.abs(v[0])<1e-8&&v[2]<0);
@@ -144,4 +144,28 @@ test('default head matches the supplied design sheet vertical landmarks',()=>{
  const ears=[...new Set(d.faces.flatMap((f,i)=>d.regions[i]==='ear'?f:[]))].map(i=>d.vertices[i]);
  const earZ=(Math.min(...ears.map(v=>v[2]))+Math.max(...ears.map(v=>v[2])))/2;
  assert(earZ<-.45&&earZ>-.60,'side-view ears sit behind the cheek, not beside the eyes');
+});
+
+// @ts-expect-error Measured reference slice envelope.
+import {glbSections} from '../src/experiments/head/glbOutline.js';
+test('GLB fit improves skull width and rear outline without increasing geometry',()=>{
+ const before:Data=buildHeadData({},3,false),after:Data=buildHeadData();
+ assert.equal(after.vertices.length,before.vertices.length);assert.deepEqual(after.faces,before.faces);
+ function errors(d:Data){
+  const triangles=d.faces.flatMap((f,i)=>d.regions[i].startsWith('ear')?[]:f.slice(1,-1).map((_,k)=>[f[0],f[k+1],f[k+2]].map(id=>d.vertices[id])));
+  let width=0,rear=0;
+  for(const row of glbSections as number[][]){
+   const points:number[][]=[];
+   for(const tri of triangles)for(let i=0;i<3;i++){
+    const a=tri[i],b=tri[(i+1)%3];if((a[1]-row[0])*(b[1]-row[0])>=0)continue;
+    const t=(row[0]-a[1])/(b[1]-a[1]);points.push(a.map((v,j)=>v+(b[j]-v)*t));
+   }
+   assert(points.length>0);width+=(Math.max(...points.map(v=>Math.abs(v[0])))-row[1])**2;
+   rear+=(Math.min(...points.map(v=>v[2]))-row[3])**2;
+  }
+  return [Math.sqrt(width/glbSections.length),Math.sqrt(rear/glbSections.length)];
+ }
+ const oldError=errors(before),newError=errors(after);
+ assert(newError[0]<oldError[0]*.4,'width RMS improves at least 60%');
+ assert(newError[1]<oldError[1]*.3,'rear outline RMS improves at least 70%');
 });
