@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
+import {GLTFExporter} from 'three/examples/jsm/exporters/GLTFExporter.js';
 import {loadReferenceParts,makeReferenceGroup,referenceCounts} from './referenceCopy.js';
 import {HEAD_REGIONS,HEAD_FAMILIES} from './headRegions.js';
 import './headLab.css';
@@ -72,6 +73,7 @@ export function startHeadLab(){
     <label><input id="head-parts-isolate" type="checkbox"> 仅显示选中块</label></div>
    <label class="head-part-target-label">聚焦部位 <select id="head-part-target"><option value="">全部分块</option></select></label>
    <div id="head-parts-list" class="head-parts-list"></div>
+   <button id="head-export-part" type="button" class="head-export-part" disabled>导出选中分块 GLB</button>
    <a class="head-download" href="./heads/grey-head-qem-symmetric.parts.glb" download>下载 23 分块 GLB</a>
    <a class="head-part-manifest" href="./heads/grey-head-qem-symmetric.parts.json" download>下载源顶点 / 三角面索引映射 JSON</a>
    <p id="head-parts-status" role="status">正在加载 23 个独立网格部件…</p>
@@ -93,6 +95,7 @@ export function startHeadLab(){
  const isolateToggle=document.querySelector('#head-parts-isolate');
  const targetSelect=document.querySelector('#head-part-target');
  const partsStatus=document.querySelector('#head-parts-status');
+ const exportPartButton=document.querySelector('#head-export-part');
  const partsVisible=new Set(HEAD_REGIONS.map(r=>r.id));
  let partsGroup=null,partMeshes=new Map();
  const scene=new T.Scene();scene.background=new T.Color('#eaede9');
@@ -206,6 +209,7 @@ export function startHeadLab(){
  };
  function updatePartMeshes(){
   const focus=targetSelect.value,solo=isolateToggle.checked;
+  exportPartButton.disabled=!focus||!partMeshes.has(focus);
   const amount=Number(distanceSlider.value)*.01;
   document.querySelector('#head-parts-distance-label').textContent=amount.toFixed(2);
   for(const r of HEAD_REGIONS){
@@ -261,6 +265,28 @@ export function startHeadLab(){
  targetSelect.onchange=()=>{
   if(targetSelect.value)partsToggle.checked=true;
   updatePartMeshes();
+ };
+ exportPartButton.onclick=()=>{
+  const id=targetSelect.value,source=partMeshes.get(id);
+  if(!source)return;
+  exportPartButton.disabled=true;
+  const clone=source.clone(false);
+  clone.visible=true;clone.position.set(0,0,0);
+  clone.material=source.material.clone();
+  clone.material.opacity=1;clone.material.transparent=false;clone.material.depthWrite=true;
+  new GLTFExporter().parse(clone,data=>{
+   const bytes=data instanceof ArrayBuffer?data:null;
+   if(!bytes){partsStatus.textContent='独立 GLB 导出失败：未生成二进制数据。';exportPartButton.disabled=false;return;}
+   const url=URL.createObjectURL(new Blob([bytes],{type:'model/gltf-binary'}));
+   const a=document.createElement('a');a.download='room-boy-head-'+id+'.glb';a.href=url;document.body.append(a);a.click();a.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),1500);
+   clone.material.dispose();
+   exportPartButton.disabled=false;
+   partsStatus.textContent='已导出 '+id+' 的独立可编辑 GLB。原始母版和其他分块未修改。';
+  },error=>{
+   clone.material.dispose();exportPartButton.disabled=false;
+   partsStatus.textContent='分块导出失败：'+(error?.message||String(error));
+  },{binary:true,onlyVisible:false});
  };
 
  document.querySelector('#head-source-file').onchange=async e=>{
