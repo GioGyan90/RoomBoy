@@ -112,3 +112,8 @@ node --import tsx --experimental-loader ../3D_AItool/experiments/prompt2rig/test
 ## 当前分块重建：臀部待审阅
 
 [独立臀部分块](https://giogyan90.github.io/RoomBoy/?view=pelvis)为待审阅的 36 顶点、68 面镜像笼架，可查看顶点编号与本地参考。侧面按可见边界拟合，橙点标出遮挡处的推定位置。男性全身检查页显示原有骨盆。[分块审阅记录](docs/PELVIS_PART_REVIEW.md)。
+
+
+### 少年头部 GLB 精确副本对照
+
+[少年头部实验室](https://giogyan90.github.io/RoomBoy/?view=head) 支持导入本机 GLB，按真实顶点及面索引构造高模 JS 副本，并与可编辑的程序化低模头部并排同步观察；可导出不依赖 GLB 的 JS 几何模块。文件只在浏览器本地读取，仓库不包含此前的用户 GLB 附件。详细说明见 [少年头部建模记录](docs/BOY_HEAD_LAB.md)。
