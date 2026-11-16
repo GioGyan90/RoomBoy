@@ -1,15 +1,53 @@
-body:has(.head-lab){margin:0;background:#ecece6;color:#263c40;font-family:system-ui,sans-serif;overflow:hidden}.head-lab *{box-sizing:border-box}.head-lab{display:grid;grid-template-columns:300px 1fr;height:100dvh}.head-lab aside{background:#faf9f4;padding:25px 25px 18px;overflow:auto;border-right:1px solid #d9ded7}.head-lab a{color:#3e6a69;text-decoration:none}.head-lab .back{display:block;font-size:12px;margin-bottom:26px}.head-lab small{font-size:10px;letter-spacing:2px;color:#758b88}.head-lab h1{font-size:28px;margin:10px 0 15px;letter-spacing:-1px}.head-lab h1 span{display:block;font-size:14px;font-weight:400;letter-spacing:2px;margin-top:8px}.head-lab .intro{font-size:12px;line-height:1.9;color:#7b8784}.head-lab section{border-top:1px solid #dfe3dc;margin-top:23px;padding-top:16px}.head-lab h2{font-size:10px;letter-spacing:1.7px;font-weight:500;margin:0 0 13px;color:#758783}.head-lab button{border:1px solid #d7dfd8;background:transparent;border-radius:7px;padding:9px 11px;color:#45615e;font:inherit;font-size:12px;cursor:pointer;touch-action:manipulation}.head-lab button.selected{background:#315d58;color:white;border-color:#315d58}.head-lab .stages{display:grid;gap:7px}.head-lab .stages button{text-align:left;display:flex;justify-content:space-between}.head-lab em{font-size:10px;font-style:normal;opacity:.66}.head-lab .views{display:flex;gap:5px}.head-lab .views button{flex:1;padding:8px 5px}.head-lab .toggles{display:flex;gap:15px;font-size:11px;margin-top:14px}.head-lab input{accent-color:#396d64}.head-lab .parameter{display:block;margin-bottom:13px;font-size:11px}.head-lab .parameter span{display:flex;justify-content:space-between}.head-lab .parameter input{width:100%;height:14px;margin:8px 0 0}.head-lab .parameter output{color:#6c817c;font-variant-numeric:tabular-nums}.head-lab #reset{width:100%}.head-lab .note{font-size:10px;line-height:1.8;color:#86918b;margin-top:20px}.head-lab #stats{font-size:10px;color:#59766d}.head-stage{position:relative;min-width:0;display:flex;flex-direction:column}.head-stage header{height:68px;padding:25px 30px;display:flex;justify-content:space-between;font-size:12px;letter-spacing:1px}.head-stage header b{font-weight:400;color:#8f9b91}.head-stage footer{height:52px;padding:17px 30px;display:flex;justify-content:space-between;font-size:11px;color:#88958b}#head-canvas{flex:1;min-height:0;position:relative}#head-canvas canvas{display:block;width:100%;height:100%;touch-action:none}@media(max-width:700px){.head-lab{display:flex;flex-direction:column;height:100dvh;overflow:auto}.head-stage{order:-1;height:58dvh;min-height:360px;flex-shrink:0}.head-stage header{height:48px;padding:17px}.head-stage footer{height:35px;padding:10px 17px;font-size:10px}.head-lab aside{padding:20px;border:0;overflow:visible}.head-lab .back{margin-bottom:16px}.head-lab section{margin-top:16px}.head-lab .stages{grid-template-columns:repeat(3,1fr)}.head-lab .stages button{display:block;padding:10px 5px;text-align:center}.head-lab em{display:block;margin-top:5px}.head-lab h1{font-size:25px}.head-lab .intro{margin-bottom:0}.head-lab #sliders{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}}
-.head-stage{min-height:0}.head-lab aside{min-height:0}#head-canvas>svg,#head-canvas>canvas{position:absolute;inset:0;display:block;width:100%;height:100%}@media(max-width:700px){.head-stage{min-height:360px}}
-.head-lab .parameter-group{border:1px solid #dce2db;border-radius:8px;margin-bottom:9px;padding:0 11px}.head-lab summary{cursor:pointer;touch-action:manipulation;font-size:12px;padding:12px 0;font-weight:550}.head-lab summary span{float:right;font-size:10px;color:#87968e;font-weight:400}.head-lab .parameter-group p,.head-lab .param-help,.head-lab .preset-json p{font-size:10px;line-height:1.8;color:#74857c;margin:0 0 14px}.head-lab .parameter-group .parameter{padding-bottom:12px;border-bottom:1px solid #e8ebe5;margin-bottom:12px}.head-lab .parameter-title{display:flex;justify-content:space-between;align-items:center;gap:5px}.head-lab .parameter input.parameter-number{width:66px;height:27px;margin:0;border:1px solid #d5ddd4;border-radius:4px;background:#fffef9;padding:4px;color:#3d6256;font:inherit;font-variant-numeric:tabular-nums}.head-lab .parameter small{display:block;font-size:9px;letter-spacing:0;line-height:1.6;color:#8b978d;margin-top:4px}.head-lab .parameter small span{display:inline}.head-lab .parameter.inactive{opacity:.45}.head-lab .group-reset{font-size:10px;margin:0 0 12px;padding:5px 9px}.head-lab .preset-actions{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.head-lab .preset-actions button{flex:1;font-size:10px;padding:8px 5px}.head-lab .preset-json textarea{width:100%;height:140px;resize:vertical;border:1px solid #d6dfd7;background:#fffefa;font:10px monospace;padding:8px;border-radius:5px}.head-lab .param-status{display:block;min-height:30px;font-size:10px;line-height:1.7;color:#4a7762;margin:9px 0}.head-lab #sliders{display:block}@media(max-width:700px){.head-lab .parameter-fields{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}.head-lab .parameter-group{padding:0 14px}.head-lab .parameter small{min-height:28px}}
-.head-lab .toggles{flex-wrap:wrap;row-gap:8px}
-
-/* Head-to-head GLB vertex comparison. Both meshes share one orthographic camera. */
-.head-lab .reference-compare p{font-size:11px;line-height:1.75;color:#71857e;margin:0 0 12px}
-.head-lab .head-file-label{display:block;position:relative;border:1px dashed #82a3a6;background:#ecf4f2;border-radius:7px;padding:12px;text-align:center;color:#315d58;font-size:12px;cursor:pointer;margin:12px 0}
+body:has(.head-lab){margin:0;background:#eaede9;color:#2c4242;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
+.head-lab,.head-lab *{box-sizing:border-box}
+.head-lab{height:100dvh;display:grid;grid-template-columns:320px minmax(0,1fr)}
+.head-lab aside{background:#fafbf6;border-right:1px solid #dce2dc;padding:25px 24px 18px;min-height:0;overflow:auto}
+.head-lab a{color:#346b65;text-decoration:none}
+.head-lab .back{display:block;margin-bottom:24px;font-size:12px}
+.head-lab small{font-size:10px;letter-spacing:1.7px;color:#77928a}
+.head-lab h1{font-size:25px;font-weight:620;letter-spacing:-.8px;margin:12px 0}
+.head-lab h1 span{display:block;font-size:14px;letter-spacing:1.2px;font-weight:450;margin:6px 0}
+.head-lab .intro{font-size:12px;color:#788a84;line-height:1.9;margin:10px 0 22px}
+.head-lab section{border-top:1px solid #e1e7df;padding-top:18px;margin-top:21px}
+.head-lab h2{font-size:10px;letter-spacing:1.8px;color:#718981;font-weight:550;margin:0 0 15px}
+.head-lab .head-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;margin:0}
+.head-lab .head-stat-grid>div{padding:12px;background:#f1f5f0;border-radius:8px}
+.head-lab dt{font-size:10px;color:#758d84;margin-bottom:6px}
+.head-lab dd{margin:0;font-weight:650;font-size:18px;font-variant-numeric:tabular-nums;letter-spacing:-.6px}
+.head-lab .ratio{font-size:10px;color:#477469;margin:14px 0;line-height:1.5}
+.head-lab .head-download{display:block;background:#365d59;color:#fff;border-radius:7px;padding:11px;text-align:center;font-size:12px}
+.head-lab button{border:1px solid #cfdad5;background:#fff;border-radius:6px;padding:9px;color:#4e6961;font:inherit;font-size:12px;cursor:pointer}
+.head-lab button.selected{background:#315d58;color:#fff;border-color:#315d58}
+.head-lab .views{display:flex;gap:5px}
+.head-lab .views button{flex:1;padding:9px 5px}
+.head-lab .toggles{display:flex;flex-wrap:wrap;gap:13px 16px;font-size:11px;margin-top:16px}
+.head-lab input{accent-color:#315d58}
+.head-lab section>p{font-size:11px;line-height:1.8;color:#738881;margin:0 0 12px}
+.head-lab .head-file-label{position:relative;display:block;border:1px dashed #7aa69b;background:#edf5ef;border-radius:7px;padding:12px;text-align:center;color:#34655c;font-size:12px;cursor:pointer}
 .head-lab .head-file-label input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
-.head-lab .head-compare-toggle{display:flex;align-items:center;gap:8px;font-size:11px;margin:12px 0;color:#315d58}
-.head-lab #head-export-js{width:100%;background:#f4f7f2}
-.head-lab #head-export-js:disabled{opacity:.45;cursor:not-allowed}
-.head-lab #head-reference-status{margin:12px 0 0;font-size:10px;line-height:1.65;overflow-wrap:anywhere}
-.head-stage.is-comparing #head-canvas::after{content:'左：低面 JS 建模　　　　右：GLB 全顶点 JS 副本';position:absolute;bottom:12px;left:0;right:0;text-align:center;pointer-events:none;color:#456967;font-size:11px;letter-spacing:.5px}
-@media(max-width:700px){.head-stage.is-comparing #head-canvas::after{font-size:9px;bottom:6px;letter-spacing:0}}
+.head-lab .head-compare-toggle{display:flex;gap:8px;align-items:center;font-size:11px;color:#416a5f;margin:14px 0}
+.head-lab .head-compare-toggle:has(input:disabled){opacity:.6}
+.head-lab #head-status{margin:14px 0 0;overflow-wrap:anywhere;min-height:20px;color:#4d786c}
+.head-lab .note{font-size:10px;color:#899890;line-height:1.75;margin:25px 0}
+.head-stage{min-height:0;min-width:0;position:relative;display:flex;flex-direction:column}
+.head-stage header{height:68px;flex-shrink:0;padding:23px 30px;display:flex;justify-content:space-between;gap:15px;font-size:12px;letter-spacing:.7px}
+.head-stage header b{font-weight:450;color:#668177}
+.head-stage footer{height:52px;flex-shrink:0;padding:16px 30px;display:flex;justify-content:space-between;font-size:11px;color:#7b8e87}
+#head-canvas{flex:1;min-height:0;position:relative}
+#head-canvas canvas{display:block;position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.head-stage.is-comparing #head-canvas::after{content:'左：QEM 30K 减面　　右：原始 GLB';position:absolute;pointer-events:none;left:0;right:0;bottom:12px;color:#456963;font-size:11px;text-align:center}
+@media(max-width:720px){
+ body:has(.head-lab){overflow:auto}
+ .head-lab{display:flex;flex-direction:column;height:auto;min-height:100dvh}
+ .head-stage{order:-1;height:58dvh;min-height:340px}
+ .head-stage header{height:47px;padding:15px;font-size:10px}
+ .head-stage footer{height:36px;padding:10px 15px;font-size:10px}
+ .head-lab aside{overflow:visible;border:0;padding:20px}
+ .head-lab .back{margin-bottom:13px}
+ .head-lab section{margin-top:14px;padding-top:14px}
+ .head-lab .head-stat-grid{grid-template-columns:repeat(4,1fr);gap:5px}
+ .head-lab .head-stat-grid>div{padding:8px 4px}
+ .head-lab dd{font-size:13px}
+ .head-lab dt{font-size:9px}
+ .head-stage.is-comparing #head-canvas::after{font-size:9px}
+}
