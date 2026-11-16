@@ -1,0 +1,60 @@
+name: Generate exact symmetric head GLB
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/head-symmetry.yml'
+      - 'scripts/symmetrize-head.py'
+      - 'public/heads/grey-head-qem-30000.glb'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: head-symmetry-generator
+  cancel-in-progress: false
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install GLB mesh geometry dependencies
+        run: python -m pip install "numpy>=1.26,<3" "trimesh>=4.5,<5"
+      - name: Clip source mesh and mirror one side along X=0
+        run: |
+          python scripts/symmetrize-head.py \
+            public/heads/grey-head-qem-30000.glb \
+            public/heads/grey-head-qem-symmetric.glb \
+            --report public/heads/grey-head-qem-symmetric.report.json
+      - name: Check symmetry in exported GLB
+        run: |
+          python - <<'PY'
+          import json, trimesh, numpy as np
+          path='public/heads/grey-head-qem-symmetric.glb'
+          mesh=trimesh.load(path,force='scene').to_geometry()
+          d=json.load(open('public/heads/grey-head-qem-symmetric.report.json'))
+          assert len(mesh.faces)==d['result_faces']==34500
+          assert len(mesh.vertices)==d['result_vertices']==31357
+          assert d['seam_boundary_edges']==0
+          vertices=np.asarray(mesh.vertices)
+          assert np.all(np.isfinite(vertices))
+          mirror={tuple(p) for p in vertices}
+          assert all(tuple((-x,y,z)) in mirror for x,y,z in vertices)
+          print('Mesh is exactly symmetric:',len(vertices),'vertices',len(mesh.faces),'faces')
+          PY
+      - name: Commit the actual GLB binary and symmetry report to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/heads/grey-head-qem-symmetric.glb public/heads/grey-head-qem-symmetric.report.json
+          if ! git diff --cached --quiet; then
+            git commit -m "asset(head): commit welded symmetric GLB cut from source QEM mesh [skip ci]"
+            git push origin HEAD:main
+          else
+            echo "Symmetric GLB is already current."
+          fi
