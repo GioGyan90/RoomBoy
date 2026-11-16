@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Box3,BufferGeometry,Float32BufferAttribute,Group,Mesh,MeshBasicMaterial,Vector3} from 'three';
 // @ts-expect-error Standalone plain JS reference-copy implementation.
-import {copyReferenceParts,normalizeReferenceParts,makeReferenceGroup,referenceCounts,serializeReferenceToJS} from '../src/experiments/head/referenceCopy.js';
+import {copyReferenceParts,normalizeReferenceParts,makeReferenceGroup,referenceCounts,serializeReferenceToJS,geometryOnlyGlb} from '../src/experiments/head/referenceCopy.js';
 
 test('GLB reference copy preserves actual triangle vertices, indices and world transforms',()=>{
  const geometry=new BufferGeometry();
@@ -57,4 +57,32 @@ test('empty or degenerate reference geometry produces readable errors',()=>{
  g.setAttribute('position',new Float32BufferAttribute([0,0,0,1,0,0,1,0,1],3));
  assert.throws(()=>normalizeReferenceParts([{name:'flat',geometry:g}]),/几何范围/);
  g.dispose();
+});
+
+test('geometry-only GLB removes KTX2 material dependencies without touching geometry buffers',()=>{
+ const gltf={
+  asset:{version:'2.0'},buffers:[{byteLength:4}],
+  meshes:[{primitives:[{attributes:{POSITION:0},indices:1,material:0}]}],
+  accessors:[],bufferViews:[],
+  extensionsUsed:['EXT_meshopt_compression','KHR_texture_basisu','KHR_materials_specular'],
+  extensionsRequired:['EXT_meshopt_compression','KHR_texture_basisu'],
+  materials:[{name:'textured'}],images:[{mimeType:'image/ktx2'}],
+  textures:[{source:0}],samplers:[{}]
+ };
+ const data=Buffer.from(JSON.stringify(gltf));
+ const jsonLength=(data.length+3)&~3;
+ const buffer=Buffer.alloc(20+jsonLength+8+4,32);
+ buffer.write('glTF',0,'ascii');buffer.writeUInt32LE(2,4);buffer.writeUInt32LE(buffer.length,8);
+ buffer.writeUInt32LE(jsonLength,12);buffer.write('JSON',16,'ascii');
+ data.copy(buffer,20);
+ const binOffset=20+jsonLength;
+ buffer.writeUInt32LE(4,binOffset);buffer.write('BIN',binOffset+4,'ascii');
+ buffer.set([12,34,56,78],binOffset+8);
+ const stripped=Buffer.from(geometryOnlyGlb(buffer.buffer.slice(buffer.byteOffset,buffer.byteOffset+buffer.length)));
+ const len=stripped.readUInt32LE(12);
+ const parsed=JSON.parse(stripped.subarray(20,20+len).toString('utf8'));
+ assert.deepEqual(parsed.extensionsRequired,['EXT_meshopt_compression']);
+ assert(!parsed.materials&&!parsed.textures&&!parsed.images&&!parsed.samplers);
+ assert.equal(parsed.meshes[0].primitives[0].material,undefined);
+ assert.deepEqual(Array.from(stripped.subarray(20+len+8)),[12,34,56,78]);
 });
