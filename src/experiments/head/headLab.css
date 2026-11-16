@@ -85,3 +85,6 @@ body:has(.head-lab){margin:0;background:#eaede9;color:#2c4242;font-family:system
  .head-stage.is-parts:not(.is-comparing) #head-canvas::after{font-size:9px}
  .head-regions .head-parts-list{max-height:245px}
 }
+
+.head-regions .head-export-part{display:block;width:100%;margin:7px 0 8px;background:#e4eee8;border-color:#c3d7ca;color:#346356;font-size:11px}
+.head-regions .head-export-part:disabled{opacity:.45;cursor:not-allowed}
