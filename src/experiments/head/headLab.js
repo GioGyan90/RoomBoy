@@ -2,6 +2,7 @@ import * as T from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import {loadReferenceParts,makeReferenceGroup,referenceCounts} from './referenceCopy.js';
+import {HEAD_REGIONS,HEAD_FAMILIES} from './headRegions.js';
 import './headLab.css';
 
 // Directly clipped from the real QEM-30K head at the bounding-box X median.
@@ -62,6 +63,19 @@ export function startHeadLab(){
    <label class="head-compare-toggle"><input id="head-compare" type="checkbox" disabled> 并排对照原模型</label>
    <p id="head-status" role="status">正在加载仓库内的精确镜像对称 GLB…</p>
   </section>
+  <section class="head-regions"><h2>04 / 逆向工程 · 结构分块</h2>
+   <p>以对称 GLB 的真实面片为依据，拆成可单独编辑的 23 个网格。每个部件保留母版的顶点和三角面索引映射。</p>
+   <label class="head-part-switch"><input id="head-parts-mode" type="checkbox"> 显示结构分块（不修改母版）</label>
+   <label class="head-part-range">分离距离 <input id="head-parts-distance" type="range" min="0" max="80" value="0" step="1">
+    <output id="head-parts-distance-label">0.00</output></label>
+   <div class="head-part-options"><label><input id="head-parts-outline" type="checkbox" checked> 显示分块边界</label>
+    <label><input id="head-parts-isolate" type="checkbox"> 仅显示选中块</label></div>
+   <label class="head-part-target-label">聚焦部位 <select id="head-part-target"><option value="">全部分块</option></select></label>
+   <div id="head-parts-list" class="head-parts-list"></div>
+   <a class="head-download" href="./heads/grey-head-qem-symmetric.parts.glb" download>下载 23 分块 GLB</a>
+   <a class="head-part-manifest" href="./heads/grey-head-qem-symmetric.parts.json" download>下载源顶点 / 三角面索引映射 JSON</a>
+   <p id="head-parts-status" role="status">正在加载 23 个独立网格部件…</p>
+  </section>
   <p class="note">从原 30K 网格直接切割镜像，保留原始面片，切口共享同一组顶点而非盖上中间平面。两半可分开检查。灰模材质不包含原 KTX2 贴图；暂不更换 Haru 的绑定头部。</p>
  </aside>
  <div class="head-stage"><header><span>GLB 半边镜像 / <b>34.5K</b></span><a href="?">返回房间</a></header><div id="head-canvas"></div>
@@ -73,6 +87,14 @@ export function startHeadLab(){
  const wireToggle=document.querySelector('#head-wire'),flatToggle=document.querySelector('#head-flat');
  const axisToggle=document.querySelector('#head-axis'),splitToggle=document.querySelector('#head-split');
  const compareToggle=document.querySelector('#head-compare');
+ const partsToggle=document.querySelector('#head-parts-mode');
+ const distanceSlider=document.querySelector('#head-parts-distance');
+ const outlineToggle=document.querySelector('#head-parts-outline');
+ const isolateToggle=document.querySelector('#head-parts-isolate');
+ const targetSelect=document.querySelector('#head-part-target');
+ const partsStatus=document.querySelector('#head-parts-status');
+ const partsVisible=new Set(HEAD_REGIONS.map(r=>r.id));
+ let partsGroup=null,partMeshes=new Map();
  const scene=new T.Scene();scene.background=new T.Color('#eaede9');
  const camera=new T.OrthographicCamera(-2,2,1.5,-1.5,.1,50);
  let renderer;
@@ -134,19 +156,22 @@ export function startHeadLab(){
 
  function setCompare(){
   const enabled=Boolean(reducedGroup&&referenceGroup&&compareToggle.checked);
-  const separated=Boolean(splitGroup&&splitToggle.checked);
-  if(reducedGroup){reducedGroup.position.x=enabled?-1.25:0;reducedGroup.visible=!separated;}
+  const segmented=Boolean(partsGroup&&partsToggle.checked);
+  const separated=Boolean(splitGroup&&splitToggle.checked&&!segmented);
+  if(reducedGroup){reducedGroup.position.x=enabled?-1.25:0;reducedGroup.visible=!segmented&&!separated;}
   if(splitGroup){splitGroup.position.x=enabled?-1.25:0;splitGroup.visible=separated;}
+  if(partsGroup){partsGroup.position.x=enabled?-1.25:0;partsGroup.visible=segmented;}
   if(referenceGroup){referenceGroup.position.x=1.25;referenceGroup.visible=enabled;}
   symmetryAxis.visible=axisToggle.checked&&(viewName==='front'||viewName==='quarter')&&!enabled;
-  camera.zoom=enabled?.78:separated?.84:1;
+  camera.zoom=enabled?.78:segmented&&Number(distanceSlider.value)>0?.84:separated?.84:1;
   camera.updateProjectionMatrix();
   document.querySelector('.head-stage').classList.toggle('is-comparing',enabled);
   document.querySelector('.head-stage').classList.toggle('is-split',separated&&!enabled);
+  document.querySelector('.head-stage').classList.toggle('is-parts',segmented&&!enabled);
  }
  function syncWire(){
   if(!reducedGroup)return;
-  for(const root of [reducedGroup,splitGroup]){
+  for(const root of [reducedGroup,splitGroup,partsGroup]){
    if(!root)continue;
    root.traverse(o=>{
    if(!o.isMesh)return;
@@ -174,7 +199,69 @@ export function startHeadLab(){
  }
  document.querySelectorAll('[data-view]').forEach(btn=>btn.onclick=()=>changeView(btn.dataset.view));
  wireToggle.onchange=syncWire;flatToggle.onchange=syncWire;compareToggle.onchange=setCompare;
- axisToggle.onchange=setCompare;splitToggle.onchange=setCompare;
+ axisToggle.onchange=setCompare;
+ splitToggle.onchange=()=>{
+  if(splitToggle.checked)partsToggle.checked=false;
+  setCompare();
+ };
+ function updatePartMeshes(){
+  const focus=targetSelect.value,solo=isolateToggle.checked;
+  const amount=Number(distanceSlider.value)*.01;
+  document.querySelector('#head-parts-distance-label').textContent=amount.toFixed(2);
+  for(const r of HEAD_REGIONS){
+   const mesh=partMeshes.get(r.id);
+   if(!mesh)continue;
+   const focused=!focus||r.id===focus;
+   mesh.visible=partsVisible.has(r.id)&&(!solo||focused);
+   mesh.position.set(r.direction[0]*amount,r.direction[1]*amount,r.direction[2]*amount);
+   const opacity=focus&&!focused&&!solo?.2:1;
+   mesh.material.transparent=opacity<1;
+   mesh.material.opacity=opacity;
+   mesh.material.depthWrite=opacity===1;
+   mesh.material.needsUpdate=true;
+   const border=mesh.getObjectByName('part-boundary');
+   if(border)border.visible=outlineToggle.checked;
+  }
+  setCompare();
+ }
+ function buildPartControlList(counts){
+  const container=document.querySelector('#head-parts-list');
+  container.replaceChildren();
+  targetSelect.replaceChildren(new Option('全部分块',''));
+  for(const family of HEAD_FAMILIES){
+   const list=HEAD_REGIONS.filter(r=>r.family===family);
+   const details=document.createElement('details');details.open=true;
+   const title=document.createElement('summary');
+   title.textContent=family+' · '+list.reduce((n,r)=>n+(counts[r.id]||0),0).toLocaleString()+' 面';
+   details.append(title);
+   for(const region of list){
+    const line=document.createElement('label');line.className='head-part-row';
+    const check=document.createElement('input');check.type='checkbox';check.checked=true;
+    check.onchange=()=>{
+     if(check.checked)partsVisible.add(region.id);else partsVisible.delete(region.id);
+     partsToggle.checked=true;splitToggle.checked=false;updatePartMeshes();
+    };
+    const swatch=document.createElement('i');swatch.style.backgroundColor='#'+region.color.toString(16).padStart(6,'0');
+    const name=document.createElement('span');name.textContent=region.label;
+    const quantity=document.createElement('small');quantity.textContent=(counts[region.id]||0).toLocaleString();
+    line.append(check,swatch,name,quantity);details.append(line);
+    targetSelect.add(new Option(region.label,region.id));
+   }
+   container.append(details);
+  }
+ }
+ partsToggle.checked=new URLSearchParams(location.search).get('mode')==='parts';
+ partsToggle.onchange=()=>{
+  if(partsToggle.checked)splitToggle.checked=false;
+  setCompare();
+ };
+ distanceSlider.oninput=()=>updatePartMeshes();
+ outlineToggle.onchange=()=>updatePartMeshes();
+ isolateToggle.onchange=()=>updatePartMeshes();
+ targetSelect.onchange=()=>{
+  if(targetSelect.value)partsToggle.checked=true;
+  updatePartMeshes();
+ };
 
  document.querySelector('#head-source-file').onchange=async e=>{
   const file=e.target.files?.[0];
@@ -197,6 +284,38 @@ export function startHeadLab(){
  };
 
  const loader=new GLTFLoader();
+ const partUrl=import.meta.env.BASE_URL+'heads/grey-head-qem-symmetric.parts.glb';
+ loader.load(partUrl,gltf=>{
+  partsGroup=gltf.scene;
+  partsGroup.name='RoomBoy | 23 independently editable anatomical blocks';
+  const counts={};
+  partsGroup.traverse(mesh=>{
+   if(!mesh.isMesh)return;
+   const region=HEAD_REGIONS.find(r=>r.id===mesh.name);
+   if(!region)return;
+   const original=mesh.material;
+   mesh.material=new T.MeshLambertMaterial({color:region.color,side:T.DoubleSide});
+   if(original)for(const m of Array.isArray(original)?original:[original])m.dispose();
+   mesh.castShadow=mesh.receiveShadow=true;
+   const boundary=new T.LineSegments(
+    new T.EdgesGeometry(mesh.geometry,165),
+    new T.LineBasicMaterial({color:0x304f55,transparent:true,opacity:.75,depthTest:true})
+   );
+   boundary.name='part-boundary';mesh.add(boundary);
+   partMeshes.set(region.id,mesh);
+   counts[region.id]=(mesh.geometry.index?.count??mesh.geometry.getAttribute('position').count)/3;
+  });
+  if(partMeshes.size!==HEAD_REGIONS.length||Object.values(counts).reduce((sum,n)=>sum+n,0)!==34500){
+   partsStatus.textContent='分块资产的部件数或三角面数量不符，请重新生成。';
+   return;
+  }
+  buildPartControlList(counts);
+  heads.add(partsGroup);
+  syncWire();updatePartMeshes();
+  partsStatus.textContent='23 个独立分块已就绪 · 共 34,500 面 · 左右 7 组配对 · 可以隔离、分离、逐块导出。';
+ },undefined,error=>{
+  console.error(error);partsStatus.textContent='分块 GLB 加载失败：'+(error?.message||String(error));
+ });
  const url=import.meta.env.BASE_URL+compressedHeadAsset.path;
  loader.load(url,gltf=>{
   reducedGroup=gltf.scene;
