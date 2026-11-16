@@ -114,10 +114,12 @@ node --import tsx --experimental-loader ../3D_AItool/experiments/prompt2rig/test
 [独立臀部分块](https://giogyan90.github.io/RoomBoy/?view=pelvis)为待审阅的 36 顶点、68 面镜像笼架，可查看顶点编号与本地参考。侧面按可见边界拟合，橙点标出遮挡处的推定位置。男性全身检查页显示原有骨盆。[分块审阅记录](docs/PELVIS_PART_REVIEW.md)。
 
 
-### 少年头部：真实 GLB 网格减面
+### 少年头部：真实 GLB 减面与严格镜像对称
 
-[打开头部减面实验室](https://giogyan90.github.io/RoomBoy/?view=head) · [查看 30K 面 GLB](https://giogyan90.github.io/RoomBoy/heads/grey-head-qem-30000.glb)
+[打开头部实验室](https://giogyan90.github.io/RoomBoy/?view=head) · [下载左右对称 GLB（34,500 面）](https://giogyan90.github.io/RoomBoy/heads/grey-head-qem-symmetric.glb) · [查看对称前 30K 源网格](https://giogyan90.github.io/RoomBoy/heads/grey-head-qem-30000.glb)
 
-从用户上传的 `grey-head-fast-medium(2).glb` **直接解码顶点和三角面**，使用 QEM 将原 1,424,998 面简化为 **30,000 面**（27,463 顶点、约 996 KB），保留原模型的实际轮廓、眼眶、鼻口与耳廓。当前页面默认加载仓库内的真实减面 GLB，而非之前 541 顶点的程序化拟合头型；旧头模及其烘焙流程已经删除。支持四视角、网格边线与从本机导入原 GLB 并排对比。
+基于用户上传的 1,424,998 面 GLB，先以 QEM 直接减到 30,000 面，再计算 X 中轴，对真实三角形裁切、保留负 X 半边、焊接中线并精确镜像正 X 半边。**最终对称版：31,357 顶点 / 34,500 三角面 / 1.17 MB。** 655 个共享中心线顶点、593 条焊接边，没有残留单侧中线边；保留镜像来源侧的表面法线。
 
-源文件纹理和 UV 尚未迁移，现以中性灰材质检视几何，原始法线已近邻转移。原始 18.9 MB 用户附件没有放入仓库，Haru 游戏角色的骨骼和现用头部暂不替换。详细制作方法、减面参数、验证及本地重新生成见 [少年头部 GLB 减面记录](docs/BOY_HEAD_LAB.md)。
+实验室默认加载新的对称版，可查看正、侧、45°和背面、显示对称轴、分开展示左右半边、开启线框及导入原始高模并排观察。**原来的 541 顶点程序化头型已删除**；30K 源网格作为未对称的备份继续保留。源码生成脚本 `scripts/symmetrize-head.py` 和 GitHub Actions 工作流可重复生成这份真实 GLB。
+
+当前使用中性灰材质，没有迁移原高模的贴图及 UV，也没有替换 Haru 的骨骼绑定头部。制作及验证细节见 [少年头部 GLB 减面与镜像记录](docs/BOY_HEAD_LAB.md)。
