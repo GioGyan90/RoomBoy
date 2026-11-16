@@ -28,23 +28,38 @@ def symmetrize(mesh, side="negative", eps=1e-7):
     if side not in ("negative", "positive"):
         raise ValueError("side must be 'negative' or 'positive'")
     vertices = np.asarray(mesh.vertices, dtype=np.float64).copy()
+    normals = np.asarray(mesh.vertex_normals, dtype=np.float64).copy()
     source_faces = np.asarray(mesh.faces, dtype=np.int64)
+    if normals.shape != vertices.shape:
+        raise ValueError("GLB normals and vertices have inconsistent shapes")
     center = (float(vertices[:, 0].min()) + float(vertices[:, 0].max())) * 0.5
     vertices[:, 0] -= center
     if side == "positive":
         vertices[:, 0] *= -1
+        normals[:, 0] *= -1
 
-    positions, kept_vertices, crossing_edges, clipped_faces = [], {}, {}, []
+    positions, saved_normals, kept_vertices, crossing_edges, clipped_faces = [], [], {}, {}, []
     crossing_triangles = 0
+
+    def fixed_normal(direction, is_seam=False):
+        direction = np.asarray(direction, dtype=np.float64).copy()
+        if is_seam:
+            direction[0] = 0.0  # seam normals must mirror to themselves
+        magnitude = np.linalg.norm(direction)
+        if magnitude < 1e-10:
+            return np.array([0.0, 0.0, 1.0], dtype=np.float64)
+        return direction / magnitude
 
     def source_vertex(index):
         index = int(index)
         if index not in kept_vertices:
             point = vertices[index].copy()
-            if abs(point[0]) <= eps:
+            is_seam = abs(point[0]) <= eps
+            if is_seam:
                 point[0] = 0.0
             kept_vertices[index] = len(positions)
             positions.append(point)
+            saved_normals.append(fixed_normal(normals[index], is_seam))
         return kept_vertices[index]
 
     def intersection(a, b):
@@ -60,6 +75,9 @@ def symmetrize(mesh, side="negative", eps=1e-7):
             point[0] = 0.0
             crossing_edges[edge] = len(positions)
             positions.append(point)
+            saved_normals.append(fixed_normal(
+                normals[a] + weight * (normals[b]-normals[a]), True
+            ))
         return crossing_edges[edge]
 
     # Clip each original indexed triangle; cache each cut edge intersection.
@@ -93,6 +111,7 @@ def symmetrize(mesh, side="negative", eps=1e-7):
                 clipped_faces.append(face_indices)
 
     half_positions = np.asarray(positions, dtype=np.float64)
+    half_normals = np.asarray(saved_normals, dtype=np.float64)
     seam_mask = np.abs(half_positions[:, 0]) <= eps
     half_positions[seam_mask, 0] = 0.0
     other = np.where(~seam_mask)[0]
@@ -101,17 +120,22 @@ def symmetrize(mesh, side="negative", eps=1e-7):
     mirror_positions = half_positions[other].copy()
     mirror_positions[:, 0] *= -1.0
     out_positions = np.vstack([half_positions, mirror_positions])
+    mirror_normals = half_normals[other].copy()
+    mirror_normals[:, 0] *= -1.0
+    out_normals = np.vstack([half_normals, mirror_normals])
 
     left = np.asarray(clipped_faces, dtype=np.int64)
     right = mirror_ids[left[:, [0, 2, 1]]]
     out_faces = np.vstack([left, right])
     if side == "positive":
         out_positions[:, 0] *= -1
+        out_normals[:, 0] *= -1
         out_faces = out_faces[:, [0, 2, 1]]
 
     result = trimesh.Trimesh(
         vertices=out_positions.astype(np.float32),
         faces=out_faces.astype(np.int64),
+        vertex_normals=out_normals.astype(np.float32),
         process=False,
     )
     result.metadata["name"] = "grey-head-qem-symmetric"
@@ -121,6 +145,7 @@ def symmetrize(mesh, side="negative", eps=1e-7):
     mirrored_vertices = {tuple(p) for p in rendered}
     assert all(tuple((-x, y, z)) in mirrored_vertices for x, y, z in rendered)
     assert len(left) == len(right)
+    assert np.max(np.abs(np.asarray(result.vertex_normals)[seam_mask.nonzero()[0], 0])) < 1e-7
     mirrored_faces = {frozenset(t) for t in right.tolist()}
     assert all(frozenset(mirror_ids[t]) in mirrored_faces for t in left)
     if side == "positive":
@@ -151,6 +176,7 @@ def symmetrize(mesh, side="negative", eps=1e-7):
         "result_faces": int(len(out_faces)),
         "result_vertices": int(len(out_positions)),
         "exact_mirrored_vertices_and_triangles": True,
+        "source_vertex_normals_preserved_except_symmetry_seam": True,
     }
     return result, report
 
