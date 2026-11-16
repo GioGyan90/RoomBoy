@@ -23,7 +23,7 @@ test('reference edge-aligned head is low-poly with complete face and open eye an
  assert(data.vertices.flat().every(Number.isFinite));
  const stations=referenceEdgeStations();
  assert(stations.length>=13 && stations.length<sourceReference.measuredSections);
- assert(stations.every((s,i)=>i===0||s.y>stations[i-1].y));
+ assert(stations.every((s:{y:number},i:number)=>i===0||s.y>stations[i-1].y));
 });
 
 test('reference contours stay close without claiming full surface precision',()=>{
