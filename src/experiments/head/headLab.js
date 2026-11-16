@@ -6,6 +6,7 @@ import {glbSections} from './glbOutline.js';
 import {makeEdgeLowpolyData,lowpolyStats,serializeLowpolyHead,referenceEdgeStations,sourceReference} from './edgeLowpoly.js';
 import {loadReferenceParts,makeReferenceGroup,referenceCounts,serializeReferenceToJS} from './referenceCopy.js';
 import {createParameterPanel} from './parameterPanel.js';
+import {createBoyHeadLowpolyMesh,createBoyHeadLowpolyWire} from '../../assets/procedural/boyHeadLowpoly.js';
 import './headLab.css';
 
 export function startHeadLab(){
@@ -34,12 +35,15 @@ export function startHeadLab(){
  let stage=3,params={...defaults},activeLowpoly=null;
  function rebuild(){
   while(group.children.length){const o=group.children[0];group.remove(o);o.geometry?.dispose();o.material?.dispose();}
-  const data=makeEdgeLowpolyData(params,stage),g=headGeometry(data,document.querySelector('#regions').checked);
+  const data=makeEdgeLowpolyData(params,stage);
   activeLowpoly=data;
-  const mesh=new T.Mesh(g,new T.MeshLambertMaterial({vertexColors:true,flatShading:true,side:T.FrontSide,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1}));group.add(mesh);
+  // Use the exact reusable scene asset, not a duplicate experimental render mesh.
+  const mesh=createBoyHeadLowpolyMesh({data,regionColors:document.querySelector('#regions').checked});
+  const g=mesh.geometry;
+  group.add(mesh);
   // Interior surface only, not an eyeball or a cap over the eye opening.
   group.add(new T.Mesh(headGeometry({...data,faces:data.faces.map(f=>[...f].reverse())}),new T.MeshBasicMaterial({color:0x777c78,side:T.FrontSide})));
-  const wire=new T.LineSegments(cageGeometry(data),new T.LineBasicMaterial({color:0x485e63,transparent:true,opacity:.4}));wire.visible=document.querySelector('#wire').checked;group.add(wire);
+  const wire=createBoyHeadLowpolyWire(data);wire.visible=document.querySelector('#wire').checked;group.add(wire);
   if(document.querySelector('#reference-outline').checked){
    const name=document.querySelector('[data-view].selected')?.dataset.view,points=[];
    if(name==='front'||name==='side')for(let i=1;i<glbSections.length;i++)for(const side of [-1,1]){
