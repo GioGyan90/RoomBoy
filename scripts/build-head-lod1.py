@@ -188,7 +188,12 @@ def shell_model(positions, faces):
             b = yi * LONGITUDE + (j + 1) % LONGITUDE
             c = (yi + 1) * LONGITUDE + j
             d = (yi + 1) * LONGITUDE + (j + 1) % LONGITUDE
-            triangles.extend(((a, c, b), (b, c, d)))
+            # Opposite quad diagonals on mirrored longitude sectors make
+            # triangle topology symmetric as well as vertex positions.
+            if j < LONGITUDE // 2:
+                triangles.extend(((a, c, d), (a, d, b)))
+            else:
+                triangles.extend(((a, c, b), (b, c, d)))
     for j in range(LONGITUDE):
         triangles.append((bottom, j, (j + 1) % LONGITUDE))
         triangles.append(((LATITUDE - 2) * LONGITUDE + j,
