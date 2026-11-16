@@ -8,7 +8,10 @@
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --import tsx --test tests/*.test.ts",
-    "assets:convert": "node --import tsx tools/glb-to-vertices.ts"
+    "assets:convert": "node --import tsx tools/glb-to-vertices.ts",
+    "assets:parts": "node scripts/bake-head-regions.mjs",
+    "pretest": "npm run assets:parts",
+    "prebuild": "npm run assets:parts"
   },
   "keywords": [],
   "author": "",
