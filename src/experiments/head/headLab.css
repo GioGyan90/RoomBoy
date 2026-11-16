@@ -51,3 +51,9 @@ body:has(.head-lab){margin:0;background:#eaede9;color:#2c4242;font-family:system
  .head-lab dt{font-size:9px}
  .head-stage.is-comparing #head-canvas::after{font-size:9px}
 }
+
+.head-lab .head-original-link{display:block;margin-top:11px;font-size:11px;text-align:center;text-decoration:underline;text-underline-offset:3px}
+.head-stage.is-split #head-canvas::after{content:'左：负 X 原始半边　 ·　 右：正 X 精确镜像半边';position:absolute;pointer-events:none;left:0;right:0;bottom:12px;color:#456963;font-size:11px;text-align:center}
+.head-stage.is-comparing #head-canvas::after{content:'左：对称 34.5K 面　 ·　 右：上传的原始 GLB'}
+.head-lab .toggles label{cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+@media(max-width:720px){.head-stage.is-split #head-canvas::after{font-size:9px}}
