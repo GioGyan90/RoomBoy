@@ -39,11 +39,39 @@ export function normalizeReferenceParts(parts) {
  return parts;
 }
 
+// Strip texture/material declarations from a GLB copy before geometry-only
+// inspection. The source requires KHR_texture_basisu (KTX2), but that should
+// never block the user from comparing vertex positions and surface normals.
+// Original user bytes are not modified, uploaded or included in the repository.
+export function geometryOnlyGlb(original) {
+ const input=new Uint8Array(original),dv=new DataView(input.buffer,input.byteOffset,input.byteLength);
+ if(input.byteLength<28||dv.getUint32(0,true)!==0x46546c67||dv.getUint32(4,true)!==2||dv.getUint32(8,true)!==input.byteLength)throw new Error('不是有效的 GLB v2 文件。');
+ const jsonSize=dv.getUint32(12,true);
+ if(dv.getUint32(16,true)!==0x4e4f534a||jsonSize<2||20+jsonSize+8>input.byteLength)throw new Error('GLB JSON 数据段无效。');
+ const json=JSON.parse(new TextDecoder().decode(input.subarray(20,20+jsonSize)));
+ for(const mesh of json.meshes??[])for(const primitive of mesh.primitives??[])delete primitive.material;
+ for(const key of ['materials','textures','images','samplers'])delete json[key];
+ json.extensionsUsed=(json.extensionsUsed??[]).filter(e=>e==='EXT_meshopt_compression');
+ json.extensionsRequired=(json.extensionsRequired??[]).filter(e=>e==='EXT_meshopt_compression');
+ const sourceBinary=20+jsonSize,binSize=dv.getUint32(sourceBinary,true);
+ if(dv.getUint32(sourceBinary+4,true)!==0x004e4942||sourceBinary+8+binSize>input.byteLength)throw new Error('GLB BIN 数据段无效。');
+ const bytes=new TextEncoder().encode(JSON.stringify(json));
+ const padded=(bytes.length+3)&~3;
+ const output=new Uint8Array(20+padded+8+binSize);
+ const header=new DataView(output.buffer);
+ header.setUint32(0,0x46546c67,true);header.setUint32(4,2,true);header.setUint32(8,output.length,true);
+ header.setUint32(12,padded,true);header.setUint32(16,0x4e4f534a,true);
+ output.fill(32,20,20+padded);output.set(bytes,20);
+ output.set(input.subarray(sourceBinary,sourceBinary+8+binSize),20+padded);
+ return output.buffer;
+}
+
 export async function loadReferenceParts(buffer) {
  await MeshoptDecoder.ready;
  const loader=new GLTFLoader();
  loader.setMeshoptDecoder(MeshoptDecoder);
- const gltf=await new Promise((resolve,reject)=>loader.parse(buffer,'',resolve,reject));
+ const geometryBuffer=geometryOnlyGlb(buffer);
+ const gltf=await new Promise((resolve,reject)=>loader.parse(geometryBuffer,'',resolve,reject));
  return normalizeReferenceParts(copyReferenceParts(gltf.scene));
 }
 

@@ -8,8 +8,7 @@
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --import tsx --test tests/*.test.ts",
-    "assets:convert": "node --import tsx tools/glb-to-vertices.ts",
-    "prebuild": "node scripts/export-head-lowpoly.mjs"
+    "assets:convert": "node --import tsx tools/glb-to-vertices.ts"
   },
   "keywords": [],
   "author": "",

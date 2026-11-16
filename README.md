@@ -114,6 +114,10 @@ node --import tsx --experimental-loader ../3D_AItool/experiments/prompt2rig/test
 [独立臀部分块](https://giogyan90.github.io/RoomBoy/?view=pelvis)为待审阅的 36 顶点、68 面镜像笼架，可查看顶点编号与本地参考。侧面按可见边界拟合，橙点标出遮挡处的推定位置。男性全身检查页显示原有骨盆。[分块审阅记录](docs/PELVIS_PART_REVIEW.md)。
 
 
-### 少年头部 GLB 精确副本对照
+### 少年头部：真实 GLB 网格减面
 
-[少年头部实验室](https://giogyan90.github.io/RoomBoy/?view=head) 支持导入本机 GLB，按真实顶点及面索引构造高模 JS 副本，并与可编辑的程序化低模头部并排同步观察；可导出不依赖 GLB 的 JS 几何模块。文件只在浏览器本地读取，仓库不包含此前的用户 GLB 附件。详细说明见 [少年头部建模记录](docs/BOY_HEAD_LAB.md)。
+[打开头部减面实验室](https://giogyan90.github.io/RoomBoy/?view=head) · [查看 30K 面 GLB](https://giogyan90.github.io/RoomBoy/heads/grey-head-qem-30000.glb)
+
+从用户上传的 `grey-head-fast-medium(2).glb` **直接解码顶点和三角面**，使用 QEM 将原 1,424,998 面简化为 **30,000 面**（27,463 顶点、约 996 KB），保留原模型的实际轮廓、眼眶、鼻口与耳廓。当前页面默认加载仓库内的真实减面 GLB，而非之前 541 顶点的程序化拟合头型；旧头模及其烘焙流程已经删除。支持四视角、网格边线与从本机导入原 GLB 并排对比。
+
+源文件纹理和 UV 尚未迁移，现以中性灰材质检视几何，原始法线已近邻转移。原始 18.9 MB 用户附件没有放入仓库，Haru 游戏角色的骨骼和现用头部暂不替换。详细制作方法、减面参数、验证及本地重新生成见 [少年头部 GLB 减面记录](docs/BOY_HEAD_LAB.md)。
