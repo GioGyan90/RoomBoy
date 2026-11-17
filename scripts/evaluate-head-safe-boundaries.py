@@ -20,14 +20,72 @@ spec.loader.exec_module(qem)
 
 
 class BoundarySafeQEM(qem.RegionQEM):
+    """Protect original component connectivity and local surface area."""
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        usage=qem.topology_edges(self.f)
+        # Open edges are not closed by fictional triangles. Never contract the
+        # actual source boundary itself; interior reduction is still allowed.
+        self.source_open_edges={edge for edge,owners in usage.items() if len(owners)==1}
+        self.source_open_vertices=set(x for edge in self.source_open_edges for x in edge)
+        self.initial_face_areas=self.face_area(self.f)
+        self.total_area=float(self.initial_face_areas.sum())
+        self.current_area=self.total_area
+        self.min_area=self.total_area*0.975
+        self.area_rejected=0
+        self.component_rejected=0
+        self.start_components=face_components(self.f)
+
+    def face_area(self,triangles):
+        a,b,c=self.v[triangles[:,0]],self.v[triangles[:,1]],self.v[triangles[:,2]]
+        return np.linalg.norm(np.cross(b-a,c-a),axis=1)*0.5
+
     def can_collapse(self,keep,drop):
-        shared=self.inc[keep] & self.inc[drop]
+        shared=self.inc[keep]&self.inc[drop]
         if len(shared)!=2:
-            return False,"original_open_boundary_preserved",None
-        # Never collapse a vertex that participates in any source open edge.
-        # The head GLB is already fragmented; contracting a single boundary
-        # edge creates the prominent ear/temple holes in the prior 10K trial.
-        return super().can_collapse(keep,drop)
+            return False,"source_open_edge_preserved",None
+        # Collapsing even an interior edge incident to a boundary vertex can
+        # destroy a narrow strip and create the missing temporal/ear surface.
+        if keep in self.source_open_vertices or drop in self.source_open_vertices:
+            return False,"source_boundary_vertex_preserved",None
+        ok,reason,region=super().can_collapse(keep,drop)
+        if not ok:
+            return ok,reason,region
+        # Removing two faces can disconnect multiple face-fans linked only
+        # through them. On the local face patch we require every surviving
+        # incident face to be connected through real, shared INDEX edges.
+        changed=(self.inc[keep]|self.inc[drop])
+        surviving=sorted(changed-shared)
+        if not surviving:return False,"component_removed",None
+        local_faces=[]
+        old_area=0.
+        new_area=0.
+        for fid in changed:
+            tri=self.f[fid]
+            old_area+=float(self.face_area(tri[None,:])[0])
+            if fid in shared:continue
+            update=np.where(tri==drop,keep,tri)
+            new_area+=float(self.face_area(update[None,:])[0])
+            local_faces.append(update)
+        # preserve local area and a global 97.5% area coverage threshold
+        if new_area<old_area*0.82 or self.current_area-old_area+new_area<self.min_area:
+            self.area_rejected+=1
+            return False,"surface_area_loss",None
+        # All updated incident faces need to form one edge-connected local
+        # patch. This is conservative, especially with fragmented input.
+        if face_components(np.asarray(local_faces,dtype=np.int64))!=1:
+            self.component_rejected+=1
+            return False,"local_component_split",None
+        return True,"ok",region
+
+    def collapse(self,keep,drop,region):
+        changed=self.inc[keep]|self.inc[drop]
+        old_area=sum(float(self.face_area(self.f[fid:fid+1])[0]) for fid in changed)
+        shared=self.inc[keep]&self.inc[drop]
+        new_area=sum(float(self.face_area(np.where(self.f[fid:fid+1]==drop,keep,self.f[fid:fid+1]))[0])
+                     for fid in changed if fid not in shared)
+        self.current_area+=new_area-old_area
+        return super().collapse(keep,drop,region)
 
 
 def face_components(faces):
@@ -91,7 +149,7 @@ def main():
     area_src=float(source.area)
     area_safe=float(mesh.area)
     report={
-      "method":"strict no single-face-edge collapse / original geometry only",
+      "method":"boundary vertex locked + local dual-graph component continuity + local and global area safeguards",
       "sourceFaces":len(faces),"outputFaces":len(mesh.faces),
       "outputVertices":len(mesh.vertices),
       "targetFaces":10000,
@@ -104,10 +162,18 @@ def main():
       "candidateLeftOpenEdges":sum(len(x)==1 for x in after.values()),
       "source":qem.SOURCE.name,"output":output.name,
       "collapses":dict(dec.stats),
+      "areaFloorPercent":97.5,
+      "localComponentSplitRejected":dec.component_rejected,
+      "surfaceAreaCollapseRejected":dec.area_rejected,
       "notice":"A topology-preserving >10K fallback is preferred to holey 10K. Do not accept solely by face count."
     }
     result=ROOT/"grey-head-region-lod-v1.safe.report.json"
     result.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf8")
+    report["componentCountPreserved"]=report["sourceConnectedComponents"]==report["candidateConnectedComponents"]
+    report["areaPass"]=report["areaRetainedPercent"]>=97.4
+    result.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\\n",encoding="utf8")
+    assert report["componentCountPreserved"],"CANDIDATE REJECTED: new edge-disconnected face components"
+    assert report["areaPass"],"CANDIDATE REJECTED: excessive surface area lost"
     print(json.dumps(report,ensure_ascii=False,indent=2))
 
 
