@@ -1,56 +1,56 @@
 {
   "source": "Actual Chromium WebGL renders, head planes page",
-  "commit": "726a4c41e416e99fe7db34a7f3c071223771a707",
-  "capturedAt": "2026-11-17T09:36:56.374Z",
+  "commit": "80971fe751f8e32466d91c02f38345b742ab6e20",
+  "capturedAt": "2026-11-17T09:41:51.242Z",
   "modelStats": "696 三角面 · 3 个结构网格",
   "screenshots": [
     {
       "name": "front",
-      "bytes": 21002
+      "bytes": 20691
     },
     {
       "name": "frontLeft",
-      "bytes": 21338
+      "bytes": 20714
     },
     {
       "name": "frontRight",
-      "bytes": 20879
+      "bytes": 20116
     },
     {
       "name": "profileLeft",
-      "bytes": 18585
+      "bytes": 17811
     },
     {
       "name": "profileRight",
-      "bytes": 18021
+      "bytes": 17653
     },
     {
       "name": "back",
-      "bytes": 17854
+      "bytes": 17370
     },
     {
       "name": "backLeft",
-      "bytes": 18162
+      "bytes": 17703
     },
     {
       "name": "top",
-      "bytes": 17947
+      "bytes": 17447
     },
     {
       "name": "stage-half",
-      "bytes": 14454
+      "bytes": 14393
     },
     {
       "name": "stage-mirror",
-      "bytes": 19925
+      "bytes": 19769
     },
     {
       "name": "all-nine",
-      "bytes": 34314
+      "bytes": 32952
     },
     {
       "name": "mobile-three-quarter",
-      "bytes": 11616
+      "bytes": 11311
     }
   ],
   "browserErrors": []
