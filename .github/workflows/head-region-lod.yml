@@ -25,6 +25,14 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: true
+      - name: Preserve exact 34.5K input for offline topology QA
+        uses: actions/upload-artifact@v4
+        with:
+          name: head-region-input-34500
+          path: |
+            public/heads/grey-head-qem-symmetric.glb
+            public/heads/grey-head-qem-symmetric.parts.json
+          retention-days: 7
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
