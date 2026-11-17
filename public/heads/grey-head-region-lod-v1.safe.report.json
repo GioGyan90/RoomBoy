@@ -1,0 +1,30 @@
+{
+  "method": "strict no single-face-edge collapse / original geometry only",
+  "sourceFaces": 34500,
+  "outputFaces": 15216,
+  "outputVertices": 18627,
+  "targetFaces": 10000,
+  "reachedTarget": false,
+  "sourceSurfaceArea": 24.340636327818174,
+  "candidateSurfaceArea": 19.57884498301057,
+  "areaRetainedPercent": 80.437,
+  "sourceConnectedComponents": 1730,
+  "candidateConnectedComponents": 3733,
+  "sourceLeftOpenEdges": 14638,
+  "candidateLeftOpenEdges": 10646,
+  "source": "grey-head-qem-symmetric.glb",
+  "output": "grey-head-region-lod-v1.safe.glb",
+  "collapses": {
+    "collapses": 4821,
+    "stale": 29204,
+    "protected_edge_face": 2305,
+    "original_open_boundary_preserved": 22255,
+    "small_area": 1597,
+    "normal_flip": 1458,
+    "link_condition": 150,
+    "island_deletion": 3133,
+    "remaining_left_faces": 7608,
+    "reached_goal": false
+  },
+  "notice": "A topology-preserving >10K fallback is preferred to holey 10K. Do not accept solely by face count."
+}
