@@ -81,12 +81,12 @@ function bustRing(level){
  return out;
 }
 const NECK_BUST=[
- {name:'neckRoot', y:-.67,w:.235,d:.24,z:-.10,shoulderDrop:0},
- {name:'neckMid',  y:-.99,w:.235,d:.25,z:-.11,shoulderDrop:0},
- {name:'neckLow',  y:-1.25,w:.26,d:.27,z:-.11,shoulderDrop:0},
- {name:'trap',     y:-1.43,w:.41,d:.30,z:-.11,shoulderDrop:.09},
- {name:'shoulder', y:-1.67,w:.70,d:.33,z:-.11,shoulderDrop:.055},
- {name:'bustEnd',  y:-2.04,w:.78,d:.34,z:-.11,shoulderDrop:0}
+ {name:'neckRoot', y:-.64,w:.235,d:.24,z:-.10,shoulderDrop:0},
+ {name:'neckMid',  y:-.78,w:.235,d:.25,z:-.11,shoulderDrop:0},
+ {name:'neckLow',  y:-.93,w:.26,d:.27,z:-.11,shoulderDrop:0},
+ {name:'trap',     y:-1.04,w:.41,d:.30,z:-.11,shoulderDrop:.05},
+ {name:'shoulder', y:-1.17,w:.70,d:.33,z:-.11,shoulderDrop:.055},
+ {name:'bustEnd',  y:-2.46,w:.78,d:.34,z:-.11,shoulderDrop:0}
 ];
 export const HEAD_PLANE_STAGES=['half','mirror','volume'];
 const mirrorSegments=new Set([0,1,2,3,4,13,14,15,16,17]);
@@ -177,7 +177,7 @@ export function createHeadPlanes({stage='volume'}={}){
   for(let s=0;s<sections;s++)
    push(ti,s,(s+1)%sections,'crown');
   const bi=pos.length/3;
-  pos.push(0,-2.04,-.11*Z_SCALE);
+  pos.push(0,-2.46,-.11*Z_SCALE);
   const n=(rings.length-1)*sections;
   for(let s=0;s<sections;s++)
    push(bi,n+(s+1)%sections,n+s,'shoulders');
