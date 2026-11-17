@@ -141,3 +141,18 @@ test('safe fallback preserves 34.5K source face islands and all original open bo
  const faces=glb.values(glb.j.meshes[0].primitives[0].indices).length/3;
  assert.equal(faces,safe.outputFaces);
 });
+
+
+test('graded intermediate does not fuse source mesh islands or exceed permitted surface loss',()=>{
+ const meta=JSON.parse(readFileSync(root+'grey-head-region-lod-v1.graded.report.json','utf8'));
+ assert.equal(meta.sourceFaces,34500);
+ assert.equal(meta.outputFaces,25740);
+ assert(meta.outputFaces>10000,'graded variant is not yet a final 10K head');
+ assert.equal(meta.componentCountPreserved,true);
+ assert.equal(meta.sourceComponents,meta.outputComponents);
+ assert(meta.surfaceAreaRetainedPercent>=95.5);
+ assert.equal(meta.state,'eligible_for_visual_review');
+ const mesh=parse(root+'grey-head-region-lod-v1.graded.glb');
+ const prim=mesh.j.meshes[0].primitives[0];
+ assert.equal(mesh.values(prim.indices).length/3,meta.outputFaces);
+});
