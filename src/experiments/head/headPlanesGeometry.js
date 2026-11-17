@@ -20,9 +20,9 @@ export const FRONT_LEFT_HALF_ROWS = [
   {name:'05 brow bridge', points:[[0,.59,.54],[-.085,.59,.55],[-.22,.59,.57],[-.40,.59,.54],[-.54,.57,.41],[-.65,.55,-.04]]},
   {name:'06 recessed eye',points:[[0,.43,.61],[-.085,.43,.58],[-.20,.43,.37],[-.36,.43,.35],[-.51,.42,.30],[-.64,.42,-.05]]},
   {name:'07 eye bottom',  points:[[0,.29,.67],[-.09,.29,.60],[-.20,.29,.42],[-.36,.29,.38],[-.50,.28,.30],[-.63,.28,-.06]]},
-  {name:'08 nasal tip',   points:[[0,.14,.74],[-.085,.14,.63],[-.21,.14,.51],[-.37,.14,.43],[-.51,.13,.33],[-.62,.12,-.07]]},
-  {name:'09 nose base',  points:[[0,-.05,.54],[-.085,-.05,.52],[-.21,-.05,.47],[-.35,-.05,.39],[-.46,-.05,.32],[-.56,-.06,-.085]]},
-  {name:'10 lower cheek',points:[[0,-.23,.48],[-.09,-.23,.46],[-.20,-.23,.43],[-.30,-.23,.38],[-.41,-.22,.25],[-.47,-.20,-.13]]},
+  {name:'08 nasal tip',   points:[[0,.14,.74],[-.085,.14,.63],[-.21,.14,.51],[-.37,.14,.396],[-.51,.13,.296],[-.62,.12,-.07]]},
+  {name:'09 nose base',  points:[[0,-.05,.54],[-.085,-.05,.52],[-.21,-.05,.460],[-.35,-.05,.363],[-.46,-.05,.286],[-.56,-.06,-.085]]},
+  {name:'10 lower cheek',points:[[0,-.23,.48],[-.09,-.23,.46],[-.20,-.23,.423],[-.30,-.23,.353],[-.41,-.22,.278],[-.47,-.20,-.13]]},
   {name:'11 chin wedge', points:[[0,-.43,.39],[-.08,-.43,.39],[-.17,-.43,.35],[-.25,-.42,.28],[-.33,-.39,.09],[-.36,-.36,-.16]]},
   {name:'12 chin shelf', points:[[0,-.54,.32],[-.07,-.54,.32],[-.16,-.54,.29],[-.22,-.51,.21],[-.25,-.47,.03],[-.28,-.44,-.18]]}
 ];
@@ -77,9 +77,13 @@ function buildRing(row,i){
 // appeared in real browser screenshots of the previous cap.
 function crownRoll(ring){
  return ring.map(([x,y,z])=>{
-   const xx=x*.70;
-   const t=Math.min(1,Math.abs(xx)/.50);
-   return [near(xx),1.631-.014*t*t,near(z*.55-.060)];
+   const xx=x*.70, zz=z*.55-.060;
+   // The longitudinal back-to-front radius matters as much as width.
+   // Without this the sagittal apex produced a vertical rooftop tab.
+   const lateral=Math.pow(xx/.53,2);
+   const posterior=Math.pow((zz+.092)/.087,2);
+   const r=Math.min(1.3,lateral+posterior);
+   return [near(xx),1.625-.075*r,near(zz)];
  });
 }
 
