@@ -33,6 +33,8 @@ jobs:
           path: |
             public/heads/grey-head-qem-symmetric.glb
             public/heads/grey-head-qem-symmetric.parts.json
+            scripts/build-head-region-lod.py
+            scripts/evaluate-head-safe-boundaries.py
           retention-days: 7
       - uses: actions/setup-python@v5
         with:
