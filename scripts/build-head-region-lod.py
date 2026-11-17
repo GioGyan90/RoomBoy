@@ -431,7 +431,7 @@ def main():
 
     stats = {
         "schema": "roomboy.head-region-lod-report.v1",
-        "state": "accepted_geometry_candidate" if len(full_f) <= 10000 else "unaccepted_first_round_over_budget",
+        "state": "rejected_visual_surface_holes" if len(full_f) <= 10000 else "unaccepted_first_round_over_budget",
         "source": SOURCE.name, "sourceFaces": len(source_f),
         "outputFaces": len(full_f), "outputVertices": len(full_v),
         "targetFaces": 10000, "reductionPercent": round(100*(1-len(full_f)/len(source_f)), 3),
@@ -454,9 +454,10 @@ def main():
             "sourceUnmodified": True,
             "mirrorAndCenterSeam": True,
             "regionBordersExact": True,
-            "visualInspection": "pending image review",
+            "visualInspection": "REJECTED: side view showed missing surfaces behind ear and temporal region; lab-only, never use as character head",
+            "noVisibleSurfaceHoles": False,
         },
-        "notice": "This is a constrained diagnostic candidate, not an accepted replacement for the 34.5K master.",
+        "notice": "The 10K diagnostic failed side-view surface integrity despite passing shared-edge and mirror checks. It must not replace the master.",
     }
     REPORT_OUT.write_text(json.dumps(stats, ensure_ascii=False, indent=2)+"\n",encoding="utf8")
     print(json.dumps({key:stats[key] for key in (
