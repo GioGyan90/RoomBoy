@@ -88,3 +88,18 @@ body:has(.head-lab){margin:0;background:#eaede9;color:#2c4242;font-family:system
 
 .head-regions .head-export-part{display:block;width:100%;margin:7px 0 8px;background:#e4eee8;border-color:#c3d7ca;color:#346356;font-size:11px}
 .head-regions .head-export-part:disabled{opacity:.45;cursor:not-allowed}
+
+/* 10K experimental region-QEM side-by-side review. Never confuse with uploaded GLB. */
+.head-stage.is-comparing.is-lod-comparing #head-canvas::after{content:'左：新 10K 真实分区减面　 ·　 右：34.5K 对称母版'}
+.head-lod .head-part-switch{display:flex;gap:9px;align-items:center;font-size:12px;color:#325a54;margin:12px 0;cursor:pointer}
+.head-lod .head-part-switch:has(input:disabled){opacity:.55}
+.head-lod .head-original-link,.head-lod .head-part-manifest{display:block;margin:10px 0;text-align:center;text-decoration:underline;font-size:11px}
+@media(max-width:720px){.head-stage.is-comparing.is-lod-comparing #head-canvas::after{font-size:9px}}
+
+/* Each intermediate comparison labels the actual left-hand mesh explicitly. */
+.head-stage.is-comparing.is-safe-comparing #head-canvas::after{content:'左：严格边界保护 30,536 面　 ·　 右：34.5K 原母版'}
+.head-stage.is-comparing.is-graded-comparing #head-canvas::after{content:'左：分级约束 25,740 面　 ·　 右：34.5K 原母版'}
+@media(max-width:720px){
+ .head-stage.is-comparing.is-safe-comparing #head-canvas::after,
+ .head-stage.is-comparing.is-graded-comparing #head-canvas::after{font-size:9px}
+}

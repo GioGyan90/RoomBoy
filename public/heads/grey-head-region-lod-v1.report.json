@@ -1,0 +1,196 @@
+{
+  "schema": "roomboy.head-region-lod-report.v1",
+  "state": "rejected_visual_surface_holes",
+  "source": "grey-head-qem-symmetric.glb",
+  "sourceFaces": 34500,
+  "outputFaces": 10000,
+  "outputVertices": 11599,
+  "targetFaces": 10000,
+  "reductionPercent": 71.014,
+  "isExactMirroredIndexedMesh": true,
+  "sourceOnlyGeometry": true,
+  "crossRegionBoundaryEdgesUnchangedOnLeft": 857,
+  "centerPlaneEdgesFullyWelded": 593,
+  "baselineSourceOpenEdgesOnLeft": 14638,
+  "candidateOpenEdgesOnLeft": 6348,
+  "newNonManifoldEdges": 0,
+  "sourceEdgesPreserved": "region interfaces and X=0; source open-edge loops may simplify",
+  "landmarkLocks": {
+    "plane": 655,
+    "shared_region_edges": 857,
+    "shared_region_vertices": 1712,
+    "crease_edges": 356,
+    "total_immutable_vertices": 2444
+  },
+  "collapser": {
+    "collapses": 9217,
+    "stale": 53249,
+    "protected_edge_face": 3306,
+    "small_area": 1128,
+    "normal_flip": 1365,
+    "island_deletion": 6446,
+    "link_condition": 3845,
+    "region_budget": 761,
+    "remaining_left_faces": 5000,
+    "reached_goal": true
+  },
+  "regions": [
+    {
+      "id": "vault",
+      "sourceLeftFaces": 2794,
+      "candidateLeftFaces": 592,
+      "minimumAllowed": 265
+    },
+    {
+      "id": "occiput",
+      "sourceLeftFaces": 4612,
+      "candidateLeftFaces": 851,
+      "minimumAllowed": 392
+    },
+    {
+      "id": "forehead",
+      "sourceLeftFaces": 1414,
+      "candidateLeftFaces": 308,
+      "minimumAllowed": 212
+    },
+    {
+      "id": "temple_L",
+      "sourceLeftFaces": 1157,
+      "candidateLeftFaces": 390,
+      "minimumAllowed": 208
+    },
+    {
+      "id": "lateral_L",
+      "sourceLeftFaces": 517,
+      "candidateLeftFaces": 171,
+      "minimumAllowed": 77
+    },
+    {
+      "id": "brow_L",
+      "sourceLeftFaces": 440,
+      "candidateLeftFaces": 202,
+      "minimumAllowed": 202
+    },
+    {
+      "id": "orbit_L",
+      "sourceLeftFaces": 1085,
+      "candidateLeftFaces": 477,
+      "minimumAllowed": 477
+    },
+    {
+      "id": "nasalBridge",
+      "sourceLeftFaces": 490,
+      "candidateLeftFaces": 220,
+      "minimumAllowed": 220
+    },
+    {
+      "id": "nasalTip",
+      "sourceLeftFaces": 284,
+      "candidateLeftFaces": 144,
+      "minimumAllowed": 139
+    },
+    {
+      "id": "midface",
+      "sourceLeftFaces": 79,
+      "candidateLeftFaces": 60,
+      "minimumAllowed": 37
+    },
+    {
+      "id": "cheek_L",
+      "sourceLeftFaces": 458,
+      "candidateLeftFaces": 169,
+      "minimumAllowed": 169
+    },
+    {
+      "id": "upperLip",
+      "sourceLeftFaces": 149,
+      "candidateLeftFaces": 89,
+      "minimumAllowed": 81
+    },
+    {
+      "id": "lowerLip",
+      "sourceLeftFaces": 202,
+      "candidateLeftFaces": 109,
+      "minimumAllowed": 109
+    },
+    {
+      "id": "chin",
+      "sourceLeftFaces": 663,
+      "candidateLeftFaces": 218,
+      "minimumAllowed": 218
+    },
+    {
+      "id": "jaw_L",
+      "sourceLeftFaces": 668,
+      "candidateLeftFaces": 200,
+      "minimumAllowed": 200
+    },
+    {
+      "id": "ear_L",
+      "sourceLeftFaces": 2238,
+      "candidateLeftFaces": 800,
+      "minimumAllowed": 783
+    }
+  ],
+  "acceptance": {
+    "countAtMost10000": true,
+    "sourceUnmodified": true,
+    "mirrorAndCenterSeam": true,
+    "regionBordersExact": true,
+    "visualInspection": "REJECTED: actual side-view missing temporal and ear-back surfaces; sampled surface distance and silhouette statistics cannot overturn this rejection",
+    "noVisibleSurfaceHoles": false,
+    "silhouettePassed": true,
+    "surfaceDistanceMeasured": true
+  },
+  "notice": "The 10K diagnostic failed side-view surface integrity despite passing shared-edge and mirror checks. It must not replace the master.",
+  "renderReview": {
+    "front": {
+      "image": "docs/images/head-region-lod-v1/front-comparison.png",
+      "silhouetteIoU": 0.997281
+    },
+    "quarter": {
+      "image": "docs/images/head-region-lod-v1/quarter-comparison.png",
+      "silhouetteIoU": 0.99323
+    },
+    "side": {
+      "image": "docs/images/head-region-lod-v1/side-comparison.png",
+      "silhouetteIoU": 0.959126
+    },
+    "back": {
+      "image": "docs/images/head-region-lod-v1/back-comparison.png",
+      "silhouetteIoU": 0.997281
+    },
+    "face_wire": {
+      "image": "docs/images/head-region-lod-v1/face-wire-comparison.png",
+      "silhouetteIoU": 0.99923
+    }
+  },
+  "surfaceReview": {
+    "method": "area-weighted uniformly sampled points and exact closest point on opposing TRIANGLE surface (R-tree)",
+    "kind": "sampled_bidirectional_point_to_triangle_surface_distance",
+    "notExactHausdorff": true,
+    "samples": 16000,
+    "headHeight": 2.2487391,
+    "masterToCandidate": {
+      "count": 8000,
+      "mean": 0.0050541,
+      "p50": 0.0014124,
+      "p95": 0.0222031,
+      "p99": 0.0419624,
+      "max": 0.0824659
+    },
+    "candidateToMaster": {
+      "count": 8000,
+      "mean": 0.0047068,
+      "p50": 0.0008499,
+      "p95": 0.0272085,
+      "p99": 0.0510486,
+      "max": 0.0920082
+    },
+    "symmetricP95": 0.0272085,
+    "symmetricP99": 0.0510486,
+    "symmetricMaxSampled": 0.0920082,
+    "symmetricP95PercentOfHeadHeight": 1.2099,
+    "symmetricMaxSampledPercentOfHeadHeight": 4.0915
+  }
+}

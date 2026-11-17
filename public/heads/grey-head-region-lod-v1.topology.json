@@ -1,0 +1,968 @@
+{
+  "source": "grey-head-qem-symmetric.glb",
+  "manifest": "grey-head-qem-symmetric.parts.json",
+  "faces": 34500,
+  "vertices": 31357,
+  "regions": 23,
+  "unique_coordinate_positions": 30931,
+  "duplicate_position_vertices": 426,
+  "source_index_edges": {
+    "total": 65795,
+    "single_use": 28090,
+    "double_use": 37705,
+    "nonmanifold": 0
+  },
+  "geometric_edge_use": {
+    "total": 65759,
+    "single_use": 28018,
+    "nonmanifold": 0
+  },
+  "symmetry_plane": {
+    "vertices": 655,
+    "edges": 593,
+    "non_two_face_edges": 0
+  },
+  "shared_region_edges": 1714,
+  "region_adjacency": [
+    {
+      "a": "occiput",
+      "b": "vault",
+      "edges": 146
+    },
+    {
+      "a": "forehead",
+      "b": "vault",
+      "edges": 86
+    },
+    {
+      "a": "brow_L",
+      "b": "orbit_L",
+      "edges": 67
+    },
+    {
+      "a": "brow_R",
+      "b": "orbit_R",
+      "edges": 67
+    },
+    {
+      "a": "midface",
+      "b": "nasalBridge",
+      "edges": 66
+    },
+    {
+      "a": "ear_L",
+      "b": "temple_L",
+      "edges": 57
+    },
+    {
+      "a": "ear_L",
+      "b": "occiput",
+      "edges": 57
+    },
+    {
+      "a": "ear_R",
+      "b": "temple_R",
+      "edges": 57
+    },
+    {
+      "a": "ear_R",
+      "b": "occiput",
+      "edges": 57
+    },
+    {
+      "a": "chin",
+      "b": "lowerLip",
+      "edges": 50
+    },
+    {
+      "a": "forehead",
+      "b": "temple_L",
+      "edges": 50
+    },
+    {
+      "a": "forehead",
+      "b": "temple_R",
+      "edges": 50
+    },
+    {
+      "a": "jaw_L",
+      "b": "lateral_L",
+      "edges": 48
+    },
+    {
+      "a": "jaw_R",
+      "b": "lateral_R",
+      "edges": 48
+    },
+    {
+      "a": "lowerLip",
+      "b": "upperLip",
+      "edges": 44
+    },
+    {
+      "a": "nasalTip",
+      "b": "upperLip",
+      "edges": 38
+    },
+    {
+      "a": "nasalBridge",
+      "b": "nasalTip",
+      "edges": 38
+    },
+    {
+      "a": "ear_L",
+      "b": "lateral_L",
+      "edges": 36
+    },
+    {
+      "a": "occiput",
+      "b": "temple_L",
+      "edges": 36
+    },
+    {
+      "a": "ear_R",
+      "b": "lateral_R",
+      "edges": 36
+    },
+    {
+      "a": "occiput",
+      "b": "temple_R",
+      "edges": 36
+    },
+    {
+      "a": "midface",
+      "b": "orbit_L",
+      "edges": 32
+    },
+    {
+      "a": "midface",
+      "b": "orbit_R",
+      "edges": 32
+    },
+    {
+      "a": "cheek_L",
+      "b": "jaw_L",
+      "edges": 29
+    },
+    {
+      "a": "cheek_R",
+      "b": "jaw_R",
+      "edges": 29
+    },
+    {
+      "a": "cheek_L",
+      "b": "orbit_L",
+      "edges": 26
+    },
+    {
+      "a": "cheek_R",
+      "b": "orbit_R",
+      "edges": 26
+    },
+    {
+      "a": "brow_L",
+      "b": "forehead",
+      "edges": 23
+    },
+    {
+      "a": "brow_R",
+      "b": "forehead",
+      "edges": 23
+    },
+    {
+      "a": "chin",
+      "b": "jaw_L",
+      "edges": 19
+    },
+    {
+      "a": "chin",
+      "b": "jaw_R",
+      "edges": 19
+    },
+    {
+      "a": "ear_L",
+      "b": "forehead",
+      "edges": 17
+    },
+    {
+      "a": "lateral_L",
+      "b": "occiput",
+      "edges": 17
+    },
+    {
+      "a": "ear_R",
+      "b": "forehead",
+      "edges": 17
+    },
+    {
+      "a": "lateral_R",
+      "b": "occiput",
+      "edges": 17
+    },
+    {
+      "a": "cheek_L",
+      "b": "temple_L",
+      "edges": 14
+    },
+    {
+      "a": "lateral_L",
+      "b": "temple_L",
+      "edges": 14
+    },
+    {
+      "a": "cheek_R",
+      "b": "temple_R",
+      "edges": 14
+    },
+    {
+      "a": "lateral_R",
+      "b": "temple_R",
+      "edges": 14
+    },
+    {
+      "a": "orbit_L",
+      "b": "temple_L",
+      "edges": 13
+    },
+    {
+      "a": "orbit_R",
+      "b": "temple_R",
+      "edges": 13
+    },
+    {
+      "a": "nasalBridge",
+      "b": "orbit_L",
+      "edges": 10
+    },
+    {
+      "a": "temple_L",
+      "b": "vault",
+      "edges": 10
+    },
+    {
+      "a": "nasalBridge",
+      "b": "orbit_R",
+      "edges": 10
+    },
+    {
+      "a": "temple_R",
+      "b": "vault",
+      "edges": 10
+    },
+    {
+      "a": "cheek_L",
+      "b": "lateral_L",
+      "edges": 9
+    },
+    {
+      "a": "cheek_R",
+      "b": "lateral_R",
+      "edges": 9
+    },
+    {
+      "a": "brow_L",
+      "b": "nasalBridge",
+      "edges": 7
+    },
+    {
+      "a": "brow_R",
+      "b": "nasalBridge",
+      "edges": 7
+    },
+    {
+      "a": "forehead",
+      "b": "midface",
+      "edges": 6
+    },
+    {
+      "a": "jaw_L",
+      "b": "upperLip",
+      "edges": 5
+    },
+    {
+      "a": "brow_L",
+      "b": "temple_L",
+      "edges": 5
+    },
+    {
+      "a": "jaw_R",
+      "b": "upperLip",
+      "edges": 5
+    },
+    {
+      "a": "brow_R",
+      "b": "temple_R",
+      "edges": 5
+    },
+    {
+      "a": "brow_L",
+      "b": "midface",
+      "edges": 4
+    },
+    {
+      "a": "jaw_L",
+      "b": "lowerLip",
+      "edges": 4
+    },
+    {
+      "a": "midface",
+      "b": "nasalTip",
+      "edges": 4
+    },
+    {
+      "a": "brow_R",
+      "b": "midface",
+      "edges": 4
+    },
+    {
+      "a": "jaw_R",
+      "b": "lowerLip",
+      "edges": 4
+    },
+    {
+      "a": "cheek_L",
+      "b": "midface",
+      "edges": 3
+    },
+    {
+      "a": "cheek_L",
+      "b": "upperLip",
+      "edges": 3
+    },
+    {
+      "a": "cheek_R",
+      "b": "midface",
+      "edges": 3
+    },
+    {
+      "a": "cheek_R",
+      "b": "upperLip",
+      "edges": 3
+    },
+    {
+      "a": "cheek_L",
+      "b": "nasalTip",
+      "edges": 2
+    },
+    {
+      "a": "cheek_R",
+      "b": "nasalTip",
+      "edges": 2
+    },
+    {
+      "a": "cheek_L",
+      "b": "nasalBridge",
+      "edges": 1
+    },
+    {
+      "a": "cheek_R",
+      "b": "nasalBridge",
+      "edges": 1
+    }
+  ],
+  "protected_vertex_count": 29199,
+  "protected_by_reason": {
+    "symmetry_plane": 655,
+    "region_shared": {
+      "edges": 1714,
+      "new_vertices": 2114
+    },
+    "source_open": {
+      "edges": 28090,
+      "new_vertices": 25530
+    },
+    "source_nonmanifold": {
+      "edges": 0,
+      "new_vertices": 0
+    },
+    "high_priority_brow_L": 38,
+    "high_priority_brow_R": 38,
+    "high_priority_orbit_L": 110,
+    "high_priority_orbit_R": 110,
+    "high_priority_nasalBridge": 72,
+    "high_priority_nasalTip": 36,
+    "high_priority_upperLip": 14,
+    "high_priority_lowerLip": 6,
+    "high_priority_chin": 126,
+    "high_priority_ear_L": 175,
+    "high_priority_ear_R": 175
+  },
+  "groups": [
+    {
+      "id": "vault",
+      "family": "颅骨",
+      "faces": 5588,
+      "vertices": 5147,
+      "components_by_source_indices": 343,
+      "largest_components": [
+        777,
+        777,
+        480,
+        454,
+        384,
+        316,
+        316,
+        256,
+        180,
+        174,
+        134,
+        99
+      ],
+      "single_face_islands": 228,
+      "internal_edges": 5997,
+      "exposed_edges": 4770,
+      "locked_vertices": 4645
+    },
+    {
+      "id": "occiput",
+      "family": "颅骨",
+      "faces": 9224,
+      "vertices": 8517,
+      "components_by_source_indices": 562,
+      "largest_components": [
+        973,
+        973,
+        792,
+        792,
+        714,
+        616,
+        448,
+        304,
+        256,
+        203,
+        203,
+        192
+      ],
+      "single_face_islands": 358,
+      "internal_edges": 9901,
+      "exposed_edges": 7870,
+      "locked_vertices": 7623
+    },
+    {
+      "id": "forehead",
+      "family": "颅骨",
+      "faces": 2828,
+      "vertices": 2702,
+      "components_by_source_indices": 183,
+      "largest_components": [
+        412,
+        412,
+        188,
+        179,
+        179,
+        128,
+        128,
+        120,
+        99,
+        99,
+        94,
+        92
+      ],
+      "single_face_islands": 94,
+      "internal_edges": 2956,
+      "exposed_edges": 2572,
+      "locked_vertices": 2470
+    },
+    {
+      "id": "temple_L",
+      "family": "颅骨",
+      "faces": 1157,
+      "vertices": 1220,
+      "components_by_source_indices": 129,
+      "largest_components": [
+        245,
+        216,
+        116,
+        69,
+        58,
+        56,
+        41,
+        30,
+        22,
+        21,
+        18,
+        15
+      ],
+      "single_face_islands": 63,
+      "internal_edges": 1126,
+      "exposed_edges": 1219,
+      "locked_vertices": 1135
+    },
+    {
+      "id": "temple_R",
+      "family": "颅骨",
+      "faces": 1157,
+      "vertices": 1220,
+      "components_by_source_indices": 129,
+      "largest_components": [
+        245,
+        216,
+        116,
+        69,
+        58,
+        56,
+        41,
+        30,
+        22,
+        21,
+        18,
+        15
+      ],
+      "single_face_islands": 63,
+      "internal_edges": 1126,
+      "exposed_edges": 1219,
+      "locked_vertices": 1135
+    },
+    {
+      "id": "lateral_L",
+      "family": "颅骨",
+      "faces": 517,
+      "vertices": 535,
+      "components_by_source_indices": 60,
+      "largest_components": [
+        98,
+        67,
+        41,
+        27,
+        24,
+        22,
+        20,
+        20,
+        19,
+        18,
+        17,
+        13
+      ],
+      "single_face_islands": 19,
+      "internal_edges": 520,
+      "exposed_edges": 511,
+      "locked_vertices": 477
+    },
+    {
+      "id": "lateral_R",
+      "family": "颅骨",
+      "faces": 517,
+      "vertices": 535,
+      "components_by_source_indices": 60,
+      "largest_components": [
+        98,
+        67,
+        41,
+        27,
+        24,
+        22,
+        20,
+        20,
+        19,
+        18,
+        17,
+        13
+      ],
+      "single_face_islands": 19,
+      "internal_edges": 520,
+      "exposed_edges": 511,
+      "locked_vertices": 477
+    },
+    {
+      "id": "brow_L",
+      "family": "眼眶",
+      "faces": 440,
+      "vertices": 451,
+      "components_by_source_indices": 34,
+      "largest_components": [
+        60,
+        55,
+        46,
+        40,
+        33,
+        33,
+        25,
+        23,
+        22,
+        20,
+        13,
+        10
+      ],
+      "single_face_islands": 10,
+      "internal_edges": 446,
+      "exposed_edges": 428,
+      "locked_vertices": 451
+    },
+    {
+      "id": "brow_R",
+      "family": "眼眶",
+      "faces": 440,
+      "vertices": 451,
+      "components_by_source_indices": 34,
+      "largest_components": [
+        60,
+        55,
+        46,
+        40,
+        33,
+        33,
+        25,
+        23,
+        22,
+        20,
+        13,
+        10
+      ],
+      "single_face_islands": 10,
+      "internal_edges": 446,
+      "exposed_edges": 428,
+      "locked_vertices": 451
+    },
+    {
+      "id": "orbit_L",
+      "family": "眼眶",
+      "faces": 1085,
+      "vertices": 1130,
+      "components_by_source_indices": 98,
+      "largest_components": [
+        80,
+        73,
+        66,
+        50,
+        45,
+        38,
+        36,
+        34,
+        33,
+        31,
+        31,
+        29
+      ],
+      "single_face_islands": 19,
+      "internal_edges": 1102,
+      "exposed_edges": 1051,
+      "locked_vertices": 1130
+    },
+    {
+      "id": "orbit_R",
+      "family": "眼眶",
+      "faces": 1085,
+      "vertices": 1130,
+      "components_by_source_indices": 98,
+      "largest_components": [
+        80,
+        73,
+        66,
+        50,
+        45,
+        38,
+        36,
+        34,
+        33,
+        31,
+        31,
+        29
+      ],
+      "single_face_islands": 19,
+      "internal_edges": 1102,
+      "exposed_edges": 1051,
+      "locked_vertices": 1130
+    },
+    {
+      "id": "nasalBridge",
+      "family": "鼻部",
+      "faces": 980,
+      "vertices": 953,
+      "components_by_source_indices": 56,
+      "largest_components": [
+        120,
+        96,
+        58,
+        53,
+        53,
+        52,
+        38,
+        38,
+        34,
+        26,
+        26,
+        24
+      ],
+      "single_face_islands": 8,
+      "internal_edges": 1054,
+      "exposed_edges": 832,
+      "locked_vertices": 953
+    },
+    {
+      "id": "nasalTip",
+      "family": "鼻部",
+      "faces": 568,
+      "vertices": 581,
+      "components_by_source_indices": 44,
+      "largest_components": [
+        56,
+        37,
+        37,
+        30,
+        27,
+        27,
+        26,
+        25,
+        25,
+        22,
+        21,
+        21
+      ],
+      "single_face_islands": 6,
+      "internal_edges": 591,
+      "exposed_edges": 522,
+      "locked_vertices": 581
+    },
+    {
+      "id": "midface",
+      "family": "鼻部",
+      "faces": 158,
+      "vertices": 273,
+      "components_by_source_indices": 74,
+      "largest_components": [
+        18,
+        16,
+        11,
+        11,
+        5,
+        5,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "single_face_islands": 48,
+      "internal_edges": 91,
+      "exposed_edges": 292,
+      "locked_vertices": 273
+    },
+    {
+      "id": "cheek_L",
+      "family": "面颊",
+      "faces": 458,
+      "vertices": 446,
+      "components_by_source_indices": 21,
+      "largest_components": [
+        87,
+        69,
+        62,
+        53,
+        45,
+        28,
+        22,
+        20,
+        16,
+        13,
+        10,
+        7
+      ],
+      "single_face_islands": 3,
+      "internal_edges": 485,
+      "exposed_edges": 404,
+      "locked_vertices": 398
+    },
+    {
+      "id": "cheek_R",
+      "family": "面颊",
+      "faces": 458,
+      "vertices": 446,
+      "components_by_source_indices": 21,
+      "largest_components": [
+        87,
+        69,
+        62,
+        53,
+        45,
+        28,
+        22,
+        20,
+        16,
+        13,
+        10,
+        7
+      ],
+      "single_face_islands": 3,
+      "internal_edges": 485,
+      "exposed_edges": 404,
+      "locked_vertices": 398
+    },
+    {
+      "id": "upperLip",
+      "family": "口唇",
+      "faces": 298,
+      "vertices": 308,
+      "components_by_source_indices": 24,
+      "largest_components": [
+        44,
+        40,
+        32,
+        22,
+        22,
+        20,
+        20,
+        12,
+        11,
+        11,
+        10,
+        10
+      ],
+      "single_face_islands": 4,
+      "internal_edges": 306,
+      "exposed_edges": 282,
+      "locked_vertices": 308
+    },
+    {
+      "id": "lowerLip",
+      "family": "口唇",
+      "faces": 404,
+      "vertices": 454,
+      "components_by_source_indices": 43,
+      "largest_components": [
+        30,
+        30,
+        28,
+        26,
+        23,
+        23,
+        18,
+        18,
+        17,
+        17,
+        14,
+        14
+      ],
+      "single_face_islands": 12,
+      "internal_edges": 381,
+      "exposed_edges": 450,
+      "locked_vertices": 454
+    },
+    {
+      "id": "chin",
+      "family": "下颌",
+      "faces": 1326,
+      "vertices": 1246,
+      "components_by_source_indices": 50,
+      "largest_components": [
+        196,
+        94,
+        91,
+        91,
+        84,
+        65,
+        65,
+        64,
+        55,
+        55,
+        48,
+        48
+      ],
+      "single_face_islands": 10,
+      "internal_edges": 1448,
+      "exposed_edges": 1082,
+      "locked_vertices": 1246
+    },
+    {
+      "id": "jaw_L",
+      "family": "下颌",
+      "faces": 668,
+      "vertices": 689,
+      "components_by_source_indices": 55,
+      "largest_components": [
+        116,
+        113,
+        42,
+        41,
+        38,
+        33,
+        33,
+        29,
+        27,
+        18,
+        17,
+        16
+      ],
+      "single_face_islands": 21,
+      "internal_edges": 687,
+      "exposed_edges": 630,
+      "locked_vertices": 615
+    },
+    {
+      "id": "jaw_R",
+      "family": "下颌",
+      "faces": 668,
+      "vertices": 689,
+      "components_by_source_indices": 55,
+      "largest_components": [
+        116,
+        113,
+        42,
+        41,
+        38,
+        33,
+        33,
+        29,
+        27,
+        18,
+        17,
+        16
+      ],
+      "single_face_islands": 21,
+      "internal_edges": 687,
+      "exposed_edges": 630,
+      "locked_vertices": 615
+    },
+    {
+      "id": "ear_L",
+      "family": "耳部",
+      "faces": 2238,
+      "vertices": 2265,
+      "components_by_source_indices": 185,
+      "largest_components": [
+        479,
+        96,
+        86,
+        78,
+        63,
+        62,
+        61,
+        55,
+        54,
+        46,
+        45,
+        44
+      ],
+      "single_face_islands": 77,
+      "internal_edges": 2267,
+      "exposed_edges": 2180,
+      "locked_vertices": 2265
+    },
+    {
+      "id": "ear_R",
+      "family": "耳部",
+      "faces": 2238,
+      "vertices": 2265,
+      "components_by_source_indices": 185,
+      "largest_components": [
+        479,
+        96,
+        86,
+        78,
+        63,
+        62,
+        61,
+        55,
+        54,
+        46,
+        45,
+        44
+      ],
+      "single_face_islands": 77,
+      "internal_edges": 2267,
+      "exposed_edges": 2180,
+      "locked_vertices": 2265
+    }
+  ],
+  "warning": "Index-edge topology differs from position-welded topology; region boundaries are provisional."
+}

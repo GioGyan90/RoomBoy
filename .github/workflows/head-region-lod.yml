@@ -1,0 +1,132 @@
+name: Head region LOD topology and candidate
+on:
+  push:
+    branches: ['feat/head-region-lod-v1']
+    paths:
+      - 'scripts/audit-head-region-topology.py'
+      - 'scripts/build-head-region-lod.py'
+      - '.github/workflows/head-region-lod.yml'
+      - 'scripts/render-head-region-lod.py'
+      - 'scripts/check-head-lod-surface.py'
+      - 'scripts/evaluate-head-safe-boundaries.py'
+      - 'scripts/evaluate-head-graded-boundaries.py'
+      - 'scripts/capture-head-lod.mjs'
+      - 'src/experiments/head/headLab.js'
+      - 'tests/head-region-lod.test.ts'
+permissions:
+  contents: write
+concurrency:
+  group: head-region-lod-v1
+  cancel-in-progress: true
+jobs:
+  geometry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Preserve exact 34.5K input for offline topology QA
+        uses: actions/upload-artifact@v4
+        with:
+          name: head-region-input-34500
+          path: |
+            public/heads/grey-head-qem-symmetric.glb
+            public/heads/grey-head-qem-symmetric.parts.json
+            scripts/build-head-region-lod.py
+            scripts/evaluate-head-safe-boundaries.py
+          retention-days: 7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Dependencies for actual GLB mesh analysis
+        run: python -m pip install "numpy>=1.26,<3" "trimesh>=4.5,<5" "vtk>=9.3,<10" "scipy>=1.11,<2" "matplotlib>=3.8,<4" "rtree>=1.3,<2"
+      - name: Audit master, all source parts and boundary locks
+        run: python scripts/audit-head-region-topology.py
+      - name: Run candidate generation only when present
+        shell: bash
+        run: |
+          if [ -f scripts/build-head-region-lod.py ]; then
+            python scripts/build-head-region-lod.py
+          fi
+      - name: Evaluate topology-safe variant without source open-edge collapse
+        run: python scripts/evaluate-head-safe-boundaries.py
+      - name: Evaluate graded boundary contraction with connected surface checks
+        run: python scripts/evaluate-head-graded-boundaries.py
+      - name: Render matched source/candidate front, quarter, side, back and facial wireframe
+        run: |
+          if [ -f public/heads/grey-head-region-lod-v1.glb ]; then
+            python scripts/render-head-region-lod.py
+          fi
+      - name: Measure actual source-vs-LOD point-to-triangle surface distances
+        run: python scripts/check-head-lod-surface.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Run Node regression tests and production build on actual candidate
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - name: Install Playwright Chromium for real Three.js GLB comparisons
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Capture original-vs-LOD actual Three.js WebGL screens
+        run: node scripts/capture-head-lod.mjs
+      - name: Upload browser images
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: head-region-lod-v1-webgl
+          path: artifacts/head-lod-webgl
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Upload geometry image review captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: head-region-lod-v1-review
+          path: docs/images/head-region-lod-v1
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Upload unified and regional GLB candidate for detailed review
+        uses: actions/upload-artifact@v4
+        with:
+          name: head-region-lod-v1-models
+          path: |
+            public/heads/grey-head-region-lod-v1.glb
+            public/heads/grey-head-region-lod-v1.parts.glb
+            public/heads/grey-head-region-lod-v1.parts.json
+            public/heads/grey-head-region-lod-v1.report.json
+            public/heads/grey-head-region-lod-v1.safe.glb
+            public/heads/grey-head-region-lod-v1.safe.report.json
+            public/heads/grey-head-region-lod-v1.graded.glb
+            public/heads/grey-head-region-lod-v1.graded.report.json
+          retention-days: 30
+      - name: Commit generated assets onto latest task branch without binary rebase conflicts
+        run: |
+          mkdir -p /tmp/head-region-generated /tmp/head-region-images
+          cp public/heads/grey-head-region-lod-v1.* /tmp/head-region-generated/
+          cp -a docs/images/head-region-lod-v1/. /tmp/head-region-images/
+          git fetch origin feat/head-region-lod-v1
+          base_script=$(git rev-parse HEAD:scripts/build-head-region-lod.py)
+          remote_script=$(git rev-parse origin/feat/head-region-lod-v1:scripts/build-head-region-lod.py)
+          if [ "$base_script" != "$remote_script" ]; then
+            echo 'Generator changed during CI; newer run must publish its own output'
+            exit 1
+          fi
+          git reset --hard origin/feat/head-region-lod-v1
+          mkdir -p docs/images/head-region-lod-v1
+          cp -f /tmp/head-region-generated/* public/heads/
+          cp -f /tmp/head-region-images/* docs/images/head-region-lod-v1/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/heads/grey-head-region-lod-v1.*
+          git add docs/images/head-region-lod-v1/
+          if ! git diff --cached --quiet; then
+            git commit -m "asset(head): source-true 10K indexed GLB, 23 regions and visual audit [skip ci]"
+            git push origin HEAD:feat/head-region-lod-v1
+          fi
