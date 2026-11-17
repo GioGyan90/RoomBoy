@@ -1,6 +1,6 @@
 {
   "schema": "roomboy.head-region-lod-report.v1",
-  "state": "accepted_geometry_candidate",
+  "state": "rejected_visual_surface_holes",
   "source": "grey-head-qem-symmetric.glb",
   "sourceFaces": 34500,
   "outputFaces": 10000,
@@ -137,11 +137,12 @@
     "sourceUnmodified": true,
     "mirrorAndCenterSeam": true,
     "regionBordersExact": true,
-    "visualInspection": "review screenshot and surface metrics separately; IoU cannot prove feature fidelity",
+    "visualInspection": "REJECTED: actual side-view missing temporal and ear-back surfaces; sampled surface distance and silhouette statistics cannot overturn this rejection",
+    "noVisibleSurfaceHoles": false,
     "silhouettePassed": true,
     "surfaceDistanceMeasured": true
   },
-  "notice": "This is a constrained diagnostic candidate, not an accepted replacement for the 34.5K master.",
+  "notice": "The 10K diagnostic failed side-view surface integrity despite passing shared-edge and mirror checks. It must not replace the master.",
   "renderReview": {
     "front": {
       "image": "docs/images/head-region-lod-v1/front-comparison.png",
