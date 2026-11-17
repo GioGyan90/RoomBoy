@@ -9,6 +9,7 @@ on:
       - 'scripts/render-head-region-lod.py'
       - 'scripts/check-head-lod-surface.py'
       - 'scripts/evaluate-head-safe-boundaries.py'
+      - 'scripts/evaluate-head-graded-boundaries.py'
       - 'scripts/capture-head-lod.mjs'
       - 'src/experiments/head/headLab.js'
       - 'tests/head-region-lod.test.ts'
@@ -16,7 +17,7 @@ permissions:
   contents: write
 concurrency:
   group: head-region-lod-v1
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   geometry:
     runs-on: ubuntu-latest
@@ -51,6 +52,8 @@ jobs:
           fi
       - name: Evaluate topology-safe variant without source open-edge collapse
         run: python scripts/evaluate-head-safe-boundaries.py
+      - name: Evaluate graded boundary contraction with connected surface checks
+        run: python scripts/evaluate-head-graded-boundaries.py
       - name: Render matched source/candidate front, quarter, side, back and facial wireframe
         run: |
           if [ -f public/heads/grey-head-region-lod-v1.glb ]; then
@@ -100,6 +103,8 @@ jobs:
             public/heads/grey-head-region-lod-v1.report.json
             public/heads/grey-head-region-lod-v1.safe.glb
             public/heads/grey-head-region-lod-v1.safe.report.json
+            public/heads/grey-head-region-lod-v1.graded.glb
+            public/heads/grey-head-region-lod-v1.graded.report.json
           retention-days: 30
       - name: Commit generated assets onto latest task branch without binary rebase conflicts
         run: |
