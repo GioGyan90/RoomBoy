@@ -11,39 +11,41 @@ import * as T from 'three';
  * No disconnected brow, eye, nose, cheek or jaw "sticker" geometry exists.
  */
 export const FRONT_LEFT_HALF_ROWS = [
-  {name:'01 crown',       points:[[0,1.61,.00],[-.10,1.61,-.01],[-.19,1.60,-.025],[-.28,1.58,-.055],[-.36,1.56,-.085],[-.43,1.52,-.12]]},
-  {name:'02 top planes',  points:[[0,1.47,.25],[-.11,1.47,.24],[-.22,1.47,.21],[-.33,1.46,.17],[-.43,1.45,.10],[-.52,1.42,-.03]]},
-  {name:'03 frontal cap', points:[[0,1.28,.41],[-.12,1.28,.41],[-.25,1.28,.37],[-.39,1.28,.31],[-.52,1.27,.20],[-.60,1.25,-.03]]},
-  {name:'04 forehead',    points:[[0,.84,.49],[-.13,.84,.49],[-.27,.84,.46],[-.43,.84,.38],[-.56,.83,.25],[-.65,.82,-.04]]},
-  {name:'05 brow ridge', points:[[0,.59,.56],[-.12,.59,.56],[-.25,.59,.55],[-.42,.58,.52],[-.55,.57,.40],[-.66,.57,-.03]]},
-  {name:'06 eye shelf',  points:[[0,.44,.64],[-.12,.43,.60],[-.25,.42,.47],[-.41,.42,.40],[-.55,.42,.29],[-.66,.41,-.04]]},
-  {name:'07 orbit',       points:[[0,.29,.675],[-.11,.29,.61],[-.23,.29,.41],[-.39,.28,.37],[-.53,.28,.29],[-.63,.28,-.06]]},
-  {name:'08 cheek ridge', points:[[0,.12,.74],[-.12,.12,.655],[-.23,.12,.48],[-.39,.12,.50],[-.51,.12,.37],[-.62,.12,-.06]]},
-  {name:'09 cheek fall',  points:[[0,-.07,.725],[-.125,-.07,.625],[-.24,-.08,.48],[-.36,-.08,.43],[-.47,-.07,.29],[-.57,-.08,-.09]]},
-  {name:'10 jaw angle',   points:[[0,-.25,.49],[-.11,-.25,.47],[-.21,-.25,.45],[-.31,-.24,.38],[-.40,-.23,.22],[-.47,-.19,-.15]]},
-  {name:'11 chin plane',  points:[[0,-.42,.40],[-.065,-.42,.39],[-.14,-.43,.35],[-.21,-.43,.30],[-.28,-.39,.13],[-.33,-.35,-.19]]},
-  {name:'12 chin base',   points:[[0,-.55,.33],[-.055,-.55,.32],[-.115,-.54,.30],[-.16,-.52,.23],[-.21,-.50,.07],[-.25,-.46,-.18]]}
+  // Authored only on -X. Six columns: center / nose / inner orbit /
+  // outer orbit / cheek ridge / silhouette. All other vertices derive here.
+  {name:'01 cranial crown', points:[[0,1.59,.02],[-.10,1.59,-.01],[-.20,1.58,-.035],[-.29,1.55,-.07],[-.38,1.53,-.10],[-.45,1.49,-.14]]},
+  {name:'02 upper crown',  points:[[0,1.45,.28],[-.11,1.45,.27],[-.23,1.45,.24],[-.35,1.44,.18],[-.45,1.43,.09],[-.54,1.40,-.04]]},
+  {name:'03 frontal plane',points:[[0,1.25,.40],[-.12,1.25,.40],[-.25,1.25,.37],[-.39,1.25,.31],[-.52,1.24,.19],[-.60,1.22,-.04]]},
+  {name:'04 lower forehead',points:[[0,.84,.47],[-.12,.84,.47],[-.25,.84,.46],[-.41,.84,.40],[-.55,.83,.27],[-.65,.82,-.04]]},
+  {name:'05 brow bridge', points:[[0,.59,.54],[-.085,.59,.55],[-.22,.59,.57],[-.40,.59,.54],[-.54,.57,.41],[-.65,.55,-.04]]},
+  {name:'06 recessed eye',points:[[0,.43,.61],[-.085,.43,.58],[-.20,.43,.37],[-.36,.43,.35],[-.51,.42,.30],[-.64,.42,-.05]]},
+  {name:'07 eye bottom',  points:[[0,.29,.67],[-.09,.29,.60],[-.20,.29,.42],[-.36,.29,.38],[-.50,.28,.30],[-.63,.28,-.06]]},
+  {name:'08 nasal tip',   points:[[0,.14,.74],[-.085,.14,.63],[-.21,.14,.54],[-.37,.14,.49],[-.51,.13,.38],[-.62,.12,-.07]]},
+  {name:'09 nose base',  points:[[0,-.05,.54],[-.085,-.05,.52],[-.21,-.05,.52],[-.35,-.05,.45],[-.46,-.05,.31],[-.56,-.06,-.085]]},
+  {name:'10 lower cheek',points:[[0,-.23,.48],[-.09,-.23,.46],[-.20,-.23,.43],[-.30,-.23,.36],[-.41,-.22,.19],[-.47,-.20,-.13]]},
+  {name:'11 chin wedge', points:[[0,-.43,.39],[-.08,-.43,.39],[-.17,-.43,.35],[-.25,-.42,.28],[-.33,-.39,.09],[-.36,-.36,-.16]]},
+  {name:'12 chin shelf', points:[[0,-.54,.32],[-.07,-.54,.32],[-.16,-.54,.29],[-.22,-.51,.21],[-.25,-.47,.03],[-.28,-.44,-.18]]}
 ];
 
 // Four depth stations complete the positive X rear half, then mirror X again.
 // Each station is keyed to the EXACT corresponding front silhouette row.
 const REAR_DEPTH = [
-  {d:-.16,lift:.00}, {d:-.42,lift:0},
-  {d:-.78,lift:0}, {d:-1.01,lift:0},
-  {d:-1.07,lift:0}, {d:-1.07,lift:0},
-  {d:-1.02,lift:0}, {d:-.96,lift:.02},
+  {d:-.17,lift:.00}, {d:-.44,lift:0},
+  {d:-.78,lift:0}, {d:-.97,lift:0},
+  {d:-1.02,lift:0}, {d:-1.03,lift:0},
+  {d:-1.00,lift:0}, {d:-.92,lift:.02},
   {d:-.82,lift:.04}, {d:-.64,lift:.05},
   {d:-.46,lift:.06}, {d:-.35,lift:.09}
 ];
 
 const PAL = {
   crown:0xd4d0cc, forehead:0xd3cfca, brow:0xbab5b1,
-  eyes:0x88827e, underEye:0xc1bcb7, nose:0xd3cdc7,
-  cheek:0xc8c3be, jaw:0xaea9a5, chin:0xc8c2bd,
+  eyes:0x827d78, underEye:0xc1bcb7, nose:0xd5d0ca,
+  cheek:0xc9c4bf, jaw:0xb6b0ab, chin:0xcac4be,
   side:0xb3aeaa, back:0xbeb9b4, neck:0xbab5b0,
   shoulders:0xd6d0c9, ears:0xbab5b0, inset:0x938d87
 };
-const SKIN=0xc8c3be, X_SCALE=1.38, Z_SCALE=1.08;
+const SKIN=0xc8c3be, X_SCALE=1.38, Z_SCALE=1.04;
 const sections=18;
 const colorMaterial=(color)=>new T.MeshStandardMaterial({
   color,roughness:1,metalness:0,flatShading:true,side:T.DoubleSide
@@ -93,19 +95,22 @@ const mirrorSegments=new Set([0,1,2,3,4,13,14,15,16,17]);
 function segmentZone(row,seg){
  if(row>=FRONT_LEFT_HALF_ROWS.length-1)
    return row<FRONT_LEFT_HALF_ROWS.length+1?'neck':'shoulders';
- const face=mirrorSegments.has(seg);
- if(!face)return row<3?'crown':row<8?'side':'back';
+ const onFace=mirrorSegments.has(seg);
+ if(!onFace)return row<3?'crown':row<8?'side':'back';
  const c=seg<5?seg:17-seg;
  if(row<=1)return 'crown';
  if(row<=3)return 'forehead';
- if(row===4)return c===0?'nose':'brow';
- if(row===5)return c===0?'nose':c===1?'underEye':c<=3?'eyes':'side';
- if(row===6)return c<=1?'nose':c<=3?'underEye':'side';
- if(row===7)return c<=1?'nose':'cheek';
- if(row===8)return c===0?'nose':c>=3?'jaw':'cheek';
+ // One continuous, inset dark plane under a broad eyebrow shelf.
+ // All these triangles belong to the SAME connected head topology.
+ if(row===4)return c===0?'nose':c===1?'brow':c<=3?'eyes':'side';
+ if(row===5)return c===0?'nose':c===1?'underEye':c<=3?'underEye':'cheek';
+ if(row===6)return c<=1?'nose':'cheek';
+ if(row===7)return c===0?'nose':'cheek';
+ if(row===8)return c===0?'chin':c>=3?'jaw':'cheek';
  if(row===9)return c>=2?'jaw':'chin';
  return 'chin';
 }
+
 function makeEar(side){
  // A single, closed ear wedge. It rests in the side silhouette; no
  // stacked rectangular front/back cards and no floating ear inserts.
@@ -173,7 +178,7 @@ export function createHeadPlanes({stage='volume'}={}){
  if(stage==='volume'){
   // Crown closes at one shared apex (not a separate sphere).
   const ti=pos.length/3;
-  pos.push(0,1.565,-.095*Z_SCALE);
+  pos.push(0,1.615,-.095*Z_SCALE);
   for(let s=0;s<sections;s++)
    push(ti,s,(s+1)%sections,'crown');
   const bi=pos.length/3;
