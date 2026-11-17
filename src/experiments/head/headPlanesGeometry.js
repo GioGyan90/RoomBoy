@@ -77,13 +77,13 @@ function buildRing(row,i){
 // appeared in real browser screenshots of the previous cap.
 function crownRoll(ring){
  return ring.map(([x,y,z])=>{
-   const xx=x*.70, zz=z*.55-.060;
-   // The longitudinal back-to-front radius matters as much as width.
-   // Without this the sagittal apex produced a vertical rooftop tab.
-   const lateral=Math.pow(xx/.53,2);
-   const posterior=Math.pow((zz+.092)/.087,2);
-   const r=Math.min(1.3,lateral+posterior);
-   return [near(xx),1.625-.075*r,near(zz)];
+   // Both X and Z MUST contract on the top ring. The previous Z station
+   // overlapped the lower occipital section when viewed in profile,
+   // producing a thin, vertical "fin" even with a flat central cap.
+   const xx=x*.70,zz=z*.30-.050;
+   const lateral=Math.min(1,Math.pow(xx/.52,2));
+   const posterior=Math.max(0,Math.min(1,(-zz-.075)/.030));
+   return [near(xx),1.605-.040*lateral-.015*posterior,near(zz)];
  });
 }
 
@@ -194,7 +194,7 @@ export function createHeadPlanes({stage='volume'}={}){
  if(stage==='volume'){
   // Crown closes at one shared apex (not a separate sphere).
   const ti=pos.length/3;
-  pos.push(0,1.605,-.105*Z_SCALE); // Keep apex level with the rounded collar; no sagittal spike.
+  pos.push(0,1.605,-.072); // Center stays INSIDE the contracted sagittal crown ring.
   for(let s=0;s<sections;s++)
    push(ti,s,(s+1)%sections,'crown');
   const bi=pos.length/3;
