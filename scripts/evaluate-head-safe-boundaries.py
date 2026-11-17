@@ -171,7 +171,7 @@ def main():
     result.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf8")
     report["componentCountPreserved"]=report["sourceConnectedComponents"]==report["candidateConnectedComponents"]
     report["areaPass"]=report["areaRetainedPercent"]>=97.4
-    result.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\\n",encoding="utf8")
+    result.write_text(json.dumps(report,ensure_ascii=False,indent=2)+chr(10),encoding="utf8")
     assert report["componentCountPreserved"],"CANDIDATE REJECTED: new edge-disconnected face components"
     assert report["areaPass"],"CANDIDATE REJECTED: excessive surface area lost"
     print(json.dumps(report,ensure_ascii=False,indent=2))
