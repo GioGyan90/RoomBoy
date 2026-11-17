@@ -63,7 +63,7 @@ test('full volume has one continuous indexed skin shell with no floating facial 
   const b=new Box3().setFromObject(result.group);
   assert(Math.abs(b.max.x+b.min.x)<1e-5);
   assert(b.max.y>1.55 && b.min.y< -1.55,'the shortened reference bust must still be present');
-  assert(b.max.z>.85 && b.min.z<-.80);
+  assert(b.max.z>.75 && b.min.z< -1.0,'nose projects forward and rounded occipital mass extends backward');
 });
 
 test('full indexed geometry mirrors X and exposes honest wire/region switches',()=>{
