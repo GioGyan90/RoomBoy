@@ -72,7 +72,7 @@ def audit():
         # First attempt: exact landmarks in eye, nose, lips, chin and ear stay
         # unchanged. The later reducer may simplify their *interiors* only.
         before = len(protected)
-        protected.update(i for f in g["faceIds"] for i in faces[f])
+        protected.update(int(i) for f in g["faceIds"] for i in faces[f])
         reasons["high_priority_" + g["id"]] = len(protected) - before
 
     groups = []
