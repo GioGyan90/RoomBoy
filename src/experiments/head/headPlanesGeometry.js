@@ -194,7 +194,7 @@ export function createHeadPlanes({stage='volume'}={}){
  if(stage==='volume'){
   // Crown closes at one shared apex (not a separate sphere).
   const ti=pos.length/3;
-  pos.push(0,1.636,-.105*Z_SCALE);
+  pos.push(0,1.605,-.105*Z_SCALE); // Keep apex level with the rounded collar; no sagittal spike.
   for(let s=0;s<sections;s++)
    push(ti,s,(s+1)%sections,'crown');
   const bi=pos.length/3;
