@@ -35,6 +35,7 @@ export function startHeadLab(){
  document.body.innerHTML=`<main class="head-lab">
  <aside>
   <a class="back" href="?view=structure">← 人体结构研究</a>
+  <a class="back" href="?view=head-planes" style="margin-left:12px">基础头部平面 · JS 版 ↗</a>
   <small>ROOMBOY / ORIGINAL MESH REDUCTION</small>
   <h1>少年头部<span>30K GLB · 精确镜像对称版</span></h1>
   <p class="intro">真实 GLB 网格减面 → X 中线裁切 → 镜像焊接<br>沿中线共享顶点，左右形体与三角面完全对称</p>
