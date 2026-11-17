@@ -224,7 +224,7 @@ export function startHeadLab(){
   viewName=name;
   camera.position.set(...directions[name]);
   controls.target.set(0,.07,0);
-  setCompare();controls.update();
+  controls.update();setCompare();
   document.querySelectorAll('[data-view]').forEach(btn=>btn.classList.toggle('selected',btn.dataset.view===name));
   document.querySelector('#view-label').textContent=({front:'正面',quarter:'45°',side:'侧面',back:'背面'})[name]+' · 正交投影';
  }
