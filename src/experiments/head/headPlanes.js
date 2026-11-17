@@ -63,9 +63,9 @@ export function startHeadPlanes(){
  let model=createHeadPlanes(),scene=new T.Scene();
  scene.background=new T.Color(0xf2f0ed);
  scene.add(model.group);
- scene.add(new T.HemisphereLight(0xffffff,0xb1aba4,2.4));
- const key=new T.DirectionalLight(0xffffff,2.7);key.position.set(-3,6,7);scene.add(key);
- const fill=new T.DirectionalLight(0xffffff,.9);fill.position.set(5,3,-5);scene.add(fill);
+ scene.add(new T.HemisphereLight(0xffffff,0xb1aba4,1.45));
+ const key=new T.DirectionalLight(0xffffff,1.95);key.position.set(-3,6,7);scene.add(key);
+ const fill=new T.DirectionalLight(0xffffff,.65);fill.position.set(5,3,-5);scene.add(fill);
  const renderer=new T.WebGLRenderer({antialias:true,alpha:false});
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
  renderer.outputColorSpace=T.SRGBColorSpace;
