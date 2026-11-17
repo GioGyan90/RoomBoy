@@ -62,7 +62,7 @@ test('full volume has one continuous indexed skin shell with no floating facial 
      'each head/neck/shoulder edge is shared by exactly two triangles');
   const b=new Box3().setFromObject(result.group);
   assert(Math.abs(b.max.x+b.min.x)<1e-5);
-  assert(b.max.y>1.55 && b.min.y< -2);
+  assert(b.max.y>1.55 && b.min.y< -1.55,'the shortened reference bust must still be present');
   assert(b.max.z>.85 && b.min.z<-.80);
 });
 
