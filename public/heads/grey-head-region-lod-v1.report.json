@@ -1,0 +1,143 @@
+{
+  "schema": "roomboy.head-region-lod-report.v1",
+  "state": "unaccepted_first_round_over_budget",
+  "source": "grey-head-qem-symmetric.glb",
+  "sourceFaces": 34500,
+  "outputFaces": 10804,
+  "outputVertices": 12297,
+  "targetFaces": 10000,
+  "reductionPercent": 68.684,
+  "isExactMirroredIndexedMesh": true,
+  "sourceOnlyGeometry": true,
+  "crossRegionBoundaryEdgesUnchangedOnLeft": 857,
+  "centerPlaneEdgesFullyWelded": 593,
+  "baselineSourceOpenEdgesOnLeft": 14638,
+  "candidateOpenEdgesOnLeft": 6670,
+  "newNonManifoldEdges": 0,
+  "sourceEdgesPreserved": "region interfaces and X=0; source open-edge loops may simplify",
+  "landmarkLocks": {
+    "plane": 655,
+    "shared_region_edges": 857,
+    "shared_region_vertices": 1712,
+    "crease_edges": 356,
+    "total_immutable_vertices": 2444
+  },
+  "collapser": {
+    "collapses": 8896,
+    "stale": 52172,
+    "protected_edge_face": 3662,
+    "small_area": 1424,
+    "normal_flip": 1228,
+    "island_deletion": 6101,
+    "link_condition": 3641,
+    "region_budget": 1835,
+    "remaining_left_faces": 5402,
+    "reached_goal": false
+  },
+  "regions": [
+    {
+      "id": "vault",
+      "sourceLeftFaces": 2794,
+      "candidateLeftFaces": 576,
+      "minimumAllowed": 265
+    },
+    {
+      "id": "occiput",
+      "sourceLeftFaces": 4612,
+      "candidateLeftFaces": 858,
+      "minimumAllowed": 392
+    },
+    {
+      "id": "forehead",
+      "sourceLeftFaces": 1414,
+      "candidateLeftFaces": 305,
+      "minimumAllowed": 254
+    },
+    {
+      "id": "temple_L",
+      "sourceLeftFaces": 1157,
+      "candidateLeftFaces": 388,
+      "minimumAllowed": 208
+    },
+    {
+      "id": "lateral_L",
+      "sourceLeftFaces": 517,
+      "candidateLeftFaces": 166,
+      "minimumAllowed": 77
+    },
+    {
+      "id": "brow_L",
+      "sourceLeftFaces": 440,
+      "candidateLeftFaces": 242,
+      "minimumAllowed": 242
+    },
+    {
+      "id": "orbit_L",
+      "sourceLeftFaces": 1085,
+      "candidateLeftFaces": 553,
+      "minimumAllowed": 553
+    },
+    {
+      "id": "nasalBridge",
+      "sourceLeftFaces": 490,
+      "candidateLeftFaces": 240,
+      "minimumAllowed": 240
+    },
+    {
+      "id": "nasalTip",
+      "sourceLeftFaces": 284,
+      "candidateLeftFaces": 150,
+      "minimumAllowed": 150
+    },
+    {
+      "id": "midface",
+      "sourceLeftFaces": 79,
+      "candidateLeftFaces": 60,
+      "minimumAllowed": 39
+    },
+    {
+      "id": "cheek_L",
+      "sourceLeftFaces": 458,
+      "candidateLeftFaces": 196,
+      "minimumAllowed": 196
+    },
+    {
+      "id": "upperLip",
+      "sourceLeftFaces": 149,
+      "candidateLeftFaces": 89,
+      "minimumAllowed": 86
+    },
+    {
+      "id": "lowerLip",
+      "sourceLeftFaces": 202,
+      "candidateLeftFaces": 119,
+      "minimumAllowed": 119
+    },
+    {
+      "id": "chin",
+      "sourceLeftFaces": 663,
+      "candidateLeftFaces": 258,
+      "minimumAllowed": 258
+    },
+    {
+      "id": "jaw_L",
+      "sourceLeftFaces": 668,
+      "candidateLeftFaces": 240,
+      "minimumAllowed": 240
+    },
+    {
+      "id": "ear_L",
+      "sourceLeftFaces": 2238,
+      "candidateLeftFaces": 962,
+      "minimumAllowed": 962
+    }
+  ],
+  "acceptance": {
+    "countAtMost10000": false,
+    "sourceUnmodified": true,
+    "mirrorAndCenterSeam": true,
+    "regionBordersExact": true,
+    "visualInspection": "pending image review"
+  },
+  "notice": "This is a constrained diagnostic candidate, not an accepted replacement for the 34.5K master."
+}
