@@ -59,8 +59,8 @@ function buildRing(row,i){
  const x=max[0],y=max[1],z=max[2];
  const side=[
    [x*1.025,y-.01,z*.28-.10],
-   [Math.max(x*.88,i>7?.41:0),y+rear.lift*.55,rear.d*.72],
-   [Math.max(x*.50,i>7?.30:0),y+rear.lift*.88,rear.d*.94],
+   [x*.88,y+rear.lift*.55,rear.d*.72],
+   [x*.50,y+rear.lift*.88,rear.d*.94],
    [0,y+rear.lift,rear.d]
  ];
  // Winding: front midline -> right face -> back midline -> left face.
@@ -173,7 +173,7 @@ export function createHeadPlanes({stage='volume'}={}){
  if(stage==='volume'){
   // Crown closes at one shared apex (not a separate sphere).
   const ti=pos.length/3;
-  pos.push(0,1.602,-.095*Z_SCALE);
+  pos.push(0,1.565,-.095*Z_SCALE);
   for(let s=0;s<sections;s++)
    push(ti,s,(s+1)%sections,'crown');
   const bi=pos.length/3;
