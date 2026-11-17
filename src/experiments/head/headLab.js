@@ -178,21 +178,25 @@ export function startHeadLab(){
   const enabled=nativeComparison||loadedComparison;
   const segmented=Boolean(partsGroup&&partsToggle.checked);
   const separated=Boolean(splitGroup&&splitToggle.checked&&!segmented&&!lodOn);
+  // Camera-right in world space, so the pair stays SIDE BY SIDE even at side/back views.
+  const screenRight=new T.Vector3(1,0,0).applyQuaternion(camera.quaternion).normalize();
+  const offset=screenRight.multiplyScalar(1.25);
   if(reducedGroup){
-   reducedGroup.position.x=nativeComparison?1.25:loadedComparison?-1.25:0;
+   reducedGroup.position.copy(nativeComparison?offset:loadedComparison?offset.clone().negate():new T.Vector3());
    reducedGroup.visible=(nativeComparison||(!lodOn&&!segmented&&!separated));
   }
   if(lodGroup){
-   lodGroup.position.x=enabled?-1.25:0;
+   lodGroup.position.copy(enabled?offset.clone().negate():new T.Vector3());
    lodGroup.visible=lodOn&&!segmented&&!separated;
   }
-  if(splitGroup){splitGroup.position.x=loadedComparison?-1.25:0;splitGroup.visible=separated;}
-  if(partsGroup){partsGroup.position.x=loadedComparison?-1.25:0;partsGroup.visible=segmented;}
-  if(referenceGroup){referenceGroup.position.x=1.25;referenceGroup.visible=loadedComparison;}
+  if(splitGroup){splitGroup.position.copy(loadedComparison?offset.clone().negate():new T.Vector3());splitGroup.visible=separated;}
+  if(partsGroup){partsGroup.position.copy(loadedComparison?offset.clone().negate():new T.Vector3());partsGroup.visible=segmented;}
+  if(referenceGroup){referenceGroup.position.copy(offset);referenceGroup.visible=loadedComparison;}
   symmetryAxis.visible=axisToggle.checked&&(viewName==='front'||viewName==='quarter')&&!enabled;
   camera.zoom=enabled?.78:segmented&&Number(distanceSlider.value)>0?.84:separated?.84:1;
   camera.updateProjectionMatrix();
   document.querySelector('.head-stage').classList.toggle('is-comparing',enabled);
+  document.querySelector('.head-stage').classList.toggle('is-lod-comparing',nativeComparison);
   document.querySelector('.head-stage').classList.toggle('is-split',separated&&!enabled);
   document.querySelector('.head-stage').classList.toggle('is-parts',segmented&&!enabled);
  }
