@@ -95,3 +95,11 @@ body:has(.head-lab){margin:0;background:#eaede9;color:#2c4242;font-family:system
 .head-lod .head-part-switch:has(input:disabled){opacity:.55}
 .head-lod .head-original-link,.head-lod .head-part-manifest{display:block;margin:10px 0;text-align:center;text-decoration:underline;font-size:11px}
 @media(max-width:720px){.head-stage.is-comparing.is-lod-comparing #head-canvas::after{font-size:9px}}
+
+/* Each intermediate comparison labels the actual left-hand mesh explicitly. */
+.head-stage.is-comparing.is-safe-comparing #head-canvas::after{content:'左：严格边界保护 30,536 面　 ·　 右：34.5K 原母版'}
+.head-stage.is-comparing.is-graded-comparing #head-canvas::after{content:'左：分级约束 25,740 面　 ·　 右：34.5K 原母版'}
+@media(max-width:720px){
+ .head-stage.is-comparing.is-safe-comparing #head-canvas::after,
+ .head-stage.is-comparing.is-graded-comparing #head-canvas::after{font-size:9px}
+}
