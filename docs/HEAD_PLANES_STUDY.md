@@ -51,3 +51,24 @@ npm test
 npm run build
 npm run dev
 \`\`\`
+
+
+## 2026-11-17 · 实际浏览器截图与连续形体修正
+
+本轮继续按“原左半面端点、X=0 镜像、深度与后脑成形”顺序操作，每次改完都用真正的 Chromium/Three.js 页面输出多角度截图。
+
+- **正面**：重新定位母版 12 条高度线 × 6 列端点，眉弓暗面更集中、鼻柱缩窄、鼻尖缩短、下颌收束更方正。
+- **45°**：颧骨/鼻翼/下颌 Z 坐标重排；颧骨主要端点近似排列在 z = .62 + .70*x + .25*y 的大平面上，以减少琐碎的三角面明暗。
+- **背面和侧面**：头部宽度系数 1.38 → 1.24；后脑深度重新分配；新增从现有头顶网格推导的顶部过渡环，向中轴收缩 X/Z，修正顶盖在侧视中的竖直尖刺。
+- **耳部**：原六角鼓包换为带凹点、侧壁和厚度的封闭耳壳；左右严格镜像。
+- **颈肩与灯光**：减少过度曝光的环境光，缩短胸像底座并改善颈肩扩张比例。
+
+### 实际渲染证据
+
+可在 docs/images/head-planes-review 中找到 [正面](images/head-planes-review/front.jpg)、[左 3/4](images/head-planes-review/frontLeft.jpg)、[侧面](images/head-planes-review/profileLeft.jpg)、[背面](images/head-planes-review/back.jpg)、[九视同屏](images/head-planes-review/all-nine.jpg)、[左半面端点](images/head-planes-review/stage-half.jpg) 与 [镜像](images/head-planes-review/stage-mirror.jpg)。
+
+自动化工作流位于 .github/workflows/head-planes-visual.yml，调用浏览器真实 WebGL 截图而非仅进行几何算术验证。要继续迭代，请先读取最新截图而不要从源码推测视觉结果。
+
+### 尚未完成的美术验收
+
+目前仍不能宣称与参考原画一致：眉弓与鼻柱平面的连线仍需要更精确的二维读点；正面颧骨和下颌面片尚可进一步整合；耳甲细节简化；顶部侧视仍有轻微折线；颈肩过渡还需要对照原画。构建通过仅说明工程运行正常，不代表造型验收通过。
