@@ -119,6 +119,31 @@ def main():
     if not report["acceptance"]["silhouettePassed"]:
         report["state"]="unaccepted_silhouette_deviation"
     report["acceptance"]["visualInspection"]="five actual-source matched geometry renders generated; automatic silhouette check; human image inspection still required"
+    graded_path=ROOT/"grey-head-region-lod-v1.graded.glb"
+    graded_report_path=ROOT/"grey-head-region-lod-v1.graded.report.json"
+    if graded_path.exists() and graded_report_path.exists():
+        graded=load(graded_path)
+        graded_views={}
+        for name,(look,right) in VIEWS.items():
+            comparison=Image.new("RGB",(1200,700),(245,246,244))
+            comparison.paste(draw_mesh(*original,look,right),(6,34))
+            comparison.paste(draw_mesh(*graded,look,right),(604,34))
+            paste_title(comparison,"34,500 source mesh",6)
+            paste_title(comparison,"25,740 graded boundary reduction",604)
+            image_name="graded-"+name+"-comparison.png"
+            comparison.save(OUT/image_name,optimize=True)
+            m0=silhouette(*original,look,right)
+            m1=silhouette(*graded,look,right)
+            iou=float(np.logical_and(m0,m1).sum())/max(1,int(np.logical_or(m0,m1).sum()))
+            graded_views[name]={"image":f"docs/images/head-region-lod-v1/{image_name}",
+                               "silhouetteIoU":round(iou,6)}
+        graded_report=json.loads(graded_report_path.read_text(encoding="utf8"))
+        graded_report["renderReview"]=graded_views
+        graded_report["silhouettePass"]=all(v["silhouetteIoU"]>=.99 for v in graded_views.values())
+        if not graded_report["silhouettePass"]:
+            graded_report["state"]="rejected_silhouette_deviation"
+        graded_report_path.write_text(json.dumps(graded_report,ensure_ascii=False,indent=2)+chr(10),encoding="utf8")
+        print("graded 25K source surface view comparison",json.dumps(graded_views,indent=2))
     REPORT.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf8")
     print(json.dumps(result,indent=2))
 
