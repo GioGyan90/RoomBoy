@@ -7,6 +7,7 @@ allowed to overwrite the validated 34.5K master or the 10K diagnostic.
 """
 import importlib.util
 import json
+import struct
 from collections import Counter
 from pathlib import Path
 
@@ -17,6 +18,30 @@ ROOT=Path("public/heads")
 spec=importlib.util.spec_from_file_location("regionqem",Path(__file__).with_name("build-head-region-lod.py"))
 mod=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
+
+def load_authored_normals_from_glb(path):
+    """Read the original NORMAL accessor bytes, avoiding trimesh normal repair.
+
+    Some source seam vertices have intentionally authored normals which
+    trimesh.vertex_normals silently recomputes. Those recalculated normals
+    caused a few dark/inverted islands in the 25K Three.js preview.
+    """
+    data=Path(path).read_bytes()
+    assert data[:4]==b"glTF" and struct.unpack_from("<I",data,4)[0]==2
+    json_len=struct.unpack_from("<I",data,12)[0]
+    gltf=json.loads(data[20:20+json_len].decode("utf8"))
+    prim=gltf["meshes"][0]["primitives"][0]
+    acc=gltf["accessors"][prim["attributes"]["NORMAL"]]
+    assert acc["type"]=="VEC3" and acc["componentType"]==5126
+    view=gltf["bufferViews"][acc["bufferView"]]
+    off=20+json_len+8+view.get("byteOffset",0)+acc.get("byteOffset",0)
+    stride=view.get("byteStride",12)
+    if stride==12:
+        return np.frombuffer(data,dtype="<f4",offset=off,
+                             count=acc["count"]*3).reshape(-1,3).copy()
+    return np.stack([np.frombuffer(data,dtype="<f4",offset=off+i*stride,
+                                    count=3).copy() for i in range(acc["count"])])
+
 
 class GradedBoundaryQEM(mod.RegionQEM):
     def __init__(self, verts, faces, tags, names):
@@ -149,7 +174,8 @@ def main():
     # export recalculates fragmented patch normals and can render as a black
     # silhouette in Three.js despite very high geometric silhouette IoU.
     # Preserve original indexed normals and mirror them exactly.
-    source_normals=np.asarray(m.vertex_normals,dtype=np.float64)
+    source_normals=load_authored_normals_from_glb(mod.SOURCE).astype(np.float64)
+    assert len(source_normals)==len(original)
     left_normals=source_normals[kept_ids].copy()
     reflected_normals=left_normals[movable].copy()
     reflected_normals[:,0]*=-1
