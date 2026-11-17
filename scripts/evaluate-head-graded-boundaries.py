@@ -145,7 +145,18 @@ def main():
     positions=np.vstack([neg,reflected]).astype(np.float32)
     lf=index[out_faces]
     rf=twins[lf[:,[0,2,1]]]
-    result=trimesh.Trimesh(vertices=positions,faces=np.vstack([lf,rf]),process=False)
+    # The source uses authored hard/smooth normals. A fresh geometry-only
+    # export recalculates fragmented patch normals and can render as a black
+    # silhouette in Three.js despite very high geometric silhouette IoU.
+    # Preserve original indexed normals and mirror them exactly.
+    source_normals=np.asarray(m.vertex_normals,dtype=np.float64)
+    left_normals=source_normals[kept_ids].copy()
+    reflected_normals=left_normals[movable].copy()
+    reflected_normals[:,0]*=-1
+    final_normals=np.vstack([left_normals,reflected_normals]).astype(np.float32)
+    assert final_normals.shape==positions.shape
+    result=trimesh.Trimesh(vertices=positions,faces=np.vstack([lf,rf]),
+                          vertex_normals=final_normals,process=False)
     name="grey-head-region-lod-v1.graded"
     out=ROOT/(name+".glb")
     result.export(out)
