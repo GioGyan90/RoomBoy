@@ -65,7 +65,14 @@ def main():
     surface["symmetricMaxSampledPercentOfHeadHeight"]=round(100*surface["symmetricMaxSampled"]/normalized_head_height,4)
     report["surfaceReview"]=surface
     report["acceptance"]["surfaceDistanceMeasured"]=True
-    report["acceptance"]["visualInspection"]="review screenshot and surface metrics separately; IoU cannot prove feature fidelity"
+    if report["state"] == "rejected_visual_surface_holes":
+        report["acceptance"]["visualInspection"] = (
+            "REJECTED: actual side-view missing temporal and ear-back surfaces; "
+            "sampled surface distance and silhouette statistics cannot overturn this rejection"
+        )
+        report["acceptance"]["noVisibleSurfaceHoles"] = False
+    else:
+        report["acceptance"]["visualInspection"] = "review screenshot and surface metrics separately; IoU cannot prove feature fidelity"
     REPORT.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf8")
     print(json.dumps(surface,ensure_ascii=False,indent=2))
 
