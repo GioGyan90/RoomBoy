@@ -1,56 +1,56 @@
 {
   "source": "Actual Chromium WebGL renders, head planes page",
-  "commit": "f32cf6ebe06eb23610171e38c4592643cc5a8c94",
-  "capturedAt": "2026-11-17T10:14:48.760Z",
-  "modelStats": "696 三角面 · 3 个结构网格",
+  "commit": "e562d06c280a50403e5f311c781c831c8e952aa9",
+  "capturedAt": "2026-11-17T10:17:07.572Z",
+  "modelStats": "736 三角面 · 3 个结构网格",
   "screenshots": [
     {
       "name": "front",
-      "bytes": 20001
+      "bytes": 20158
     },
     {
       "name": "frontLeft",
-      "bytes": 20487
+      "bytes": 20450
     },
     {
       "name": "frontRight",
-      "bytes": 19862
+      "bytes": 20023
     },
     {
       "name": "profileLeft",
-      "bytes": 17331
+      "bytes": 17310
     },
     {
       "name": "profileRight",
-      "bytes": 16992
+      "bytes": 16902
     },
     {
       "name": "back",
-      "bytes": 17261
+      "bytes": 17242
     },
     {
       "name": "backLeft",
-      "bytes": 17280
+      "bytes": 17250
     },
     {
       "name": "top",
-      "bytes": 17228
+      "bytes": 17509
     },
     {
       "name": "stage-half",
-      "bytes": 14269
+      "bytes": 14174
     },
     {
       "name": "stage-mirror",
-      "bytes": 19633
+      "bytes": 19467
     },
     {
       "name": "all-nine",
-      "bytes": 32487
+      "bytes": 32504
     },
     {
       "name": "mobile-three-quarter",
-      "bytes": 11199
+      "bytes": 11153
     }
   ],
   "browserErrors": []
