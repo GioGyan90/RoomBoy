@@ -6,6 +6,8 @@ on:
       - 'scripts/audit-head-region-topology.py'
       - 'scripts/build-head-region-lod.py'
       - '.github/workflows/head-region-lod.yml'
+      - 'scripts/render-head-region-lod.py'
+      - 'tests/head-region-lod.test.ts'
 permissions:
   contents: write
 concurrency:
@@ -33,12 +35,35 @@ jobs:
           if [ -f scripts/build-head-region-lod.py ]; then
             python scripts/build-head-region-lod.py
           fi
+      - name: Render matched source/candidate front, quarter, side, back and facial wireframe
+        run: |
+          if [ -f public/heads/grey-head-region-lod-v1.glb ]; then
+            python scripts/render-head-region-lod.py
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Run Node regression tests and production build on actual candidate
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - name: Upload geometry image review captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: head-region-lod-v1-review
+          path: docs/images/head-region-lod-v1
+          retention-days: 30
+          if-no-files-found: warn
       - name: Commit geometry artifacts to task branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/heads/grey-head-region-lod-v1.* || true
           git add docs/HEAD_REGION_LOD_V1.md || true
+          git add docs/images/head-region-lod-v1/ || true
           if ! git diff --cached --quiet; then
             git commit -m "asset(head): store source topology audit and region LOD candidate [skip ci]"
             git fetch origin feat/head-region-lod-v1
