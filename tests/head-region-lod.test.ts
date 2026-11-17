@@ -156,3 +156,33 @@ test('graded intermediate does not fuse source mesh islands or exceed permitted 
  const prim=mesh.j.meshes[0].primitives[0];
  assert.equal(mesh.values(prim.indices).length/3,meta.outputFaces);
 });
+
+
+test('graded GLB preserves master authored vertex normals instead of recomputing dark inverted face normals',()=>{
+ const source=parse(root+'grey-head-qem-symmetric.glb');
+ const base=source.j.meshes[0].primitives[0];
+ const pos=source.values(base.attributes.POSITION);
+ const normals=source.values(base.attributes.NORMAL);
+ const normalByPosition=new Map<string,number[][]>();
+ for(let i=0;i<pos.length;i++){
+  const key=coord(pos[i]);
+  const list=normalByPosition.get(key)||[];
+  list.push(normals[i]);normalByPosition.set(key,list);
+ }
+ const candidate=parse(root+'grey-head-region-lod-v1.graded.glb');
+ const prim=candidate.j.meshes[0].primitives[0];
+ assert.notEqual(prim.attributes.NORMAL,undefined,'original normals must be exported');
+ const v=candidate.values(prim.attributes.POSITION);
+ const n=candidate.values(prim.attributes.NORMAL);
+ assert.equal(v.length,n.length);
+ for(let i=0;i<v.length;i++){
+  const possible=normalByPosition.get(coord(v[i]));
+  assert(possible?.length,'graded point must come from original surface at '+i);
+  const match=possible.some(ref=>{
+   const a=Math.hypot(...ref),b=Math.hypot(...n[i]);
+   const similarity=ref.reduce((s,x,k)=>s+x*n[i][k],0)/Math.max(a*b,1e-10);
+   return similarity>.995;
+  });
+  assert(match,'graded normal changed away from original model at '+i);
+ }
+});
