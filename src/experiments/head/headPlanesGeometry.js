@@ -28,12 +28,12 @@ export const FRONT_LEFT_HALF_ROWS = [
 // Four depth stations complete the positive X rear half, then mirror X again.
 // Each station is keyed to the EXACT corresponding front silhouette row.
 const REAR_DEPTH = [
-  {d:-.16, lift:.00}, {d:-.35,lift:0},
-  {d:-.61,lift:0}, {d:-.78,lift:0},
-  {d:-.80,lift:0}, {d:-.79,lift:0},
-  {d:-.77,lift:0}, {d:-.72,lift:.02},
-  {d:-.65,lift:.04}, {d:-.51,lift:.05},
-  {d:-.40,lift:.06}, {d:-.35,lift:.09}
+  {d:-.16,lift:.00}, {d:-.42,lift:0},
+  {d:-.78,lift:0}, {d:-1.01,lift:0},
+  {d:-1.07,lift:0}, {d:-1.07,lift:0},
+  {d:-1.02,lift:0}, {d:-.96,lift:.02},
+  {d:-.82,lift:.04}, {d:-.64,lift:.05},
+  {d:-.46,lift:.06}, {d:-.35,lift:.09}
 ];
 
 const PAL = {
