@@ -118,3 +118,26 @@ test('topology baseline records original holes and 23 semantic components withou
  assert(audit.source_index_edges.single_use>20000,'must not conceal existing open edges');
  assert.equal(audit.shared_region_edges,1714);
 });
+
+
+test('failed 10K face count is never represented as an accepted asset',()=>{
+ assert.equal(faces.length,10000);
+ assert.equal(report.state,'rejected_visual_surface_holes');
+ assert.equal(report.acceptance.noVisibleSurfaceHoles,false);
+ assert.match(report.acceptance.visualInspection,/REJECTED/);
+});
+
+test('safe fallback preserves 34.5K source face islands and all original open boundaries',()=>{
+ const safe=JSON.parse(readFileSync(root+'grey-head-region-lod-v1.safe.report.json','utf8'));
+ assert.equal(safe.sourceFaces,34500);
+ assert(safe.outputFaces>10000);
+ assert.equal(safe.targetFaces,10000);
+ assert.equal(safe.reachedTarget,false);
+ assert.equal(safe.componentCountPreserved,true);
+ assert.equal(safe.sourceConnectedComponents,safe.candidateConnectedComponents);
+ assert.equal(safe.sourceLeftOpenEdges,safe.candidateLeftOpenEdges);
+ assert(safe.areaRetainedPercent>=97.5);
+ const glb=parse(root+'grey-head-region-lod-v1.safe.glb');
+ const faces=glb.values(glb.j.meshes[0].primitives[0].indices).length/3;
+ assert.equal(faces,safe.outputFaces);
+});
