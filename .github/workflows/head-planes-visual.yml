@@ -1,0 +1,56 @@
+name: Head planes actual WebGL visual review
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/experiments/head/headPlanes.js'
+      - 'src/experiments/head/headPlanesGeometry.js'
+      - 'src/experiments/head/headPlanes.css'
+      - 'tests/head-planes.test.ts'
+      - 'scripts/capture-head-planes.mjs'
+      - '.github/workflows/head-planes-visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: head-planes-visual-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Install Chromium / Playwright for REAL WebGL captures
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Capture 9 views, front half, mirror, and mobile
+        run: node scripts/capture-head-planes.mjs
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: head-planes-actual-browser-review
+          path: docs/images/head-planes-review/
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Commit low-resolution screenshots for next-round inspection
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/images/head-planes-review/
+          if ! git diff --cached --quiet; then
+            git commit -m "docs(head): attach browser-rendered head planes review [skip ci]"
+            git push origin HEAD:main
+          fi
