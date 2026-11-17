@@ -31,5 +31,24 @@
     "remaining_left_faces": 12870,
     "reached_goal": false
   },
-  "note": "Reject if components increase, area falls or silhouette changes; do not substitute this for the master."
+  "note": "Reject if components increase, area falls or silhouette changes; do not substitute this for the master.",
+  "renderReview": {
+    "front": {
+      "image": "docs/images/head-region-lod-v1/graded-front-comparison.png",
+      "silhouetteIoU": 0.999388
+    },
+    "quarter": {
+      "image": "docs/images/head-region-lod-v1/graded-quarter-comparison.png",
+      "silhouetteIoU": 0.999866
+    },
+    "side": {
+      "image": "docs/images/head-region-lod-v1/graded-side-comparison.png",
+      "silhouetteIoU": 0.999769
+    },
+    "back": {
+      "image": "docs/images/head-region-lod-v1/graded-back-comparison.png",
+      "silhouetteIoU": 0.999388
+    }
+  },
+  "silhouettePass": true
 }
