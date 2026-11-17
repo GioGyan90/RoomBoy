@@ -137,8 +137,9 @@
     "sourceUnmodified": true,
     "mirrorAndCenterSeam": true,
     "regionBordersExact": true,
-    "visualInspection": "five actual-source matched geometry renders generated; automatic silhouette check; human image inspection still required",
-    "silhouettePassed": true
+    "visualInspection": "review screenshot and surface metrics separately; IoU cannot prove feature fidelity",
+    "silhouettePassed": true,
+    "surfaceDistanceMeasured": true
   },
   "notice": "This is a constrained diagnostic candidate, not an accepted replacement for the 34.5K master.",
   "renderReview": {
@@ -162,5 +163,33 @@
       "image": "docs/images/head-region-lod-v1/face-wire-comparison.png",
       "silhouetteIoU": 0.99923
     }
+  },
+  "surfaceReview": {
+    "method": "area-weighted uniformly sampled points and exact closest point on opposing TRIANGLE surface (R-tree)",
+    "kind": "sampled_bidirectional_point_to_triangle_surface_distance",
+    "notExactHausdorff": true,
+    "samples": 16000,
+    "headHeight": 2.2487391,
+    "masterToCandidate": {
+      "count": 8000,
+      "mean": 0.0050541,
+      "p50": 0.0014124,
+      "p95": 0.0222031,
+      "p99": 0.0419624,
+      "max": 0.0824659
+    },
+    "candidateToMaster": {
+      "count": 8000,
+      "mean": 0.0047068,
+      "p50": 0.0008499,
+      "p95": 0.0272085,
+      "p99": 0.0510486,
+      "max": 0.0920082
+    },
+    "symmetricP95": 0.0272085,
+    "symmetricP99": 0.0510486,
+    "symmetricMaxSampled": 0.0920082,
+    "symmetricP95PercentOfHeadHeight": 1.2099,
+    "symmetricMaxSampledPercentOfHeadHeight": 4.0915
   }
 }
