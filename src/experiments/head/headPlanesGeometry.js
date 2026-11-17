@@ -1,223 +1,254 @@
 import * as T from 'three';
 
-const C={
-  skull:0xcac6c3, brow:0xd8d4d0, temple:0xb8b4b2,
-  cheek:0xbfbab7, jaw:0xa9a5a3, chin:0xcac5c1,
-  eyes:0x625f5d, nose:0xd9d3ce, noseSide:0xb4b0ad,
-  ears:0xb7b1ae, earInset:0x8f8986, neck:0xbdb8b3,
-  shoulders:0xcec9c4
+/**
+ * BASIC PLANES OF THE HEAD — second, source-directed construction.
+ *
+ * These are the measured/hand-fitted landmarks of the FRONT LEFT HALF.
+ * X is negative, Y is up, Z points toward the viewer. The front must be
+ * laid out here first. Right-side vertices are generated only by mirroring.
+ * The same vertex IDs are then moved in depth to form one connected shell.
+ *
+ * No disconnected brow, eye, nose, cheek or jaw "sticker" geometry exists.
+ */
+export const FRONT_LEFT_HALF_ROWS = [
+  {name:'01 crown',       points:[[0,1.61,.00],[-.10,1.61,-.01],[-.19,1.60,-.025],[-.28,1.58,-.055],[-.36,1.56,-.085],[-.43,1.52,-.12]]},
+  {name:'02 top planes',  points:[[0,1.47,.25],[-.11,1.47,.24],[-.22,1.47,.21],[-.33,1.46,.17],[-.43,1.45,.10],[-.52,1.42,-.03]]},
+  {name:'03 frontal cap', points:[[0,1.28,.41],[-.12,1.28,.41],[-.25,1.28,.37],[-.39,1.28,.31],[-.52,1.27,.20],[-.60,1.25,-.03]]},
+  {name:'04 forehead',    points:[[0,.84,.49],[-.13,.84,.49],[-.27,.84,.46],[-.43,.84,.38],[-.56,.83,.25],[-.65,.82,-.04]]},
+  {name:'05 brow ridge', points:[[0,.59,.56],[-.12,.59,.56],[-.25,.59,.55],[-.42,.58,.52],[-.55,.57,.40],[-.66,.57,-.03]]},
+  {name:'06 eye shelf',  points:[[0,.44,.64],[-.12,.43,.60],[-.25,.42,.47],[-.41,.42,.40],[-.55,.42,.29],[-.66,.41,-.04]]},
+  {name:'07 orbit',       points:[[0,.29,.73],[-.11,.29,.64],[-.23,.29,.41],[-.39,.28,.37],[-.53,.28,.29],[-.63,.28,-.06]]},
+  {name:'08 cheek ridge', points:[[0,.12,.84],[-.12,.12,.69],[-.23,.12,.48],[-.39,.12,.50],[-.51,.12,.37],[-.62,.12,-.06]]},
+  {name:'09 cheek fall',  points:[[0,-.07,.80],[-.125,-.07,.66],[-.24,-.08,.48],[-.36,-.08,.43],[-.47,-.07,.29],[-.57,-.08,-.09]]},
+  {name:'10 jaw angle',   points:[[0,-.25,.49],[-.11,-.25,.47],[-.21,-.25,.45],[-.31,-.24,.38],[-.40,-.23,.22],[-.47,-.19,-.15]]},
+  {name:'11 chin plane',  points:[[0,-.42,.40],[-.065,-.42,.39],[-.14,-.43,.35],[-.21,-.43,.30],[-.28,-.39,.13],[-.33,-.35,-.19]]},
+  {name:'12 chin base',   points:[[0,-.55,.33],[-.055,-.55,.32],[-.115,-.54,.30],[-.16,-.52,.23],[-.21,-.50,.07],[-.25,-.46,-.18]]}
+];
+
+// Four depth stations complete the positive X rear half, then mirror X again.
+// Each station is keyed to the EXACT corresponding front silhouette row.
+const REAR_DEPTH = [
+  {d:-.16, lift:.00}, {d:-.35,lift:0},
+  {d:-.61,lift:0}, {d:-.78,lift:0},
+  {d:-.80,lift:0}, {d:-.79,lift:0},
+  {d:-.77,lift:0}, {d:-.72,lift:.02},
+  {d:-.65,lift:.04}, {d:-.51,lift:.05},
+  {d:-.40,lift:.06}, {d:-.35,lift:.09}
+];
+
+const PAL = {
+  crown:0xd4d0cc, forehead:0xd3cfca, brow:0xbab5b1,
+  eyes:0x716d69, underEye:0xc1bcb7, nose:0xded9d3,
+  cheek:0xc8c3be, jaw:0xaea9a5, chin:0xc8c2bd,
+  side:0xb3aeaa, back:0xbeb9b4, neck:0xbab5b0,
+  shoulders:0xd6d0c9, ears:0xbab5b0, inset:0x938d87
 };
+const SKIN=0xc8c3be, X_SCALE=1.38, Z_SCALE=1.08;
+const sections=18;
+const colorMaterial=(color)=>new T.MeshStandardMaterial({
+  color,roughness:1,metalness:0,flatShading:true,side:T.DoubleSide
+});
 
-const mat=(color)=>new T.MeshStandardMaterial({color,roughness:0.95,metalness:0,flatShading:true,side:T.DoubleSide});
-
-function polygonGeometry(vertices){
-  const positions=[],indices=[];
-  for(const v of vertices)positions.push(...v);
-  for(let i=1;i<vertices.length-1;i++)indices.push(0,i,i+1);
-  const g=new T.BufferGeometry();
-  g.setAttribute('position',new T.Float32BufferAttribute(positions,3));
-  g.setIndex(indices);
-  g.computeVertexNormals();
-  return g;
+const near=(n)=>Math.abs(n)<1e-9?0:n;
+const mirrored=(p)=>[-p[0],p[1],p[2]];
+function buildRing(row,i){
+ const p=row.points;
+ // First create right half ONLY by mirroring the authored left half.
+ const right=p.map(mirrored);
+ const max=right[5],rear=REAR_DEPTH[i];
+ const x=max[0],y=max[1],z=max[2];
+ const side=[
+   [x*1.025,y-.01,z*.28-.10],
+   [x*.88,y+rear.lift*.55,rear.d*.72],
+   [x*.50,y+rear.lift*.88,rear.d*.94],
+   [0,y+rear.lift,rear.d]
+ ];
+ // Winding: front midline -> right face -> back midline -> left face.
+ const leftRear=[mirrored(side[2]),mirrored(side[1]),mirrored(side[0])];
+ const leftFront=p.slice(1).reverse();
+ return [...right,...side,...leftRear,...leftFront].map(([xx,yy,zz])=>[
+   near(xx*X_SCALE), yy, near(zz*Z_SCALE)
+ ]);
+}
+function bustRing(level){
+ const out=[];
+ for(let i=0;i<sections;i++){
+   const a=i*2*Math.PI/sections,s=Math.sin(a),c=Math.cos(a);
+   out.push([near(level.w*s*X_SCALE),
+     level.y-level.shoulderDrop*Math.abs(s),
+     near((level.z+level.d*c)*Z_SCALE)]);
+ }
+ return out;
+}
+const NECK_BUST=[
+ {name:'neckRoot', y:-.67,w:.235,d:.24,z:-.10,shoulderDrop:0},
+ {name:'neckMid',  y:-.99,w:.235,d:.25,z:-.11,shoulderDrop:0},
+ {name:'neckLow',  y:-1.25,w:.26,d:.27,z:-.11,shoulderDrop:0},
+ {name:'trap',     y:-1.43,w:.41,d:.30,z:-.11,shoulderDrop:.09},
+ {name:'shoulder', y:-1.67,w:.70,d:.33,z:-.11,shoulderDrop:.055},
+ {name:'bustEnd',  y:-2.04,w:.78,d:.34,z:-.11,shoulderDrop:0}
+];
+export const HEAD_PLANE_STAGES=['half','mirror','volume'];
+const mirrorSegments=new Set([0,1,2,3,4,13,14,15,16,17]);
+function segmentZone(row,seg){
+ if(row>=FRONT_LEFT_HALF_ROWS.length-1)
+   return row<FRONT_LEFT_HALF_ROWS.length+1?'neck':'shoulders';
+ const face=mirrorSegments.has(seg);
+ if(!face)return row<3?'crown':row<8?'side':'back';
+ const c=seg<5?seg:17-seg;
+ if(row<=1)return 'crown';
+ if(row<=3)return 'forehead';
+ if(row===4)return c===0?'nose':'brow';
+ if(row===5)return c===0?'nose':c===1?'underEye':c<=3?'eyes':'side';
+ if(row===6)return c<=1?'nose':c<=3?'underEye':'side';
+ if(row===7)return c<=1?'nose':'cheek';
+ if(row===8)return c===0?'nose':c>=3?'jaw':'cheek';
+ if(row===9)return c>=2?'jaw':'chin';
+ return 'chin';
+}
+function makeEar(side){
+ // A single, closed ear wedge. It rests in the side silhouette; no
+ // stacked rectangular front/back cards and no floating ear inserts.
+ const o=[
+  [.61,.38,-.09],[.70,.42,-.15],[.76,.30,-.19],
+  [.77,.12,-.17],[.70,-.055,-.12],[.60,-.085,-.08],
+  [.59,.12,-.045]
+ ];
+ const front=o.map(([x,y,z])=>[side*x*X_SCALE,y,(z+.045)*Z_SCALE]);
+ const back=o.map(([x,y,z])=>[side*x*X_SCALE,y,(z-.060)*Z_SCALE]);
+ const pts=[...front,...back],indices=[];
+ // Two 5-triangle fans, triangulated from a common edge vertex.
+ for(let i=1;i<o.length-1;i++){
+  indices.push(0,i,i+1);
+  indices.push(o.length,o.length+i+1,o.length+i);
+ }
+ for(let i=0;i<o.length;i++){
+  const j=(i+1)%o.length,k=o.length;
+  indices.push(i,j,k+j,i,k+j,k+i);
+ }
+ if(side<0){for(let i=0;i<indices.length;i+=3)
+   [indices[i+1],indices[i+2]]=[indices[i+2],indices[i+1]];
+ }
+ const g=new T.BufferGeometry();
+ g.setAttribute('position',new T.Float32BufferAttribute(pts.flat(),3));
+ g.setIndex(indices);g.computeVertexNormals();
+ return g;
 }
 
-// Every item lives in a semantic group, so the face can later be retopologized.
-export function createHeadPlanes(){
- const root=new T.Group();
- root.name='basic-planes-head';
- const parts=[];
- const outlineMaterial=new T.LineBasicMaterial({color:0x514d4a,transparent:true,opacity:.46,depthWrite:false});
- function add(name,geometry,color,zone){
-   const mesh=new T.Mesh(geometry,mat(color));
-   mesh.name=name;mesh.userData={zone,baseColor:color};
-   root.add(mesh);parts.push(mesh);
-   const lines=new T.LineSegments(new T.WireframeGeometry(geometry),outlineMaterial);
-   lines.name='topology';lines.visible=false;lines.renderOrder=2;
-   mesh.add(lines);
-   return mesh;
+/**
+ * Stage half: authoring side only. Stage mirror: both sides share X=0
+ * indices. Stage volume: move the SAME front vertices in Z and connect
+ * the sides and back with a 360-degree shell extending into the neck.
+ */
+export function createHeadPlanes({stage='volume'}={}){
+ if(!HEAD_PLANE_STAGES.includes(stage))stage='volume';
+ const root=new T.Group();root.name='basic-planes-head-v2';
+ const rings=FRONT_LEFT_HALF_ROWS.map(buildRing);
+ if(stage==='volume')for(const lvl of NECK_BUST)rings.push(bustRing(lvl));
+ const pts=rings.flat();
+ const pos=pts.flat();
+ const idx=[],groups=[],paletteKeys=Object.keys(PAL);
+ const mats=paletteKeys.map(k=>colorMaterial(PAL[k]));
+ const isHalf=stage==='half',isMirror=stage==='mirror';
+ let faceTriangles=0;
+ function push(a,b,c,zone){
+  const start=idx.length;
+  idx.push(a,b,c);
+  groups.push({start,count:3,materialIndex:paletteKeys.indexOf(zone)});
+  faceTriangles++;
  }
- function panel(name,vertices,color,zone){
-   return add(name,polygonGeometry(vertices),color,zone);
- }
- // A 16-sector head cage: the front, side and back are all views of one
- // consistent volume, not several independent flat silhouettes.
- const rings=[
-   {y:1.51,w:.28,d:.23,z:-.10},
-   {y:1.43,w:.51,d:.43,z:-.10},
-   {y:1.15,w:.69,d:.59,z:-.07},
-   {y:.79,w:.735,d:.60,z:-.07},
-   {y:.58,w:.73,d:.565,z:-.06},
-   {y:.39,w:.715,d:.52,z:-.06},
-   {y:.12,w:.675,d:.51,z:-.06},
-   {y:-.23,w:.55,d:.47,z:-.075},
-   {y:-.55,w:.385,d:.40,z:-.09},
-   {y:-.77,w:.22,d:.31,z:-.105}
- ];
- const segments=16,vertices=[],triangles=[];
- for(const ring of rings){
-   for(let j=0;j<segments;j++){
-     const a=j*Math.PI*2/segments;
-     let x=Math.sin(a)*ring.w;
-     let z=Math.cos(a)*ring.d+ring.z;
-     // Recessed eye-plane below the frontal brow ledge.
-     const front=Math.cos(a)>.60;
-     if(front&&ring.y===.39)z-=.095;
-     if(front&&ring.y===.12)z-=.035;
-     vertices.push([x,ring.y,z]);
-   }
- }
- for(let i=0;i<rings.length-1;i++){
-  for(let j=0;j<segments;j++){
-   const a=i*segments+j,b=i*segments+(j+1)%segments;
-   const c=(i+1)*segments+j,d=(i+1)*segments+(j+1)%segments;
-   triangles.push(a,c,b,b,c,d);
+ for(let r=0;r<rings.length-1;r++){
+  for(let s=0;s<sections;s++){
+   if(isHalf && s<13)continue;
+   if(isHalf && s>17)continue;
+   if(isMirror && !mirrorSegments.has(s))continue;
+   const a=r*sections+s,b=r*sections+(s+1)%sections,
+     c=(r+1)*sections+s,d=(r+1)*sections+(s+1)%sections;
+   const zone=segmentZone(r,s);
+   // Shared-vertex quads: no layered facial polygons.
+   push(a,c,b,zone);
+   push(b,c,d,zone);
   }
  }
- // Cap the upper and lower ends; avoid open rings in side/back views.
- const top=vertices.length;vertices.push([0,1.53,-.10]);
- const bottom=vertices.length;vertices.push([0,-.80,-.105]);
- for(let j=0;j<segments;j++){
-   triangles.push(top,j,(j+1)%segments);
-   const a=(rings.length-1)*segments+j;
-   const b=(rings.length-1)*segments+(j+1)%segments;
-   triangles.push(bottom,b,a);
+ if(stage==='volume'){
+  // Crown closes at one shared apex (not a separate sphere).
+  const ti=pos.length/3;
+  pos.push(0,1.635,-.035*Z_SCALE);
+  for(let s=0;s<sections;s++)
+   push(ti,s,(s+1)%sections,'crown');
+  const bi=pos.length/3;
+  pos.push(0,-2.04,-.11*Z_SCALE);
+  const n=(rings.length-1)*sections;
+  for(let s=0;s<sections;s++)
+   push(bi,n+(s+1)%sections,n+s,'shoulders');
  }
- const geom=new T.BufferGeometry();
- geom.setAttribute('position',new T.Float32BufferAttribute(vertices.flat(),3));
- geom.setIndex(triangles);geom.computeVertexNormals();
- add('01 / 颅骨主壳',geom,C.skull,'skull');
-
- for(const s of [-1,1]){
-   // The eyebrow shelf, cheek wedge and jaw are deliberately distinct
-   // connected-looking volumes, with planar turns and mirrored landmarks.
-   panel('02 / 眉弓 '+s,[
-    [s*.73,.60,.06],[s*.62,.64,.33],[s*.30,.60,.52],
-    [s*.135,.54,.55],[s*.28,.48,.55],[s*.56,.48,.42],
-    [s*.72,.48,.22]
-   ],C.brow,'brow');
-   panel('03 / 眼窝 '+s,[
-    [s*.17,.46,.43],[s*.36,.47,.40],[s*.61,.46,.285],
-    [s*.68,.36,.21],[s*.51,.34,.36],[s*.29,.34,.40],
-    [s*.16,.36,.43]
-   ],C.eyes,'eyes');
-   panel('04 / 太阳穴 '+s,[
-    [s*.73,.77,.005],[s*.72,.48,.19],
-    [s*.68,.32,.26],[s*.79,.08,.01],
-    [s*.72,.58,-.13]
-   ],C.temple,'temple');
-   panel('05 / 颧骨 '+s,[
-    [s*.67,.34,.30],[s*.48,.29,.46],
-    [s*.24,.13,.55],[s*.35,-.16,.50],
-    [s*.57,-.08,.34],[s*.67,.12,.24]
-   ],C.cheek,'cheek');
-   panel('06 / 下颌侧面 '+s,[
-    [s*.63,.06,.16],[s*.56,-.09,.32],
-    [s*.40,-.26,.44],[s*.40,-.56,.29],
-    [s*.21,-.76,.20],[s*.50,-.45,.10],
-    [s*.58,-.17,-.03]
-   ],C.jaw,'jaw');
-   panel('07 / 颏侧面 '+s,[
-    [s*.40,-.54,.29],[s*.27,-.64,.43],
-    [s*.19,-.77,.25],[0,-.78,.29],
-    [0,-.60,.46],[s*.23,-.49,.46]
-   ],C.chin,'chin');
-
-   // Straight bridge, tapered mid-section, projecting nose tip and two
-   // lower side facets. No eyeballs or hair, following the plane study.
-   panel('08 / 鼻梁 '+s,[
-    [0,.54,.57],[s*.115,.52,.555],
-    [s*.10,.25,.69],[s*.135,-.04,.78],
-    [0,-.095,.90],[0,.28,.77]
-   ],C.nose,'nose');
-   panel('09 / 鼻翼 '+s,[
-    [s*.135,-.04,.78],[0,-.095,.90],
-    [s*.125,-.15,.76],[s*.17,-.13,.60],
-    [s*.10,.25,.69]
-   ],C.noseSide,'nose');
-
-   const earOuter=[
-    [s*.70,.46,-.13],[s*.82,.49,-.12],
-    [s*.94,.36,-.13],[s*.965,.14,-.10],
-    [s*.87,.005,-.075],[s*.76,.045,-.03],
-    [s*.72,.20,.035]
-   ];
-   const earFront=earOuter.map(([x,y,z])=>[x,y,z+.10]);
-   panel('10 / 外耳正面 '+s,earFront,C.ears,'ears');
-   panel('11 / 外耳背面 '+s,earOuter,C.temple,'ears');
-   for(let i=0;i<earOuter.length;i++){
-     const j=(i+1)%earOuter.length;
-     panel('12 / 耳轮厚度 '+s+'-'+i,[
-       earOuter[i],earOuter[j],earFront[j],earFront[i]
-     ],C.ears,'ears');
+ const g=new T.BufferGeometry();
+ g.setAttribute('position',new T.Float32BufferAttribute(pos,3));
+ g.setIndex(idx);
+ for(const group of groups)g.addGroup(group.start,group.count,group.materialIndex);
+ g.computeVertexNormals();
+ const shell=new T.Mesh(g,mats);
+ shell.name='统一头面与颈肩 · 共享索引网格';
+ shell.userData.zone='skin';
+ root.add(shell);
+ const parts=[shell],allMaterials=[...mats];
+ const earMeshes=[];
+ if(stage==='volume'){
+   for(const s of [-1,1]){
+    const em=new T.Mesh(makeEar(s),colorMaterial(PAL.ears));
+    em.name=s<0?'左耳 · 闭合体块':'右耳 · 镜像闭合体块';
+    em.userData.zone='ears';
+    root.add(em);parts.push(em);earMeshes.push(em);
+    allMaterials.push(em.material);
    }
-   panel('13 / 耳甲 '+s,[
-     [s*.80,.38,.013],[s*.90,.30,.026],
-     [s*.90,.17,.04],[s*.83,.10,.052],
-     [s*.78,.19,.067]
-   ],C.earInset,'ears');
-   panel('14 / 耳屏 '+s,[
-     [s*.76,.22,.091],[s*.82,.25,.090],
-     [s*.82,.12,.088]
-   ],C.ears,'ears');
  }
- // One tiny shadow break for the upper lip, not full lips/eyes.
- panel('15 / 口部基准面',[
-   [-.235,-.40,.425],[0,-.42,.488],
-   [.235,-.40,.425],[.17,-.48,.44],
-   [0,-.50,.466],[-.17,-.48,.44]
- ],0xb0aaa7,'chin');
-
- function loft(name,levels,sections,color,zone){
-   const positions=[],indices=[];
-   for(const l of levels){
-     for(let j=0;j<sections;j++){
-       const a=j*2*Math.PI/sections;
-       positions.push(l.w*Math.sin(a),l.y,l.z+l.d*Math.cos(a));
-     }
-   }
-   for(let i=0;i<levels.length-1;i++){
-     for(let j=0;j<sections;j++){
-       const a=i*sections+j,b=i*sections+(j+1)%sections,
-         c=(i+1)*sections+j,d=(i+1)*sections+(j+1)%sections;
-       indices.push(a,c,b,b,c,d);
-     }
-   }
-   // Both cut ends are filled to avoid hollow caps in back/top views.
-   const t=positions.length/3;positions.push(0,levels[0].y,levels[0].z);
-   const b=positions.length/3;const last=levels[levels.length-1];
-   positions.push(0,last.y,last.z);
-   for(let j=0;j<sections;j++){
-     indices.push(t,j,(j+1)%sections);
-     const a=(levels.length-1)*sections+j,d=(levels.length-1)*sections+(j+1)%sections;
-     indices.push(b,d,a);
-   }
-   const g=new T.BufferGeometry();
-   g.setAttribute('position',new T.Float32BufferAttribute(positions,3));
-   g.setIndex(indices);g.computeVertexNormals();
-   add(name,g,color,zone);
+ const meshEdges=[];
+ for(const mesh of parts){
+  const e=new T.LineSegments(new T.EdgesGeometry(mesh.geometry,24),
+    new T.LineBasicMaterial({color:0x635e59,transparent:true,opacity:.20,depthWrite:false}));
+  e.name='primary-edges';mesh.add(e);
+  const w=new T.LineSegments(new T.WireframeGeometry(mesh.geometry),
+    new T.LineBasicMaterial({color:0x47433f,transparent:true,opacity:.42,depthWrite:false}));
+  w.name='topology';w.visible=stage!=='volume';
+  mesh.add(w);meshEdges.push(w);
  }
- loft('16 / 颈部',[
-   {y:-.64,w:.25,d:.245,z:-.11},
-   {y:-.97,w:.26,d:.26,z:-.13},
-   {y:-1.29,w:.275,d:.26,z:-.13},
-   {y:-1.53,w:.34,d:.27,z:-.14}
- ],12,C.neck,'neck');
- loft('17 / 斜方肌与肩部截面',[
-   {y:-1.29,w:.265,d:.25,z:-.13},
-   {y:-1.39,w:.41,d:.28,z:-.13},
-   {y:-1.57,w:.92,d:.37,z:-.12},
-   {y:-1.68,w:1.04,d:.40,z:-.12},
-   {y:-2.08,w:1.10,d:.43,z:-.12}
- ],12,C.shoulders,'shoulders');
-
- let faces=0;
- for(const m of parts)faces+=(m.geometry.index?.count||m.geometry.attributes.position.count)/3;
- function setWire(visible){for(const m of parts)m.getObjectByName('topology').visible=visible;}
- function setZones(visible){
-   for(const m of parts)m.material.color.setHex(visible?m.userData.baseColor:C.skull);
+ // White pinpoints show authored left-half endpoints before mirroring.
+ if(stage!=='volume'){
+  const half=FRONT_LEFT_HALF_ROWS.flatMap((r,i)=>r.points.map(p=>[
+     p[0]*X_SCALE,p[1],p[2]*Z_SCALE
+  ]));
+  const mirroredHalf=half.map(p=>[-p[0],p[1],p[2]]);
+  const points=isHalf?half:[...half,...mirroredHalf];
+  const pg=new T.BufferGeometry();
+  pg.setAttribute('position',new T.Float32BufferAttribute(points.flat(),3));
+  const pin=new T.Points(pg,new T.PointsMaterial({
+    color:0x37332f,size:.028,sizeAttenuation:true,depthTest:false
+  }));
+  pin.name='正面端点 · 左半版';pin.renderOrder=6;root.add(pin);
  }
- function setPartVisible(zone,visible){for(const m of parts)if(m.userData.zone===zone)m.visible=visible;}
- return {group:root,parts,faces,vertices:parts.reduce((v,m)=>v+m.geometry.attributes.position.count,0),
+ let showRegions=true,showFeatures=true;
+ function repaint(){
+  paletteKeys.forEach((k,i)=>{
+   let hex=showRegions?PAL[k]:SKIN;
+   if(!showFeatures && ['eyes','brow','underEye','nose','cheek','jaw','chin'].includes(k))
+     hex=SKIN;
+   mats[i].color.setHex(hex);
+  });
+  for(const ear of earMeshes)ear.material.color.setHex(showRegions?PAL.ears:SKIN);
+ }
+ function setWire(visible){for(const wire of meshEdges)wire.visible=visible;}
+ function setZones(visible){showRegions=visible;repaint();}
+ function setPartVisible(zone,visible){
+  if(zone==='ears'){for(const ear of earMeshes)ear.visible=visible;return;}
+  if(['neck','shoulders'].includes(zone)){
+   const k=paletteKeys.indexOf(zone);if(k!==-1)mats[k].visible=visible;return;
+  }
+  if(['brow','eyes','temple','cheek','jaw','chin','nose'].includes(zone)){
+   showFeatures=visible;repaint();
+  }
+ }
+ return {group:root,parts,faces:parts.reduce((n,m)=>n+(m.geometry.index?.count||0)/3,0),
+  vertices:parts.reduce((n,m)=>n+m.geometry.attributes.position.count,0),
+  stage,frontLeftLandmarks:FRONT_LEFT_HALF_ROWS,
   setWire,setZones,setPartVisible};
 }
-
