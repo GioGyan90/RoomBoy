@@ -7,7 +7,7 @@
  * node scripts/bake-head-regions.mjs [input.glb] [output-prefix]
  */
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
-import {dirname,basename} from 'node:path';
+import {dirname} from 'node:path';
 import {partitionHeadFaces,createHeadPartsManifest,auditHeadParts,HEAD_REGIONS} from '../src/experiments/head/headRegions.js';
 
 const input=process.argv[2]||'public/heads/grey-head-qem-symmetric.glb';
@@ -109,19 +109,12 @@ function bake(source,partition){
 const source=loadGlb(input);
 const parts=partitionHeadFaces(source.positions,source.indices);
 const audit=auditHeadParts(parts);
-const isOriginal=basename(input)==='grey-head-qem-symmetric.glb';
-const isLOD1=basename(input)==='grey-head-lod1-10000.glb';
-if(!isOriginal&&!isLOD1)throw Error('Unsupported head source: '+input);
-if((isOriginal&&(audit.sourceFaces!==34500||audit.sourceVertices!==31357))||
-   (isLOD1&&(audit.sourceFaces>10000||audit.sourceFaces<9700))||
-   audit.unassignedFaces||audit.regionCount!==HEAD_REGIONS.length||
-   !audit.allMirroredFaceCountsEqual)
+if(audit.sourceFaces!==34500||audit.sourceVertices!==31357||audit.unassignedFaces||
+  audit.regionCount!==HEAD_REGIONS.length||!audit.allMirroredFaceCountsEqual)
  throw Error('Source mesh partition audit failed: '+JSON.stringify(audit));
 mkdirSync(dirname(prefix),{recursive:true});
 const {result,sourceVertices}=bake(source,parts);
 const manifest=createHeadPartsManifest(parts);
-manifest.source=basename(input);
-manifest.parentLOD=isLOD1?'first-pass 10k hybrid; triangles are not original 34.5k face IDs':'unchanged 34.5k symmetric parent';
 manifest.vertexIndexMapping='sourceVertexIds maps each compact part vertex to the original GLB vertex. Shared region borders duplicate vertices for independent editing.';
 for(let i=0;i<manifest.groups.length;i++)manifest.groups[i].sourceVertexIds=sourceVertices[i];
 writeFileSync(prefix+'.parts.glb',result);

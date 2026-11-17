@@ -132,10 +132,3 @@ node --import tsx --experimental-loader ../3D_AItool/experiments/prompt2rig/test
 以已经完成对称化的 34,500 面真实 GLB 为母版，按颅骨、眼眶、鼻部、面颊、口唇、下颌和耳部划分 **23 个独立模型部件**；每块有自己紧凑的顶点及三角面缓冲，同时记录全部 `sourceVertexIds` 和 `faceIds`，便于以后分别简化、恢复原始索引和保持拼接边界。34,500 个母版三角面全部保留、恰好分配一次，7 对左右部位面数相同。页面支持独立显示隐藏、颜色区分、分离距离、聚焦检查与选中部件单独导出 GLB。
 
 **第一版为可编辑的逆向语义标注，不是经过人工确认的最终解剖布线**。目前未进一步减面，下一步先修整区域边界、标记关键五官/耳部保护边，再针对颅顶与后脑等低敏感区域重点减面。可重复运行 `npm run assets:parts`；完整分区方法、统计、精度保障及 LOD 预算见 [头部逆向结构分块记录](docs/HEAD_REVERSE_ENGINEERING.md)。
-
-
-### 少年头部 · 独立 LOD1 10K 面试验版
-
-[查看 LOD1](https://giogyan90.github.io/RoomBoy/?view=head&lod=1) · [GLB 10,000 面](https://giogyan90.github.io/RoomBoy/heads/grey-head-lod1-10000.glb) · [LOD1 的 23 分块 GLB](https://giogyan90.github.io/RoomBoy/heads/grey-head-lod1-10000.parts.glb) · [制作与局限](docs/HEAD_LOD1_10K.md)
-
-在**保留 34,500 面对称母版、原 30K GLB 和原 23 分块**的前提下，新建独立 LOD1：**10,000 个三角面 / 7,710 顶点 / 约 299 KB**，相比 34.5K 面减少约 71%。首轮直接统一 QEM 会导致眼周、颅骨与后脑面片出现孔洞，因此当前采用 **5,600 面连续颅骨支撑壳 + 4,400 面来自真实源网格的五官/耳廓简化面片**。它经真实模型位置采样，保持镜像对称，页面支持 LOD1 和母版共用镜头左右对比。该版**仍是第一轮可审阅的混合 LOD，不是已完成无交叉、共边焊合的单一拓扑网格**，后续需要整理五官面片与支撑壳之间的重叠。

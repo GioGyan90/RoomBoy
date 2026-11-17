@@ -88,13 +88,3 @@ body:has(.head-lab){margin:0;background:#eaede9;color:#2c4242;font-family:system
 
 .head-regions .head-export-part{display:block;width:100%;margin:7px 0 8px;background:#e4eee8;border-color:#c3d7ca;color:#346356;font-size:11px}
 .head-regions .head-export-part:disabled{opacity:.45;cursor:not-allowed}
-
-.head-lab .head-lod-panel>label{display:flex;align-items:center;gap:8px;font-size:12px;color:#42665e;margin:10px 0;cursor:pointer}
-.head-lab .head-lod-panel>label input{accent-color:#315d58}
-.head-lab .head-lod-panel .head-lod-stats{font-size:11px;color:#6e867f;margin:11px 0 13px}
-.head-lab .head-lod-panel .head-download{margin:10px 0 0}
-.head-stage.is-lod-comparing #head-canvas::after{
- content:'左：对称母版 34,500 面　　右：第一轮 LOD1 10,000 面';
- position:absolute;pointer-events:none;left:0;right:0;bottom:12px;color:#456963;font-size:11px;text-align:center
-}
-@media(max-width:720px){.head-stage.is-lod-comparing #head-canvas::after{font-size:9px}}
