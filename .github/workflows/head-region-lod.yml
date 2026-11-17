@@ -7,6 +7,8 @@ on:
       - 'scripts/build-head-region-lod.py'
       - '.github/workflows/head-region-lod.yml'
       - 'scripts/render-head-region-lod.py'
+      - 'scripts/capture-head-lod.mjs'
+      - 'src/experiments/head/headLab.js'
       - 'tests/head-region-lod.test.ts'
 permissions:
   contents: write
@@ -49,6 +51,20 @@ jobs:
           npm ci
           npm test
           npm run build
+      - name: Install Playwright Chromium for real Three.js GLB comparisons
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Capture original-vs-LOD actual Three.js WebGL screens
+        run: node scripts/capture-head-lod.mjs
+      - name: Upload browser images
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: head-region-lod-v1-webgl
+          path: artifacts/head-lod-webgl
+          retention-days: 30
+          if-no-files-found: warn
       - name: Upload geometry image review captures
         if: always()
         uses: actions/upload-artifact@v4
