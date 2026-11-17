@@ -8,6 +8,7 @@ on:
       - '.github/workflows/head-region-lod.yml'
       - 'scripts/render-head-region-lod.py'
       - 'scripts/check-head-lod-surface.py'
+      - 'scripts/evaluate-head-safe-boundaries.py'
       - 'scripts/capture-head-lod.mjs'
       - 'src/experiments/head/headLab.js'
       - 'tests/head-region-lod.test.ts'
@@ -46,6 +47,8 @@ jobs:
           if [ -f scripts/build-head-region-lod.py ]; then
             python scripts/build-head-region-lod.py
           fi
+      - name: Evaluate topology-safe variant without source open-edge collapse
+        run: python scripts/evaluate-head-safe-boundaries.py
       - name: Render matched source/candidate front, quarter, side, back and facial wireframe
         run: |
           if [ -f public/heads/grey-head-region-lod-v1.glb ]; then
@@ -93,6 +96,8 @@ jobs:
             public/heads/grey-head-region-lod-v1.parts.glb
             public/heads/grey-head-region-lod-v1.parts.json
             public/heads/grey-head-region-lod-v1.report.json
+            public/heads/grey-head-region-lod-v1.safe.glb
+            public/heads/grey-head-region-lod-v1.safe.report.json
           retention-days: 30
       - name: Commit generated assets onto latest task branch without binary rebase conflicts
         run: |
