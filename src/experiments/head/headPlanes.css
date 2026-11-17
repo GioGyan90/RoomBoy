@@ -40,3 +40,8 @@
  .planes-gridlabels{font-size:9px}
  .planes-gridlabels span{margin-bottom:5px}
 }
+/* A visible audit trail for the new construction sequence. */
+.planes-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.planes-stages button{line-height:1.5;min-height:46px;padding:7px 5px}
+.planes-step-note{margin:11px 0 0;color:#847b73;font-size:11px;line-height:1.7}
+.planes-sidebar label input:disabled{opacity:.45;cursor:default}
