@@ -35,6 +35,7 @@ class GradedBoundaryQEM(mod.RegionQEM):
             if base in {"ear","orbit","brow","nasalTip","upperLip","lowerLip","chin"}:
                 self.boundary_features.update(edge)
         self.component_baseline=component_count(self.f)
+        self.source_face_island=face_component_ids(self.f)
 
     def area(self,triangles):
         v=self.v
@@ -44,6 +45,10 @@ class GradedBoundaryQEM(mod.RegionQEM):
     def can_collapse(self,keep,drop):
         ok,reason,region=super().can_collapse(keep,drop)
         if not ok:return ok,reason,region
+        # Do not fuse separate original triangle islands via a common point.
+        incident=self.inc[keep]|self.inc[drop]
+        if len({int(self.source_face_island[f]) for f in incident})!=1:
+            return False,"source_component_crossing",None
         if keep in self.boundary_features or drop in self.boundary_features:
             return False,"protected_feature_open_edge",None
         edge=(min(keep,drop),max(keep,drop))
@@ -81,6 +86,24 @@ class GradedBoundaryQEM(mod.RegionQEM):
                   for f in oldfaces if f not in shared)
         self.area_current+=after-before
         return super().collapse(keep,drop,region)
+
+def face_component_ids(faces):
+    parent=list(range(len(faces)))
+    def root(x):
+        while parent[x]!=x:
+            parent[x]=parent[parent[x]]
+            x=parent[x]
+        return x
+    owners={}
+    for fid,tri in enumerate(faces):
+        for e in mod.edges_of(tri):
+            old=owners.get(e)
+            if old is None:owners[e]=fid
+            else:
+                a,b=root(fid),root(old)
+                if a!=b:parent[b]=a
+    return np.asarray([root(i) for i in range(len(faces))],dtype=np.int32)
+
 
 def component_count(faces):
     parent=list(range(len(faces)))
@@ -145,6 +168,7 @@ def main():
       "minAllowedSurfaceAreaPercent":95.5,
       "sourceComponents":parent_components,"outputComponents":components,
       "componentCountPreserved":components==parent_components,
+      "state":"eligible_for_visual_review" if components==parent_components and area_retention>=95.5 else "rejected_topology_or_area",
       "reached10000":len(result.faces)<=10000,
       "sourceOpenEdgesLeft":sum(len(v)==1 for v in source_edges.values()),
       "candidateOpenEdgesLeft":sum(len(v)==1 for v in remaining_edges.values()),
