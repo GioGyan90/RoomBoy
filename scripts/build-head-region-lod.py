@@ -92,6 +92,10 @@ class RegionQEM:
             for i, name in enumerate(region_names)
         ], dtype=int)
         self.locked, self.lock_reasons = self.feature_locks(source_protected)
+        usage = topology_edges(self.f)
+        self.immutable_edges = {e for e, owners in usage.items()
+                                if len(owners) == 2 and self.labels[owners[0]] != self.labels[owners[1]]}
+        self.immutable_edges.update(e for e in usage if self.v[e[0], 0] == 0 and self.v[e[1], 0] == 0)
         self.q = np.zeros((len(vertices), 4, 4), dtype=np.float64)
         self.version = np.zeros(len(vertices), dtype=np.int64)
         self.serial = 0
@@ -231,6 +235,11 @@ class RegionQEM:
         if len(shared) not in (1, 2):
             return False, "edge_incidence", None
         region = int(self.labels[next(iter(shared))])
+        # Even when the collapsing vertex is free, removing its adjacent
+        # triangle must not erase an immutable seam or semantic boundary.
+        if any(edge in self.immutable_edges for fid in shared
+               for edge in edges_of(self.f[fid])):
+            return False, 'protected_edge_face', None
         if any(self.labels[f] != region for f in shared):
             return False, "mixed_region", None
         if self.by_region[region] - len(shared) < self.minimum[region]:
