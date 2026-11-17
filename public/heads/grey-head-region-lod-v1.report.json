@@ -137,7 +137,30 @@
     "sourceUnmodified": true,
     "mirrorAndCenterSeam": true,
     "regionBordersExact": true,
-    "visualInspection": "pending image review"
+    "visualInspection": "five actual-source matched geometry renders generated; automatic silhouette check; human image inspection still required",
+    "silhouettePassed": true
   },
-  "notice": "This is a constrained diagnostic candidate, not an accepted replacement for the 34.5K master."
+  "notice": "This is a constrained diagnostic candidate, not an accepted replacement for the 34.5K master.",
+  "renderReview": {
+    "front": {
+      "image": "docs/images/head-region-lod-v1/front-comparison.png",
+      "silhouetteIoU": 0.997281
+    },
+    "quarter": {
+      "image": "docs/images/head-region-lod-v1/quarter-comparison.png",
+      "silhouetteIoU": 0.99323
+    },
+    "side": {
+      "image": "docs/images/head-region-lod-v1/side-comparison.png",
+      "silhouetteIoU": 0.959126
+    },
+    "back": {
+      "image": "docs/images/head-region-lod-v1/back-comparison.png",
+      "silhouetteIoU": 0.997281
+    },
+    "face_wire": {
+      "image": "docs/images/head-region-lod-v1/face-wire-comparison.png",
+      "silhouetteIoU": 0.99923
+    }
+  }
 }
