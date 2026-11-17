@@ -106,6 +106,8 @@
 
 文件为 `public/heads/grey-head-region-lod-v1.graded.glb` 与 `.graded.report.json`。页面 `?view=head&mode=graded` 用于与母版并排观察；安全版入口 `?view=head&mode=safe`，10K 不合格诊断版入口 `?view=head&mode=lod`。
 
+**顶点法线复查（完成）：** 生成后发现第三方案在真实 WebGL 中变成深色剪影。原因是 Trimesh 的 `vertex_normals` 属性对母版的 94 个顶点自动重算了法线，未完整保留 GLB 原始法线。现由 `evaluate-head-graded-boundaries.py` 直接解析 GLB 的二进制 `NORMAL` accessor，按原始顶点索引传递并对镜像另一半的 X 分量取反；新增回归测试逐个验证顶点法线与母版一致。修复后正面及侧面的真实 Three.js 并排截图均可看清眼眶、鼻梁、唇形、耳廓和颅骨层次，未再出现整面发黑的问题。此版仍只是 25,740 面候选，不代表 10K 目标完成。
+
 自动比对：`scripts/render-head-region-lod.py` 生成正面、45°、侧面、背面的轮廓与图像；`scripts/capture-head-lod.mjs` 捕获真实 Three.js 截图。**不要把 25,740 面中间结果当成已达到 10K。**
 
 ## 文件、自动检查与回滚
