@@ -38,6 +38,17 @@ try{
    return lod && !lod.disabled && txt.includes('10,000') && master.includes('34,500');
  },{timeout:30000});
  await page.locator('#head-lod-compare').check();
+ await page.waitForFunction(()=>!document.querySelector('#head-safe-toggle')?.disabled);
+ await page.locator('#head-safe-toggle').check();
+ for(const view of ['front','quarter','side','back']){
+  await page.locator('[data-view="'+view+'"]').click();
+  await page.waitForTimeout(550);
+  const bytes=await page.locator('.head-stage').screenshot({
+   path:resolve(output,'boundary-safe-'+view+'.png'),animations:'disabled'
+  });
+  if(bytes.length<15000)throw Error('Blank safety comparison '+view);
+ }
+ await page.locator('#head-lod-toggle').check();
  for(const view of ['front','quarter','side','back']){
   await page.locator('[data-view="'+view+'"]').click();
   await page.waitForTimeout(650);
@@ -57,7 +68,7 @@ try{
  if(wireShot.length<15000)throw Error('Blank face zoom');
  await writeFile(resolve(output,'report.json'),JSON.stringify({
   source:'actual Three.js GLTFLoader + MeshLambertMaterial',
-  views:['front','quarter','side','back','face-zoom'],
+  views:['front','quarter','side','back','face-zoom', 'boundary-safe-front','boundary-safe-quarter','boundary-safe-side','boundary-safe-back'],
   issues,commit:process.env.GITHUB_SHA||null
  },null,2)+'\n');
  if(issues.length)throw Error(issues.join('; '));
