@@ -20,9 +20,9 @@ export const FRONT_LEFT_HALF_ROWS = [
   {name:'05 brow bridge', points:[[0,.59,.54],[-.085,.59,.55],[-.22,.59,.57],[-.40,.59,.54],[-.54,.57,.41],[-.65,.55,-.04]]},
   {name:'06 recessed eye',points:[[0,.43,.61],[-.085,.43,.58],[-.20,.43,.37],[-.36,.43,.35],[-.51,.42,.30],[-.64,.42,-.05]]},
   {name:'07 eye bottom',  points:[[0,.29,.67],[-.09,.29,.60],[-.20,.29,.42],[-.36,.29,.38],[-.50,.28,.30],[-.63,.28,-.06]]},
-  {name:'08 nasal tip',   points:[[0,.14,.74],[-.085,.14,.63],[-.21,.14,.54],[-.37,.14,.49],[-.51,.13,.38],[-.62,.12,-.07]]},
-  {name:'09 nose base',  points:[[0,-.05,.54],[-.085,-.05,.52],[-.21,-.05,.52],[-.35,-.05,.45],[-.46,-.05,.31],[-.56,-.06,-.085]]},
-  {name:'10 lower cheek',points:[[0,-.23,.48],[-.09,-.23,.46],[-.20,-.23,.43],[-.30,-.23,.36],[-.41,-.22,.19],[-.47,-.20,-.13]]},
+  {name:'08 nasal tip',   points:[[0,.14,.74],[-.085,.14,.63],[-.21,.14,.51],[-.37,.14,.43],[-.51,.13,.33],[-.62,.12,-.07]]},
+  {name:'09 nose base',  points:[[0,-.05,.54],[-.085,-.05,.52],[-.21,-.05,.47],[-.35,-.05,.39],[-.46,-.05,.32],[-.56,-.06,-.085]]},
+  {name:'10 lower cheek',points:[[0,-.23,.48],[-.09,-.23,.46],[-.20,-.23,.43],[-.30,-.23,.38],[-.41,-.22,.25],[-.47,-.20,-.13]]},
   {name:'11 chin wedge', points:[[0,-.43,.39],[-.08,-.43,.39],[-.17,-.43,.35],[-.25,-.42,.28],[-.33,-.39,.09],[-.36,-.36,-.16]]},
   {name:'12 chin shelf', points:[[0,-.54,.32],[-.07,-.54,.32],[-.16,-.54,.29],[-.22,-.51,.21],[-.25,-.47,.03],[-.28,-.44,-.18]]}
 ];
@@ -41,7 +41,7 @@ const REAR_DEPTH = [
 const PAL = {
   crown:0xd4d0cc, forehead:0xd3cfca, brow:0xbab5b1,
   eyes:0x827d78, underEye:0xc1bcb7, nose:0xd5d0ca,
-  cheek:0xc9c4bf, jaw:0xb6b0ab, chin:0xcac4be,
+  cheek:0xc4c0bc, jaw:0xb2ada9, chin:0xcac4be,
   side:0xb3aeaa, back:0xbeb9b4, neck:0xbab5b0,
   shoulders:0xd6d0c9, ears:0xbab5b0, inset:0x938d87
 };
@@ -72,6 +72,17 @@ function buildRing(row,i){
    near(xx*X_SCALE), yy, near(zz*Z_SCALE)
  ]);
 }
+// Rounded upper skull is created from the SAME indexed cranial ring.
+// Its flattened inner collar avoids the single long triangular ridge that
+// appeared in real browser screenshots of the previous cap.
+function crownRoll(ring){
+ return ring.map(([x,y,z])=>{
+   const xx=x*.70;
+   const t=Math.min(1,Math.abs(xx)/.50);
+   return [near(xx),1.610-.027*t*t,near(z*.55-.060)];
+ });
+}
+
 function bustRing(level){
  const out=[];
  for(let i=0;i<sections;i++){
@@ -112,32 +123,30 @@ function segmentZone(row,seg){
 }
 
 function makeEar(side){
- // A single, closed ear wedge. It rests in the side silhouette; no
- // stacked rectangular front/back cards and no floating ear inserts.
- const o=[
-  [.61,.38,-.09],[.70,.42,-.15],[.76,.30,-.19],
-  [.77,.12,-.17],[.70,-.055,-.12],[.60,-.085,-.08],
-  [.59,.12,-.045]
+ // Slightly inset ear concha, with an outer helix and a real side wall.
+ // Front-face triangles share the recessed central vertex: not a 2D card.
+ const outline=[
+  [.625,.37,-.10],[.68,.425,-.15],[.725,.36,-.17],
+  [.749,.15,-.16],[.710,-.035,-.12],[.644,-.05,-.075],
+  [.625,.12,-.055]
  ];
- const front=o.map(([x,y,z])=>[side*x*X_SCALE,y,(z+.045)*Z_SCALE]);
- const back=o.map(([x,y,z])=>[side*x*X_SCALE,y,(z-.060)*Z_SCALE]);
- const pts=[...front,...back],indices=[];
- // Two 5-triangle fans, triangulated from a common edge vertex.
- for(let i=1;i<o.length-1;i++){
-  indices.push(0,i,i+1);
-  indices.push(o.length,o.length+i+1,o.length+i);
+ const front=outline.map(([x,y,z])=>[side*x*X_SCALE,y,(z+.045)*Z_SCALE]);
+ const back=outline.map(([x,y,z])=>[side*x*X_SCALE,y,(z-.055)*Z_SCALE]);
+ const center=[side*.685*X_SCALE,.19,-.135*Z_SCALE];
+ const vertices=[...front,...back,center];
+ const cap=outline.length,inner=vertices.length-1,indices=[];
+ for(let i=0;i<cap;i++){
+   const j=(i+1)%cap;
+   indices.push(inner,i,j); // Concave ear front fan.
+   indices.push(i,j,cap+j,i,cap+j,cap+i); // Solid thickness.
  }
- for(let i=0;i<o.length;i++){
-  const j=(i+1)%o.length,k=o.length;
-  indices.push(i,j,k+j,i,k+j,k+i);
- }
- if(side<0){for(let i=0;i<indices.length;i+=3)
+ for(let i=1;i<cap-1;i++)indices.push(cap,cap+i+1,cap+i);
+ if(side<0)for(let i=0;i<indices.length;i+=3)
    [indices[i+1],indices[i+2]]=[indices[i+2],indices[i+1]];
- }
- const g=new T.BufferGeometry();
- g.setAttribute('position',new T.Float32BufferAttribute(pts.flat(),3));
- g.setIndex(indices);g.computeVertexNormals();
- return g;
+ const geometry=new T.BufferGeometry();
+ geometry.setAttribute('position',new T.Float32BufferAttribute(vertices.flat(),3));
+ geometry.setIndex(indices);geometry.computeVertexNormals();
+ return geometry;
 }
 
 /**
@@ -149,7 +158,10 @@ export function createHeadPlanes({stage='volume'}={}){
  if(!HEAD_PLANE_STAGES.includes(stage))stage='volume';
  const root=new T.Group();root.name='basic-planes-head-v2';
  const rings=FRONT_LEFT_HALF_ROWS.map(buildRing);
- if(stage==='volume')for(const lvl of NECK_BUST)rings.push(bustRing(lvl));
+ if(stage==='volume'){
+   rings.unshift(crownRoll(rings[0]));
+   for(const lvl of NECK_BUST)rings.push(bustRing(lvl));
+ }
  const pts=rings.flat();
  const pos=pts.flat();
  const idx=[],groups=[],paletteKeys=Object.keys(PAL);
@@ -169,7 +181,7 @@ export function createHeadPlanes({stage='volume'}={}){
    if(isMirror && !mirrorSegments.has(s))continue;
    const a=r*sections+s,b=r*sections+(s+1)%sections,
      c=(r+1)*sections+s,d=(r+1)*sections+(s+1)%sections;
-   const zone=segmentZone(r,s);
+   const zone=stage==='volume'&&r===0?'crown':segmentZone(r-(stage==='volume'?1:0),s);
    // Shared-vertex quads: no layered facial polygons.
    push(a,c,b,zone);
    push(b,c,d,zone);
@@ -178,7 +190,7 @@ export function createHeadPlanes({stage='volume'}={}){
  if(stage==='volume'){
   // Crown closes at one shared apex (not a separate sphere).
   const ti=pos.length/3;
-  pos.push(0,1.615,-.095*Z_SCALE);
+  pos.push(0,1.626,-.105*Z_SCALE);
   for(let s=0;s<sections;s++)
    push(ti,s,(s+1)%sections,'crown');
   const bi=pos.length/3;
