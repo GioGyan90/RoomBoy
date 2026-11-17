@@ -30,6 +30,28 @@ class BoundarySafeQEM(qem.RegionQEM):
         return super().can_collapse(keep,drop)
 
 
+def face_components(faces):
+    """Exact source-index edge connectivity; never fill or alter any holes."""
+    parent=list(range(len(faces)))
+    def find(x):
+        while parent[x]!=x:
+            parent[x]=parent[parent[x]]
+            x=parent[x]
+        return x
+    def join(a,b):
+        a=find(a)
+        b=find(b)
+        if a!=b:parent[b]=a
+    seen={}
+    for fid,tri in enumerate(faces):
+        for edge in qem.edges_of(tri):
+            if edge in seen:
+                join(fid,seen[edge])
+            else:
+                seen[edge]=fid
+    return len({find(i) for i in range(len(faces))})
+
+
 def main():
     src=trimesh.load(qem.SOURCE,force="scene",process=False)
     source=src.to_geometry() if hasattr(src,"to_geometry") else src.dump(concatenate=True)
@@ -76,8 +98,8 @@ def main():
       "reachedTarget":len(mesh.faces)<=10000,
       "sourceSurfaceArea":area_src,"candidateSurfaceArea":area_safe,
       "areaRetainedPercent":round(100*area_safe/area_src,3),
-      "sourceConnectedComponents":len(source.split(only_watertight=False)),
-      "candidateConnectedComponents":len(mesh.split(only_watertight=False)),
+      "sourceConnectedComponents":face_components(faces),
+      "candidateConnectedComponents":face_components(fullfaces),
       "sourceLeftOpenEdges":sum(len(x)==1 for x in before.values()),
       "candidateLeftOpenEdges":sum(len(x)==1 for x in after.values()),
       "source":qem.SOURCE.name,"output":output.name,
