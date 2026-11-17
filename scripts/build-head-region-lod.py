@@ -29,11 +29,11 @@ REPORT_OUT = ROOT / (PREFIX + ".report.json")
 
 # Minimum retained fractions are deliberately higher around key features.
 MIN_RETAIN = {
-    "vault": .095, "occiput": .085, "forehead": .18,
-    "temple": .18, "lateral": .15, "brow": .55, "orbit": .51,
-    "nasalBridge": .49, "nasalTip": .53, "midface": .50,
-    "cheek": .43, "upperLip": .58, "lowerLip": .59,
-    "chin": .39, "jaw": .36, "ear": .43,
+    "vault": .095, "occiput": .085, "forehead": .15,
+    "temple": .18, "lateral": .15, "brow": .46, "orbit": .44,
+    "nasalBridge": .45, "nasalTip": .49, "midface": .48,
+    "cheek": .37, "upperLip": .55, "lowerLip": .54,
+    "chin": .33, "jaw": .30, "ear": .35,
 }
 PRIORITY = {
     "vault": .7, "occiput": .65, "forehead": 1.1,
@@ -264,11 +264,13 @@ class RegionQEM:
             after = np.cross(bb-aa, cc-aa)
             sq_before = float(np.dot(before, before))
             sq_after = float(np.dot(after, after))
-            if sq_after < 1e-14 or sq_after < .055 * sq_before:
+            base=base_name(self.names[region])
+            min_area_ratio=.025 if base in ("vault","occiput","forehead","lateral","temple") else .055
+            if sq_after < 1e-14 or sq_after < min_area_ratio * sq_before:
                 return False, "small_area", None
             cosine = float(np.dot(before, after) /
                            np.sqrt(max(sq_before * sq_after, 1e-30)))
-            if cosine < .50:
+            if cosine < (.28 if base in ("vault","occiput","forehead","lateral","temple") else .50):
                 return False, "normal_flip", None
         return True, "ok", region
 
