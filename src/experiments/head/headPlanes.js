@@ -73,10 +73,10 @@ export function startHeadPlanes(){
  const camera=new T.OrthographicCamera(-2.5,2.5,2.3,-2.3,.1,100);
  const controls=new OrbitControls(camera,renderer.domElement);
  controls.enableDamping=true;controls.dampingFactor=.10;
- controls.target.set(0,-.23,0);controls.minZoom=.65;controls.maxZoom=4;
+ controls.target.set(0,-.40,0);controls.minZoom=.65;controls.maxZoom=4;
  controls.enablePan=false;
  let sheet=false,active='frontLeft';
- const center=new T.Vector3(0,-.23,0);
+ const center=new T.Vector3(0,-.40,0);
  function placeView(view,cam=camera){
    const p=new T.Vector3(...view.pos).normalize().multiplyScalar(7).add(center);
    cam.position.copy(p);cam.up.set(0,1,0);
@@ -102,7 +102,7 @@ export function startHeadPlanes(){
    renderer.setSize(w,h,false);
    renderer.domElement.style.width='100%';
    renderer.domElement.style.height='100%';
-   const aspect=w/h,span=2.07;
+   const aspect=w/h,span=2.15;
    camera.left=-span*aspect;camera.right=span*aspect;
    camera.top=span;camera.bottom=-span;
    camera.updateProjectionMatrix();
@@ -118,7 +118,7 @@ export function startHeadPlanes(){
        sw=Math.ceil(cw),sh=Math.ceil(ch);
      renderer.setViewport(x,y,sw,sh);
      renderer.setScissor(x,y,sw,sh);
-     const aspect=sw/sh,span=2.10;
+     const aspect=sw/sh,span=2.18;
      gridCamera.left=-span*aspect;gridCamera.right=span*aspect;
      gridCamera.top=span;gridCamera.bottom=-span;
      gridCamera.zoom=1;
@@ -161,6 +161,7 @@ export function startHeadPlanes(){
      for(const material of ms)if(material)material.dispose();
    });
    model=createHeadPlanes({stage});
+   center.y=stage==='volume'?-.40:.50;
    scene.add(model.group);
    document.querySelectorAll('[data-stage]').forEach(b=>b.classList.toggle('selected',b.dataset.stage===stage));
    document.getElementById('planes-step-note').textContent=stageNotes[stage];
