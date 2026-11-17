@@ -17,9 +17,9 @@ export const FRONT_LEFT_HALF_ROWS = [
   {name:'04 forehead',    points:[[0,.84,.49],[-.13,.84,.49],[-.27,.84,.46],[-.43,.84,.38],[-.56,.83,.25],[-.65,.82,-.04]]},
   {name:'05 brow ridge', points:[[0,.59,.56],[-.12,.59,.56],[-.25,.59,.55],[-.42,.58,.52],[-.55,.57,.40],[-.66,.57,-.03]]},
   {name:'06 eye shelf',  points:[[0,.44,.64],[-.12,.43,.60],[-.25,.42,.47],[-.41,.42,.40],[-.55,.42,.29],[-.66,.41,-.04]]},
-  {name:'07 orbit',       points:[[0,.29,.73],[-.11,.29,.64],[-.23,.29,.41],[-.39,.28,.37],[-.53,.28,.29],[-.63,.28,-.06]]},
-  {name:'08 cheek ridge', points:[[0,.12,.84],[-.12,.12,.69],[-.23,.12,.48],[-.39,.12,.50],[-.51,.12,.37],[-.62,.12,-.06]]},
-  {name:'09 cheek fall',  points:[[0,-.07,.80],[-.125,-.07,.66],[-.24,-.08,.48],[-.36,-.08,.43],[-.47,-.07,.29],[-.57,-.08,-.09]]},
+  {name:'07 orbit',       points:[[0,.29,.675],[-.11,.29,.61],[-.23,.29,.41],[-.39,.28,.37],[-.53,.28,.29],[-.63,.28,-.06]]},
+  {name:'08 cheek ridge', points:[[0,.12,.74],[-.12,.12,.655],[-.23,.12,.48],[-.39,.12,.50],[-.51,.12,.37],[-.62,.12,-.06]]},
+  {name:'09 cheek fall',  points:[[0,-.07,.725],[-.125,-.07,.625],[-.24,-.08,.48],[-.36,-.08,.43],[-.47,-.07,.29],[-.57,-.08,-.09]]},
   {name:'10 jaw angle',   points:[[0,-.25,.49],[-.11,-.25,.47],[-.21,-.25,.45],[-.31,-.24,.38],[-.40,-.23,.22],[-.47,-.19,-.15]]},
   {name:'11 chin plane',  points:[[0,-.42,.40],[-.065,-.42,.39],[-.14,-.43,.35],[-.21,-.43,.30],[-.28,-.39,.13],[-.33,-.35,-.19]]},
   {name:'12 chin base',   points:[[0,-.55,.33],[-.055,-.55,.32],[-.115,-.54,.30],[-.16,-.52,.23],[-.21,-.50,.07],[-.25,-.46,-.18]]}
@@ -38,7 +38,7 @@ const REAR_DEPTH = [
 
 const PAL = {
   crown:0xd4d0cc, forehead:0xd3cfca, brow:0xbab5b1,
-  eyes:0x716d69, underEye:0xc1bcb7, nose:0xded9d3,
+  eyes:0x88827e, underEye:0xc1bcb7, nose:0xd3cdc7,
   cheek:0xc8c3be, jaw:0xaea9a5, chin:0xc8c2bd,
   side:0xb3aeaa, back:0xbeb9b4, neck:0xbab5b0,
   shoulders:0xd6d0c9, ears:0xbab5b0, inset:0x938d87
@@ -59,8 +59,8 @@ function buildRing(row,i){
  const x=max[0],y=max[1],z=max[2];
  const side=[
    [x*1.025,y-.01,z*.28-.10],
-   [x*.88,y+rear.lift*.55,rear.d*.72],
-   [x*.50,y+rear.lift*.88,rear.d*.94],
+   [Math.max(x*.88,i>7?.41:0),y+rear.lift*.55,rear.d*.72],
+   [Math.max(x*.50,i>7?.30:0),y+rear.lift*.88,rear.d*.94],
    [0,y+rear.lift,rear.d]
  ];
  // Winding: front midline -> right face -> back midline -> left face.
@@ -81,12 +81,12 @@ function bustRing(level){
  return out;
 }
 const NECK_BUST=[
- {name:'neckRoot', y:-.64,w:.235,d:.24,z:-.10,shoulderDrop:0},
- {name:'neckMid',  y:-.78,w:.235,d:.25,z:-.11,shoulderDrop:0},
- {name:'neckLow',  y:-.93,w:.26,d:.27,z:-.11,shoulderDrop:0},
- {name:'trap',     y:-1.04,w:.41,d:.30,z:-.11,shoulderDrop:.05},
- {name:'shoulder', y:-1.17,w:.70,d:.33,z:-.11,shoulderDrop:.055},
- {name:'bustEnd',  y:-2.46,w:.78,d:.34,z:-.11,shoulderDrop:0}
+ {name:'neckRoot', y:-.63,w:.235,d:.24,z:-.10,shoulderDrop:0},
+ {name:'neckMid',  y:-.76,w:.235,d:.25,z:-.11,shoulderDrop:0},
+ {name:'neckLow',  y:-.92,w:.265,d:.27,z:-.11,shoulderDrop:0},
+ {name:'trap',     y:-1.08,w:.42,d:.30,z:-.11,shoulderDrop:.045},
+ {name:'shoulder', y:-1.28,w:.74,d:.33,z:-.11,shoulderDrop:.035},
+ {name:'bustEnd',  y:-1.62,w:.79,d:.34,z:-.11,shoulderDrop:0}
 ];
 export const HEAD_PLANE_STAGES=['half','mirror','volume'];
 const mirrorSegments=new Set([0,1,2,3,4,13,14,15,16,17]);
@@ -173,11 +173,11 @@ export function createHeadPlanes({stage='volume'}={}){
  if(stage==='volume'){
   // Crown closes at one shared apex (not a separate sphere).
   const ti=pos.length/3;
-  pos.push(0,1.635,-.035*Z_SCALE);
+  pos.push(0,1.602,-.095*Z_SCALE);
   for(let s=0;s<sections;s++)
    push(ti,s,(s+1)%sections,'crown');
   const bi=pos.length/3;
-  pos.push(0,-2.46,-.11*Z_SCALE);
+  pos.push(0,-1.62,-.11*Z_SCALE);
   const n=(rings.length-1)*sections;
   for(let s=0;s<sections;s++)
    push(bi,n+(s+1)%sections,n+s,'shoulders');
