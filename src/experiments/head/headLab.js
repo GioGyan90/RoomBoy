@@ -78,11 +78,14 @@ export function startHeadLab(){
    <a class="head-part-manifest" href="./heads/grey-head-qem-symmetric.parts.json" download>下载源顶点 / 三角面索引映射 JSON</a>
    <p id="head-parts-status" role="status">正在加载 23 个独立网格部件…</p>
   </section>
-  <section class="head-lod"><h2>05 / 真实分区减面 · 10K 对照</h2>
-   <p>以 34,500 面对称母版的原始三角形为输入，按 23 个语义区域约束 QEM 折边，再精确镜像拼接。没有重建颅骨壳或叠加五官面片。</p>
-   <label class="head-part-switch"><input id="head-lod-toggle" type="checkbox" disabled> 预览 10,000 面分区减面版</label>
+  <section class="head-lod"><h2>05 / 真实网格分区减面实验</h2>
+   <p>两版均由原始 23 分区真实网格 QEM 折边得到。严谨保护原始开边的安全候选优先，10K 虽达标但侧面有破洞，明确标记为未通过验收。</p>
+   <label class="head-part-switch"><input id="head-safe-toggle" type="checkbox" disabled> 预览连通性保护版（约 30.5K 面）</label>
+   <a class="head-original-link" href="./heads/grey-head-region-lod-v1.safe.glb" download>下载边界保护版 GLB</a>
+   <a class="head-part-manifest" href="./heads/grey-head-region-lod-v1.safe.report.json" download>查看连通性、开放边和表面积报告</a>
+   <label class="head-part-switch"><input id="head-lod-toggle" type="checkbox" disabled> 10K 失败候选（仅供检查缺面，不可投入游戏）</label>
    <label class="head-compare-toggle"><input id="head-lod-compare" type="checkbox" disabled> 与原 34,500 面母版并排对照</label>
-   <a class="head-download" href="./heads/grey-head-region-lod-v1.glb" download>下载 10K 连续索引 GLB</a>
+   <a class="head-download" href="./heads/grey-head-region-lod-v1.glb" download>下载 10K 实验 GLB（未验收）</a>
    <a class="head-original-link" href="./heads/grey-head-region-lod-v1.parts.glb" download>下载 23 个减面结构分块 GLB</a>
    <a class="head-part-manifest" href="./heads/grey-head-region-lod-v1.report.json" download>下载减面、边界与拓扑报告</a>
    <p id="head-lod-status" role="status">正在检查 10K 减面资产…</p>
@@ -105,9 +108,12 @@ export function startHeadLab(){
  const targetSelect=document.querySelector('#head-part-target');
  const partsStatus=document.querySelector('#head-parts-status');
  const lodToggle=document.querySelector('#head-lod-toggle');
+ const safeToggle=document.querySelector('#head-safe-toggle');
+ const safeStatusCount={faces:30536,vertices:29375};
  const lodCompareToggle=document.querySelector('#head-lod-compare');
  const lodStatus=document.querySelector('#head-lod-status');
  lodToggle.checked=new URLSearchParams(location.search).get('mode')==='lod';
+ safeToggle.checked=new URLSearchParams(location.search).get('mode')==='safe';
  const exportPartButton=document.querySelector('#head-export-part');
  const partsVisible=new Set(HEAD_REGIONS.map(r=>r.id));
  let partsGroup=null,partMeshes=new Map();
@@ -133,7 +139,7 @@ export function startHeadLab(){
  controls.target.set(0,.07,0);controls.enablePan=false;controls.enableDamping=true;
  controls.minZoom=.48;controls.maxZoom=3;
  let reducedGroup=null,splitGroup=null,referenceGroup=null,referenceParts=null,viewName='quarter';
- let lodGroup=null;
+ let lodGroup=null,safeGroup=null;
  const heads=new T.Group();scene.add(heads);
  const symmetryAxis=new T.Line(
   new T.BufferGeometry().setFromPoints([new T.Vector3(0,-1.05,.93),new T.Vector3(0,1.25,.93)]),
@@ -173,21 +179,23 @@ export function startHeadLab(){
 
  function setCompare(){
   const lodOn=Boolean(lodGroup&&lodToggle.checked);
-  const nativeComparison=Boolean(lodOn&&lodCompareToggle.checked);
+  const safeOn=Boolean(safeGroup&&safeToggle.checked);
+  const candidateOn=lodOn||safeOn;
+  const nativeComparison=Boolean(candidateOn&&lodCompareToggle.checked);
   const loadedComparison=Boolean(referenceGroup&&compareToggle.checked&&!nativeComparison);
   const enabled=nativeComparison||loadedComparison;
   const segmented=Boolean(partsGroup&&partsToggle.checked);
-  const separated=Boolean(splitGroup&&splitToggle.checked&&!segmented&&!lodOn);
-  // Camera-right in world space, so the pair stays SIDE BY SIDE even at side/back views.
+  const separated=Boolean(splitGroup&&splitToggle.checked&&!segmented&&!candidateOn);
   const screenRight=new T.Vector3(1,0,0).applyQuaternion(camera.quaternion).normalize();
   const offset=screenRight.multiplyScalar(1.25);
   if(reducedGroup){
    reducedGroup.position.copy(nativeComparison?offset:loadedComparison?offset.clone().negate():new T.Vector3());
-   reducedGroup.visible=(nativeComparison||(!lodOn&&!segmented&&!separated));
+   reducedGroup.visible=nativeComparison||(!candidateOn&&!segmented&&!separated);
   }
-  if(lodGroup){
-   lodGroup.position.copy(enabled?offset.clone().negate():new T.Vector3());
-   lodGroup.visible=lodOn&&!segmented&&!separated;
+  for(const [group,active] of [[lodGroup,lodOn],[safeGroup,safeOn]]){
+   if(!group)continue;
+   group.position.copy(enabled?offset.clone().negate():new T.Vector3());
+   group.visible=active&&!segmented&&!separated;
   }
   if(splitGroup){splitGroup.position.copy(loadedComparison?offset.clone().negate():new T.Vector3());splitGroup.visible=separated;}
   if(partsGroup){partsGroup.position.copy(loadedComparison?offset.clone().negate():new T.Vector3());partsGroup.visible=segmented;}
@@ -202,7 +210,7 @@ export function startHeadLab(){
  }
  function syncWire(){
   if(!reducedGroup)return;
-  for(const root of [reducedGroup,splitGroup,partsGroup,lodGroup]){
+  for(const root of [reducedGroup,splitGroup,partsGroup,lodGroup,safeGroup]){
    if(!root)continue;
    root.traverse(o=>{
    if(!o.isMesh)return;
@@ -232,15 +240,26 @@ export function startHeadLab(){
  wireToggle.onchange=syncWire;flatToggle.onchange=syncWire;compareToggle.onchange=setCompare;
  axisToggle.onchange=setCompare;
  splitToggle.onchange=()=>{
-  if(splitToggle.checked){partsToggle.checked=false;lodToggle.checked=false;}
+  if(splitToggle.checked){partsToggle.checked=false;lodToggle.checked=false;safeToggle.checked=false;}
   setCompare();
  };
+ function updateLodCounts(){
+  document.querySelector('#head-face-count').textContent=
+   safeToggle.checked?safeStatusCount.faces.toLocaleString():
+   lodToggle.checked?'10,000':'34,500';
+  document.querySelector('#head-vertex-count').textContent=
+   safeToggle.checked?safeStatusCount.vertices.toLocaleString():
+   lodToggle.checked?'11,599':'31,357';
+ }
  lodToggle.onchange=()=>{
-  if(lodToggle.checked){partsToggle.checked=false;splitToggle.checked=false;}
-  setCompare();syncWire();
-  const count=lodToggle.checked?'10,000 面分区约束版':'34,500 面原对称母版';
-  document.querySelector('#head-face-count').textContent=lodToggle.checked?'10,000':'34,500';
-  lodStatus.textContent='当前显示：'+count+'。可切换并排对照、视角与原网格线框。';
+  if(lodToggle.checked){partsToggle.checked=false;splitToggle.checked=false;safeToggle.checked=false;}
+  updateLodCounts();setCompare();syncWire();
+  lodStatus.textContent=lodToggle.checked?'10K 未验收：侧视耳后、颞部存在缺面。仅供对比研究。':'已返回母版或边界保护版。';
+ };
+ safeToggle.onchange=()=>{
+  if(safeToggle.checked){partsToggle.checked=false;splitToggle.checked=false;lodToggle.checked=false;}
+  updateLodCounts();setCompare();syncWire();
+  lodStatus.textContent=safeToggle.checked?'安全分区减面候选：原始连通分量与开放边数量保持不变，仍未达到 10K。':'已返回母版或 10K 实验版。';
  };
  lodCompareToggle.onchange=setCompare;
  function updatePartMeshes(){
@@ -292,7 +311,7 @@ export function startHeadLab(){
  }
  partsToggle.checked=new URLSearchParams(location.search).get('mode')==='parts';
  partsToggle.onchange=()=>{
-  if(partsToggle.checked){splitToggle.checked=false;lodToggle.checked=false;}
+  if(partsToggle.checked){splitToggle.checked=false;lodToggle.checked=false;safeToggle.checked=false;}
   setCompare();
  };
  distanceSlider.oninput=()=>updatePartMeshes();
@@ -415,9 +434,29 @@ export function startHeadLab(){
   lodGroup=next;heads.add(next);
   lodToggle.disabled=false;lodCompareToggle.disabled=false;
   syncWire();setCompare();
-  lodStatus.textContent='已载入真实源网格减面版：10,000 面 / '+c.vertices.toLocaleString()+' 个顶点。可与 34,500 面母版并排检查。';
+  lodStatus.textContent='10,000 面减面模型仅供诊断：已发现耳后及颞部缺面，不能替代母版。';
  },undefined,error=>{
   lodStatus.textContent='分区减面 GLB 加载失败：'+(error?.message||String(error));
+ });
+ const safeUrl=import.meta.env.BASE_URL+'heads/grey-head-region-lod-v1.safe.glb';
+ loader.load(safeUrl,gltf=>{
+  const c=countsFromModel(gltf.scene);
+  if(c.faces!==safeStatusCount.faces||c.vertices!==safeStatusCount.vertices){
+   lodStatus.textContent='边界保护版文件指标不符，已禁用。';
+   return;
+  }
+  safeGroup=gltf.scene;
+  safeGroup.name='RoomBoy | source boundary and components protected LOD';
+  safeGroup.traverse(o=>{
+   if(!o.isMesh)return;
+   const old=o.material;
+   o.material=new T.MeshLambertMaterial({color:0xc2c4c1,side:T.DoubleSide});
+   if(old)for(const m of Array.isArray(old)?old:[old])m.dispose();
+  });
+  heads.add(safeGroup);safeToggle.disabled=false;lodCompareToggle.disabled=false;
+  updateLodCounts();setCompare();syncWire();
+ },undefined,error=>{
+  lodStatus.textContent='安全边界版加载失败：'+(error?.message||String(error));
  });
  function resize(){
   const w=Math.max(holder.clientWidth,1),h=Math.max(holder.clientHeight,1);
