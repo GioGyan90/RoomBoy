@@ -1,0 +1,47 @@
+name: Head region LOD topology and candidate
+on:
+  push:
+    branches: ['feat/head-region-lod-v1']
+    paths:
+      - 'scripts/audit-head-region-topology.py'
+      - 'scripts/build-head-region-lod.py'
+      - '.github/workflows/head-region-lod.yml'
+permissions:
+  contents: write
+concurrency:
+  group: head-region-lod-v1
+  cancel-in-progress: false
+jobs:
+  geometry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Dependencies for actual GLB mesh analysis
+        run: python -m pip install "numpy>=1.26,<3" "trimesh>=4.5,<5" "vtk>=9.3,<10" "scipy>=1.11,<2" "matplotlib>=3.8,<4"
+      - name: Audit master, all source parts and boundary locks
+        run: python scripts/audit-head-region-topology.py
+      - name: Run candidate generation only when present
+        shell: bash
+        run: |
+          if [ -f scripts/build-head-region-lod.py ]; then
+            python scripts/build-head-region-lod.py
+          fi
+      - name: Commit geometry artifacts to task branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/heads/grey-head-region-lod-v1.* || true
+          git add docs/HEAD_REGION_LOD_V1.md || true
+          if ! git diff --cached --quiet; then
+            git commit -m "asset(head): store source topology audit and region LOD candidate [skip ci]"
+            git fetch origin feat/head-region-lod-v1
+            git rebase origin/feat/head-region-lod-v1
+            git push origin HEAD:feat/head-region-lod-v1
+          fi
