@@ -40,12 +40,12 @@ const REAR_DEPTH = [
 
 const PAL = {
   crown:0xd4d0cc, forehead:0xd3cfca, brow:0xbab5b1,
-  eyes:0x827d78, underEye:0xc1bcb7, nose:0xd5d0ca,
+  eyes:0x7c7773, underEye:0xc1bcb7, nose:0xdbd4ce,
   cheek:0xc4c0bc, jaw:0xb2ada9, chin:0xcac4be,
   side:0xb3aeaa, back:0xbeb9b4, neck:0xbab5b0,
   shoulders:0xd6d0c9, ears:0xbab5b0, inset:0x938d87
 };
-const SKIN=0xc8c3be, X_SCALE=1.38, Z_SCALE=1.04;
+const SKIN=0xc8c3be, X_SCALE=1.24, Z_SCALE=1.04;
 const sections=18;
 const colorMaterial=(color)=>new T.MeshStandardMaterial({
   color,roughness:1,metalness:0,flatShading:true,side:T.DoubleSide
@@ -79,7 +79,7 @@ function crownRoll(ring){
  return ring.map(([x,y,z])=>{
    const xx=x*.70;
    const t=Math.min(1,Math.abs(xx)/.50);
-   return [near(xx),1.610-.027*t*t,near(z*.55-.060)];
+   return [near(xx),1.631-.014*t*t,near(z*.55-.060)];
  });
 }
 
@@ -94,12 +94,12 @@ function bustRing(level){
  return out;
 }
 const NECK_BUST=[
- {name:'neckRoot', y:-.63,w:.235,d:.24,z:-.10,shoulderDrop:0},
- {name:'neckMid',  y:-.76,w:.235,d:.25,z:-.11,shoulderDrop:0},
- {name:'neckLow',  y:-.92,w:.265,d:.27,z:-.11,shoulderDrop:0},
+ {name:'neckRoot', y:-.63,w:.255,d:.24,z:-.10,shoulderDrop:0},
+ {name:'neckMid',  y:-.76,w:.255,d:.25,z:-.11,shoulderDrop:0},
+ {name:'neckLow',  y:-.92,w:.28,d:.27,z:-.11,shoulderDrop:0},
  {name:'trap',     y:-1.08,w:.42,d:.30,z:-.11,shoulderDrop:.045},
- {name:'shoulder', y:-1.28,w:.74,d:.33,z:-.11,shoulderDrop:.035},
- {name:'bustEnd',  y:-1.62,w:.79,d:.34,z:-.11,shoulderDrop:0}
+ {name:'shoulder', y:-1.28,w:.79,d:.33,z:-.11,shoulderDrop:.035},
+ {name:'bustEnd',  y:-1.62,w:.88,d:.34,z:-.11,shoulderDrop:0}
 ];
 export const HEAD_PLANE_STAGES=['half','mirror','volume'];
 const mirrorSegments=new Set([0,1,2,3,4,13,14,15,16,17]);
@@ -190,7 +190,7 @@ export function createHeadPlanes({stage='volume'}={}){
  if(stage==='volume'){
   // Crown closes at one shared apex (not a separate sphere).
   const ti=pos.length/3;
-  pos.push(0,1.626,-.105*Z_SCALE);
+  pos.push(0,1.636,-.105*Z_SCALE);
   for(let s=0;s<sections;s++)
    push(ti,s,(s+1)%sections,'crown');
   const bi=pos.length/3;
