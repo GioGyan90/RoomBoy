@@ -47,8 +47,8 @@ test('stage3 and stage4 B remain available for reversible exhibition comparison'
  }
 });
 
-test('stage4 C has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
- const m=load('stage4-c');
+for(const stage of ['stage4-c','stage4-d'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
+ const m=load(stage);
  const V=m.vertices;
  const faces=m.faces.flatMap((f,fi)=>f.slice(1,-1).map((_,j)=>({ids:[f[0],f[j+1],f[j+2]],fi})));
  const sub=(a:number[],b:number[])=>a.map((x,i)=>x-b[i]);
@@ -75,4 +75,29 @@ test('stage4 C has no nonadjacent triangle interior crossings (fan triangulation
   if(a.fi===b.fi||a.ids.some(id=>b.ids.includes(id)))continue;
   assert.ok(!crossing(a.ids,b.ids),'self-intersecting nonadjacent faces '+a.fi+' and '+b.fi);
  }
+});
+
+test('stage4 D is a symmetric depth-only calibration with protected anchors and unchanged connectivity',()=>{
+ const c=load('stage4-c'),d=load('stage4-d');
+ assert.deepEqual(d.faces,c.faces);
+ assert.equal(d.vertices.length,62);
+ const changed=[46,47,53,54,55,56];
+ for(let i=0;i<c.vertices.length;i++){
+  assert.deepEqual(d.vertices[i].slice(0,2),c.vertices[i].slice(0,2));
+  if(!changed.includes(i))assert.deepEqual(d.vertices[i],c.vertices[i]);
+  else assert.ok(d.vertices[i][2]>c.vertices[i][2]&&d.vertices[i][2]-c.vertices[i][2]<.18);
+ }
+ for(const [a,b] of [[46,54],[47,53],[55,56]])assert.equal(d.vertices[a][2],d.vertices[b][2]);
+ const normal=(vs:number[][],face:number[])=>{
+  const n=[0,0,0];
+  for(let i=0;i<face.length;i++){const a=vs[face[i]],b=vs[face[(i+1)%face.length]];n[0]+=(a[1]-b[1])*(a[2]+b[2]);n[1]+=(a[2]-b[2])*(a[0]+b[0]);n[2]+=(a[0]-b[0])*(a[1]+b[1]);}
+  return n;
+ };
+ for(const face of c.faces){
+  const a=normal(c.vertices,face),b=normal(d.vertices,face);
+  const ratio=Math.hypot(...b)/Math.hypot(...a);
+  assert.ok(ratio>.8);
+  assert.ok(a.reduce((s,x,i)=>s+x*b[i],0)/(Math.hypot(...a)*Math.hypot(...b))>Math.cos(20*Math.PI/180));
+ }
+ assert.ok(d.vertices[46][2]<d.vertices[38][2],'preserve intentional eye socket recession');
 });
