@@ -60,7 +60,7 @@ try{
  const capture=async(name)=>{await page.waitForTimeout(500);const path=folder+'/'+name+'.png';const b=await canvas.screenshot({path});const jpeg=await canvas.screenshot({type:'jpeg',quality:55});console.log('STAGE4_VISUAL_JPEG_'+name+':'+jpeg.toString('base64'));report.screenshots.push({name,path,size:(await stat(path)).size});return b};
  const corrected=await capture('stage4-d-symmetric-fixed');
  await page.getByRole('button',{name:'镜像三角化',exact:true}).click();
- await page.getByRole('status').filter({hasText:/镜像缺失 [1-9]\\d* 面/}).waitFor();
+ await page.getByRole('status').filter({hasText:/镜像缺失 [1-9][0-9]* 面/}).waitFor();
  const original=await capture('stage4-d-symmetric-original');
  assert.ok(!corrected.equals(original));
  await page.getByRole('button',{name:'镜像三角化',exact:true}).click();
