@@ -16,3 +16,14 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: Set up browser test dependency
+        run: npm install --no-save --package-lock=false playwright
+      - name: Real WebGL six-angle exhibition acceptance
+        run: node scripts/capture-topology-stage4.mjs
+      - name: Upload multi-angle stage4 comparison
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: roomboy-stage4-browser-qa
+          path: artifacts/stage4-c-browser/
+          retention-days: 14
