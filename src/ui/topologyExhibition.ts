@@ -8,7 +8,7 @@ export function startTopologyExhibition(){
  document.body.append(root);
  const bar=document.createElement('header');bar.style.cssText='padding:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#17202a';
  root.append(bar);
- for(const [id,label] of [['stage1','01 颅骨'],['stage2','02 下颌与颈部'],['stage3','03 面部纵向布线']]){const a=document.createElement('a');a.href='?view=topology-exhibition&model='+id;a.textContent=label;a.style.cssText='color:#9cd9ff;padding:5px 8px;border:1px solid #637584;border-radius:5px';bar.append(a);}
+ for(const [id,label] of [['stage1','01 颅骨'],['stage2','02 下颌与颈部'],['stage3','03 面部纵向布线'],['stage4','04 鼻部与眉弓']]){const a=document.createElement('a');a.href='?view=topology-exhibition&model='+id;a.textContent=label;a.style.cssText='color:#9cd9ff;padding:5px 8px;border:1px solid #637584;border-radius:5px';bar.append(a);}
  const title=document.createElement('strong');title.textContent='布线模型展览馆';bar.append(title);
  const back=document.createElement('a');back.href='./';back.textContent='返回 RoomBoy';back.style.color='#9cd9ff';bar.append(back);
  const file=document.createElement('input');file.type='file';file.accept='.json,application/json';file.setAttribute('aria-label','导入控制网格');bar.append(file);
@@ -53,6 +53,6 @@ export function startTopologyExhibition(){
  renderer.setAnimationLoop(()=>{orbit.update();renderer.render(scene,camera);});
  const hash=new URLSearchParams(location.hash.slice(1));const payload=hash.get('mesh');
  if(payload){try{if(payload.length>1000000)throw Error('链接太长，请使用 JSON 导入');show(JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(payload),c=>c.charCodeAt(0)))));}catch(e){error(e);}}
- else if(['stage1','stage2','stage3'].includes(new URLSearchParams(location.search).get('model')??'')){const model=new URLSearchParams(location.search).get('model');fetch(import.meta.env.BASE_URL+'exhibits/'+(model==='stage3'?'stage3-face-routing.json':model==='stage2'?'stage2-cranium-neck.json':'stage1-cranium.json')).then(r=>{if(!r.ok)throw Error('模型未找到');return r.json();}).then(show).catch(error);}
+ else if(['stage1','stage2','stage3','stage4'].includes(new URLSearchParams(location.search).get('model')??'')){const model=new URLSearchParams(location.search).get('model');fetch(import.meta.env.BASE_URL+'exhibits/'+(model==='stage4'?'stage4-nose-brow.json':model==='stage3'?'stage3-face-routing.json':model==='stage2'?'stage2-cranium-neck.json':'stage1-cranium.json')).then(r=>{if(!r.ok)throw Error('模型未找到');return r.json();}).then(show).catch(error);}
  else status.textContent='请导入 3D_AItool 控制网格 JSON';
 }
