@@ -26,7 +26,7 @@ try{
  const shots=new Map();
  const stage=async(model,expected,angles)=>{
   await page.goto('http://127.0.0.1:3012/?view=topology-exhibition&model='+model,{waitUntil:'domcontentloaded'});
-  await page.getByRole('status').getByText(expected).waitFor({timeout:30000});
+  await page.getByRole('status').filter({hasText:expected}).waitFor({timeout:30000});
   const canvas=page.locator('canvas');
   await canvas.waitFor();
   assert.ok(await canvas.evaluate(c=>Boolean(c.getContext('webgl2')||c.getContext('webgl'))),'Missing WebGL');
@@ -37,6 +37,10 @@ try{
    const path=folder+'/'+name+'.png';
    await canvas.screenshot({path,animations:'disabled'});
    const bytes=await canvas.screenshot({animations:'disabled'});
+   if(['正面','侧面','3/4'].includes(angle)){
+    const evidence=await canvas.screenshot({type:'jpeg',quality:25,animations:'disabled'});
+    console.log('STAGE4_VISUAL_JPEG_'+name+':'+evidence.toString('base64'));
+   }
    const size=(await stat(path)).size;
    assert.ok(size>6000,'Blank render: '+name+' '+size);
    report.screenshots.push({name,path,size});
