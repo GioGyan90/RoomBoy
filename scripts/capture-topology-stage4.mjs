@@ -67,6 +67,14 @@ try{
  await page.getByRole('status').filter({hasText:'镜像缺失 0 面'}).waitFor();
  report.checks.push('D real render indices mirror exactly; neutral-light original/fixed screenshots captured');
 
+ await stage('stage4-e',/62 顶点 \/ 116 边 \/ 56 控制面/,['正面','侧面','背面','俯视','仰视','3/4']);
+ await page.getByRole('status').filter({hasText:'镜像缺失 0 面'}).waitFor();
+ await page.getByRole('button',{name:'正面',exact:true}).click();
+ await page.getByRole('button',{name:'对称光照',exact:true}).click();
+ await page.getByRole('button',{name:'切换布线',exact:true}).click();
+ const eFixed=await capture('stage4-e-symmetric-fixed');
+ assert.ok(!eFixed.equals(corrected),'E nose must differ from D');
+ report.checks.push('E six angles and neutral-light D/E comparison');
  await stage('stage4-calibrated',/65 顶点 \/ \d+ 边 \/ 62 控制面/,['正面','侧面','3/4']);
  for(const a of ['正面','侧面','3/4']){
   assert.ok(!shots.get('stage4-c-'+a).equals(shots.get('stage4-calibrated-'+a)),'Stage C picture identical to old B in '+a);

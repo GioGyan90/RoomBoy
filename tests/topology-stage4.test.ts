@@ -47,7 +47,7 @@ test('stage3 and stage4 B remain available for reversible exhibition comparison'
  }
 });
 
-for(const stage of ['stage4-c','stage4-d'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
+for(const stage of ['stage4-c','stage4-d','stage4-e'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
  const m=load(stage);
  const V=m.vertices;
  const faces=m.faces.flatMap((f,fi)=>f.slice(1,-1).map((_,j)=>({ids:[f[0],f[j+1],f[j+2]],fi})));
@@ -125,4 +125,27 @@ test('stage4 D actual Three.js earcut faces have fully mirrored render triangles
  assert.equal(after.indices.length,360);
  assert.equal(before.indices.length,after.indices.length);
  console.log('RENDER_MIRROR_AUDIT',JSON.stringify({before:before.report,after:after.report}));
+});
+
+test('stage4 E preserves the D cage and all anchors outside six nose vertices',()=>{
+ const d=load('stage4-d'),e=load('stage4-e');
+ assert.deepEqual(e.faces,d.faces);
+ assert.equal(e.vertices.length,62);
+ const changed=[55,56,57,58,60,61];
+ for(let i=0;i<62;i++){
+  if(!changed.includes(i))assert.deepEqual(e.vertices[i],d.vertices[i]);
+  assert.equal(e.vertices[i][1],d.vertices[i][1]);
+ }
+ for(const [a,b] of [[55,56],[57,58],[60,61]])assert.deepEqual(e.vertices[a],[-e.vertices[b][0],e.vertices[b][1],e.vertices[b][2]]);
+ const source=e.faces.map(f=>{
+  const p=f.map(i=>new T.Vector3(...e.vertices[i] as [number,number,number]));
+  const n=new T.Vector3();p.forEach((a,i)=>n.add(a.clone().cross(p[(i+1)%p.length])));
+  const a=Math.abs(n.x)>=Math.abs(n.y)&&Math.abs(n.x)>=Math.abs(n.z)?0:Math.abs(n.y)>=Math.abs(n.z)?1:2;
+  return T.ShapeUtils.triangulateShape(p.map(v=>new T.Vector2(v.getComponent((a+1)%3),v.getComponent((a+2)%3))),[]).flatMap(t=>{
+   const [x,y,z]=t.map(i=>p[i]);if(y.clone().sub(x).cross(z.clone().sub(x)).dot(n)<0)t.reverse();return t.map(i=>f[i]);
+  });
+ });
+ const result=mirrorTrianglesX(e.vertices,e.faces,source,true);
+ assert.equal(result.report.unmatchedTriangles,0);
+ assert.equal(result.indices.length,360);
 });
