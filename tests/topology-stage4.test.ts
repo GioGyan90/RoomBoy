@@ -101,3 +101,28 @@ test('stage4 D is a symmetric depth-only calibration with protected anchors and 
  }
  assert.ok(d.vertices[46][2]<d.vertices[38][2],'preserve intentional eye socket recession');
 });
+
+
+import * as T from 'three';
+import {mirrorTrianglesX} from '../src/ui/mirrorTriangulation';
+test('stage4 D actual Three.js earcut faces have fully mirrored render triangles after repair',()=>{
+ const d=load('stage4-d');
+ const source=d.faces.map(f=>{
+  const n=new T.Vector3();const p=f.map(i=>new T.Vector3(...d.vertices[i] as [number,number,number]));
+  p.forEach((a,i)=>n.add(a.clone().cross(p[(i+1)%p.length])));
+  const a=Math.abs(n.x)>=Math.abs(n.y)&&Math.abs(n.x)>=Math.abs(n.z)?0:Math.abs(n.y)>=Math.abs(n.z)?1:2;
+  return T.ShapeUtils.triangulateShape(p.map(v=>new T.Vector2(v.getComponent((a+1)%3),v.getComponent((a+2)%3))),[]).flatMap(t=>{
+   const [x,y,z]=t.map(i=>p[i]);if(y.clone().sub(x).cross(z.clone().sub(x)).dot(n)<0)t.reverse();return t.map(i=>f[i]);
+  });
+ });
+ const before=mirrorTrianglesX(d.vertices,d.faces,source,false);
+ const after=mirrorTrianglesX(d.vertices,d.faces,source,true);
+ assert.ok(before.report.unmatchedTriangles!>0);
+ assert.equal(after.report.matchedVertices,62);
+ assert.equal(after.report.pairedFaces,56);
+ assert.equal(after.report.unmatchedTriangles,0);
+ assert.deepEqual(after.report.unresolvedFaces,[]);
+ assert.equal(after.indices.length,360);
+ assert.equal(before.indices.length,after.indices.length);
+ console.log('RENDER_MIRROR_AUDIT',JSON.stringify({before:before.report,after:after.report}));
+});

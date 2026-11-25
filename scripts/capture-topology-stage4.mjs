@@ -52,6 +52,21 @@ try{
  await stage('stage4-d',/62 顶点 \/ 116 边 \/ 56 控制面/,['正面','侧面','背面','俯视','仰视','3/4']);
  for(const a of ['正面','3/4'])assert.ok(!shots.get('stage4-c-'+a).equals(shots.get('stage4-d-'+a)),'D must render a visible change in '+a);
  report.checks.push('D model captured from six cameras and compared with C');
+ await page.getByRole('status').filter({hasText:'镜像缺失 0 面'}).waitFor();
+ await page.getByRole('button',{name:'正面',exact:true}).click();
+ await page.getByRole('button',{name:'对称光照',exact:true}).click();
+ await page.getByRole('button',{name:'切换布线',exact:true}).click();
+ const canvas=page.locator('canvas');
+ const capture=async(name)=>{await page.waitForTimeout(500);const path=folder+'/'+name+'.png';const b=await canvas.screenshot({path});const jpeg=await canvas.screenshot({type:'jpeg',quality:55});console.log('STAGE4_VISUAL_JPEG_'+name+':'+jpeg.toString('base64'));report.screenshots.push({name,path,size:(await stat(path)).size});return b};
+ const corrected=await capture('stage4-d-symmetric-fixed');
+ await page.getByRole('button',{name:'镜像三角化',exact:true}).click();
+ await page.getByRole('status').filter({hasText:/镜像缺失 [1-9][0-9]* 面/}).waitFor();
+ const original=await capture('stage4-d-symmetric-original');
+ assert.ok(!corrected.equals(original));
+ await page.getByRole('button',{name:'镜像三角化',exact:true}).click();
+ await page.getByRole('status').filter({hasText:'镜像缺失 0 面'}).waitFor();
+ report.checks.push('D real render indices mirror exactly; neutral-light original/fixed screenshots captured');
+
  await stage('stage4-calibrated',/65 顶点 \/ \d+ 边 \/ 62 控制面/,['正面','侧面','3/4']);
  for(const a of ['正面','侧面','3/4']){
   assert.ok(!shots.get('stage4-c-'+a).equals(shots.get('stage4-calibrated-'+a)),'Stage C picture identical to old B in '+a);
