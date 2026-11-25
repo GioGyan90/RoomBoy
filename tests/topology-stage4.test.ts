@@ -47,7 +47,7 @@ test('stage3 and stage4 B remain available for reversible exhibition comparison'
  }
 });
 
-for(const stage of ['stage4-c','stage4-d','stage4-e'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
+for(const stage of ['stage4-c','stage4-d','stage4-e','stage4-f'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
  const m=load(stage);
  const V=m.vertices;
  const faces=m.faces.flatMap((f,fi)=>f.slice(1,-1).map((_,j)=>({ids:[f[0],f[j+1],f[j+2]],fi})));
@@ -148,4 +148,19 @@ test('stage4 E preserves the D cage and all anchors outside six nose vertices',(
  const result=mirrorTrianglesX(e.vertices,e.faces,source,true);
  assert.equal(result.report.unmatchedTriangles,0);
  assert.equal(result.indices.length,360);
+});
+
+test('stage4 F is the exact editor-exported two-edge collapse, closed and X-symmetric',()=>{
+ const e=load('stage4-e'),f=load('stage4-f');
+ assert.deepEqual(f.vertices,e.vertices.filter((_,i)=>i!==37&&i!==41));
+ const map=(i:number)=>i===37?8:i===41?25:i-(i>37?1:0)-(i>41?1:0);
+ assert.deepEqual(f.faces,e.faces.map(face=>{const a=face.map(map);return a.filter((v,j)=>v!==a[(j+a.length-1)%a.length]);}));
+ assert.equal(f.vertices.length,60);assert.equal(f.faces.length,56);
+ const edges=new Map<string,number>();
+ for(const face of f.faces){assert.ok(face.length>=3&&new Set(face).size===face.length);
+ for(let i=0;i<face.length;i++){const k=[face[i],face[(i+1)%face.length]].sort((a,b)=>a-b).join(':');edges.set(k,(edges.get(k)??0)+1)}}
+ assert.equal(edges.size,114);assert.ok([...edges.values()].every(n=>n===2));
+ assert.equal(f.vertices.length-edges.size+f.faces.length,2);
+ assert.ok(f.vertices.every(v=>f.vertices.some(w=>close(v[0],-w[0])&&close(v[1],w[1])&&close(v[2],w[2]))));
+ assert.equal(f.faces.reduce((n,face)=>n+face.length-2,0),116);
 });
