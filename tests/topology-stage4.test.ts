@@ -47,7 +47,7 @@ test('stage3 and stage4 B remain available for reversible exhibition comparison'
  }
 });
 
-for(const stage of ['stage4-c','stage4-d','stage4-e','stage4-f','stage4-g','stage4-h','stage5-a'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
+for(const stage of ['stage4-c','stage4-d','stage4-e','stage4-f','stage4-g','stage4-h','stage5-a','stage5-b'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
  const m=load(stage);
  const V=m.vertices;
  const faces=m.faces.flatMap((f,fi)=>f.slice(1,-1).map((_,j)=>({ids:[f[0],f[j+1],f[j+2]],fi})));
@@ -193,4 +193,13 @@ test('stage5 A preserves H coordinates and creates two six-point orbital loops',
  assert.ok(mirror.every(i=>i>=0));const fs=new Set(a.faces.map(key));
  for(const f of a.faces){assert.ok(fs.has(key(f.map(i=>mirror[i]))));assert.ok(new Set(f).size===f.length);f.forEach((v,i)=>{const k=key([v,f[(i+1)%f.length]]);edges.set(k,(edges.get(k)??0)+1)})}
  assert.equal(edges.size,144);assert.ok([...edges.values()].every(n=>n===2));assert.equal(a.faces.reduce((n,f)=>n+f.length-2,0),144);
+});
+
+test('stage5 B retains A vertices and a closed symmetric mouth seam',()=>{
+ const a=load('stage5-a'),b=load('stage5-b');assert.deepEqual(b.vertices.slice(0,74),a.vertices);assert.equal(b.vertices.length,89);assert.equal(b.faces.length,88);
+ const edges=new Map<string,number>(),key=(f:number[])=>[...f].sort((a,b)=>a-b).join(':');
+ const mirror=b.vertices.map(v=>b.vertices.findIndex(w=>close(v[0],-w[0])&&close(v[1],w[1])&&close(v[2],w[2])));
+ assert.ok(mirror.every(i=>i>=0));const fs=new Set(b.faces.map(key));for(const f of b.faces){assert.ok(fs.has(key(f.map(i=>mirror[i]))));assert.ok(new Set(f).size===f.length);f.forEach((v,i)=>{const k=key([v,f[(i+1)%f.length]]);edges.set(k,(edges.get(k)??0)+1)})}
+ assert.equal(edges.size,175);assert.ok([...edges.values()].every(n=>n===2));assert.equal(b.faces.reduce((n,f)=>n+f.length-2,0),174);
+ const seam=[74,86,87,88,80];for(let i=0;i<4;i++)assert.equal(edges.get(key(seam.slice(i,i+2))),2);
 });
