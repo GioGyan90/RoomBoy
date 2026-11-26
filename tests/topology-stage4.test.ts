@@ -47,7 +47,7 @@ test('stage3 and stage4 B remain available for reversible exhibition comparison'
  }
 });
 
-for(const stage of ['stage4-c','stage4-d','stage4-e','stage4-f','stage4-g'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
+for(const stage of ['stage4-c','stage4-d','stage4-e','stage4-f','stage4-g','stage4-h'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
  const m=load(stage);
  const V=m.vertices;
  const faces=m.faces.flatMap((f,fi)=>f.slice(1,-1).map((_,j)=>({ids:[f[0],f[j+1],f[j+2]],fi})));
@@ -173,4 +173,14 @@ test('stage4 G restores two upper silhouette corners with local mirrored cuts; a
  const mirror=g.vertices.map(v=>g.vertices.findIndex(w=>close(v[0],-w[0])&&close(v[1],w[1])&&close(v[2],w[2])));
  const faceKeys=new Set(g.faces.map(key));for(const face of g.faces){assert.ok(face.length>=3&&new Set(face).size===face.length);assert.ok(faceKeys.has(key(face.map(i=>mirror[i]))));for(let j=0;j<face.length;j++){const k=[face[j],face[(j+1)%face.length]].sort((a,b)=>a-b).join(':');edges.set(k,(edges.get(k)??0)+1)}}
  assert.equal(edges.size,120);assert.ok([...edges.values()].every(n=>n===2));assert.equal(g.vertices.length-edges.size+g.faces.length,2);assert.equal(g.faces.reduce((n,face)=>n+face.length-2,0),120);
+});
+
+test('stage4 H keeps all G faces and protected anchors; bounded local deformation',()=>{
+ const g=load('stage4-g'),h=load('stage4-h');
+ assert.equal(h.vertices.length,62);assert.deepEqual(h.faces,g.faces);
+ const changed=[38,41,44,52,45,51,53,54,55,56,58,59,43];
+ for(let i=0;i<62;i++)if(!changed.includes(i))assert.deepEqual(h.vertices[i],g.vertices[i]);
+ assert.ok(h.vertices.every(v=>h.vertices.some(w=>close(v[0],-w[0])&&close(v[1],w[1])&&close(v[2],w[2]))));
+ const normal=(vs:number[][],f:number[])=>{const n=[0,0,0];for(let i=0;i<f.length;i++){const a=vs[f[i]],b=vs[f[(i+1)%f.length]];n[0]+=(a[1]-b[1])*(a[2]+b[2]);n[1]+=(a[2]-b[2])*(a[0]+b[0]);n[2]+=(a[0]-b[0])*(a[1]+b[1])}return n};
+ for(const f of h.faces){const a=normal(g.vertices,f),b=normal(h.vertices,f),la=Math.hypot(...a),lb=Math.hypot(...b);assert.ok(lb/la>.9);assert.ok(a.reduce((s,n,i)=>s+n*b[i],0)/la/lb>Math.cos(11*Math.PI/180));}
 });

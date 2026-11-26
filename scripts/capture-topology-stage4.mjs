@@ -83,6 +83,10 @@ try{
  await page.getByRole('status').filter({hasText:'镜像缺失 0 面'}).waitFor();
  for(const a of ['正面','侧面','3/4'])assert.ok(!shots.get('stage4-f-'+a).equals(shots.get('stage4-g-'+a)),'G must show a visible calibrated shape in '+a);
  report.checks.push('G actual six-camera exhibition, restored crown corners and symmetric triangles');
+ await stage('stage4-h',/62 顶点 \/ 120 边 \/ 60 控制面/,['正面','侧面','背面','俯视','仰视','3/4']);
+ await page.getByRole('status').filter({hasText:'镜像缺失 0 面'}).waitFor();
+ for(const a of ['正面','侧面','3/4'])assert.ok(!shots.get('stage4-g-'+a).equals(shots.get('stage4-h-'+a)),'H must show local calibration in '+a);
+ report.checks.push('H actual six-camera exhibition, same topology and mirror triangles');
  await stage('stage4-calibrated',/65 顶点 \/ \d+ 边 \/ 62 控制面/,['正面','侧面','3/4']);
  for(const a of ['正面','侧面','3/4']){
   assert.ok(!shots.get('stage4-c-'+a).equals(shots.get('stage4-calibrated-'+a)),'Stage C picture identical to old B in '+a);
