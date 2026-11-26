@@ -47,7 +47,7 @@ test('stage3 and stage4 B remain available for reversible exhibition comparison'
  }
 });
 
-for(const stage of ['stage4-c','stage4-d','stage4-e','stage4-f'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
+for(const stage of ['stage4-c','stage4-d','stage4-e','stage4-f','stage4-g'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
  const m=load(stage);
  const V=m.vertices;
  const faces=m.faces.flatMap((f,fi)=>f.slice(1,-1).map((_,j)=>({ids:[f[0],f[j+1],f[j+2]],fi})));
@@ -163,4 +163,14 @@ test('stage4 F is the exact editor-exported two-edge collapse, closed and X-symm
  assert.equal(f.vertices.length-edges.size+f.faces.length,2);
  assert.ok(f.vertices.every(v=>f.vertices.some(w=>close(v[0],-w[0])&&close(v[1],w[1])&&close(v[2],w[2]))));
  assert.equal(f.faces.reduce((n,face)=>n+face.length-2,0),116);
+});
+
+test('stage4 G restores two upper silhouette corners with local mirrored cuts; anchors protected',()=>{
+ const f=load('stage4-f'),g=load('stage4-g');assert.equal(g.vertices.length,62);assert.equal(g.faces.length,60);
+ for(let i=0;i<60;i++)if(![6,7,23,24,43].includes(i))assert.deepEqual(g.vertices[i],f.vertices[i]);
+ assert.ok(g.vertices.every(v=>g.vertices.some(w=>close(v[0],-w[0])&&close(v[1],w[1])&&close(v[2],w[2]))));
+ const edges=new Map<string,number>();const key=(face:number[])=>[...face].sort((a,b)=>a-b).join(':');
+ const mirror=g.vertices.map(v=>g.vertices.findIndex(w=>close(v[0],-w[0])&&close(v[1],w[1])&&close(v[2],w[2])));
+ const faceKeys=new Set(g.faces.map(key));for(const face of g.faces){assert.ok(face.length>=3&&new Set(face).size===face.length);assert.ok(faceKeys.has(key(face.map(i=>mirror[i]))));for(let j=0;j<face.length;j++){const k=[face[j],face[(j+1)%face.length]].sort((a,b)=>a-b).join(':');edges.set(k,(edges.get(k)??0)+1)}}
+ assert.equal(edges.size,120);assert.ok([...edges.values()].every(n=>n===2));assert.equal(g.vertices.length-edges.size+g.faces.length,2);assert.equal(g.faces.reduce((n,face)=>n+face.length-2,0),120);
 });
