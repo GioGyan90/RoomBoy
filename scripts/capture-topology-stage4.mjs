@@ -91,6 +91,10 @@ try{
  await page.getByRole('status').filter({hasText:'镜像缺失 0 面'}).waitFor();
  assert.ok(!shots.get('stage4-h-正面').equals(shots.get('stage5-a-正面')));
  report.checks.push('05A six-angle eye orbit model');
+ await stage('stage5-b',/89 顶点 \/ 175 边 \/ 88 控制面/,['正面','侧面','背面','俯视','仰视','3/4']);
+ await page.getByRole('status').filter({hasText:'镜像缺失 0 面'}).waitFor();
+ assert.ok(!shots.get('stage5-a-正面').equals(shots.get('stage5-b-正面')));
+ report.checks.push('05B six-angle mouth routing model');
  await stage('stage4-calibrated',/65 顶点 \/ \d+ 边 \/ 62 控制面/,['正面','侧面','3/4']);
  for(const a of ['正面','侧面','3/4']){
   assert.ok(!shots.get('stage4-c-'+a).equals(shots.get('stage4-calibrated-'+a)),'Stage C picture identical to old B in '+a);
