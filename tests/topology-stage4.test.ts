@@ -47,7 +47,7 @@ test('stage3 and stage4 B remain available for reversible exhibition comparison'
  }
 });
 
-for(const stage of ['stage4-c','stage4-d','stage4-e','stage4-f','stage4-g','stage4-h'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
+for(const stage of ['stage4-c','stage4-d','stage4-e','stage4-f','stage4-g','stage4-h','stage5-a'])test(stage+' has no nonadjacent triangle interior crossings (fan triangulation)',()=>{
  const m=load(stage);
  const V=m.vertices;
  const faces=m.faces.flatMap((f,fi)=>f.slice(1,-1).map((_,j)=>({ids:[f[0],f[j+1],f[j+2]],fi})));
@@ -183,4 +183,14 @@ test('stage4 H keeps all G faces and protected anchors; bounded local deformatio
  assert.ok(h.vertices.every(v=>h.vertices.some(w=>close(v[0],-w[0])&&close(v[1],w[1])&&close(v[2],w[2]))));
  const normal=(vs:number[][],f:number[])=>{const n=[0,0,0];for(let i=0;i<f.length;i++){const a=vs[f[i]],b=vs[f[(i+1)%f.length]];n[0]+=(a[1]-b[1])*(a[2]+b[2]);n[1]+=(a[2]-b[2])*(a[0]+b[0]);n[2]+=(a[0]-b[0])*(a[1]+b[1])}return n};
  for(const f of h.faces){const a=normal(g.vertices,f),b=normal(h.vertices,f),la=Math.hypot(...a),lb=Math.hypot(...b);assert.ok(lb/la>.9);assert.ok(a.reduce((s,n,i)=>s+n*b[i],0)/la/lb>Math.cos(11*Math.PI/180));}
+});
+
+test('stage5 A preserves H coordinates and creates two six-point orbital loops',()=>{
+ const h=load('stage4-h'),a=load('stage5-a');
+ assert.deepEqual(a.vertices.slice(0,62),h.vertices);assert.equal(a.vertices.length,74);assert.equal(a.faces.length,72);
+ for(let i=0;i<60;i++)if(![30,31,34,35].includes(i))assert.deepEqual(a.faces[i],h.faces[i]);
+ const edges=new Map<string,number>();const key=(f:number[])=>[...f].sort((a,b)=>a-b).join(':');const mirror=a.vertices.map(v=>a.vertices.findIndex(w=>close(v[0],-w[0])&&close(v[1],w[1])&&close(v[2],w[2])));
+ assert.ok(mirror.every(i=>i>=0));const fs=new Set(a.faces.map(key));
+ for(const f of a.faces){assert.ok(fs.has(key(f.map(i=>mirror[i]))));assert.ok(new Set(f).size===f.length);f.forEach((v,i)=>{const k=key([v,f[(i+1)%f.length]]);edges.set(k,(edges.get(k)??0)+1)})}
+ assert.equal(edges.size,144);assert.ok([...edges.values()].every(n=>n===2));assert.equal(a.faces.reduce((n,f)=>n+f.length-2,0),144);
 });
